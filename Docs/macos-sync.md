@@ -22,13 +22,13 @@ D:\UnityEditor\Projects\Tide
 - Version Control 模式是 Visible Meta Files
 - 本机已安装 Git LFS
 
-需要做的事：
+已完成的事：
 
 ```powershell
 cd D:\UnityEditor\Projects\Tide
 git status
-git remote add origin https://github.com/V2beach/Tide.git
-git push -u origin main
+git remote -v
+git push
 ```
 
 当前远程仓库：
