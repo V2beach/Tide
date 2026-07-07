@@ -27,11 +27,21 @@ D:\UnityEditor\Projects\Tide
 ```powershell
 cd D:\UnityEditor\Projects\Tide
 git status
-git remote add origin <你的远程仓库地址>
+git remote add origin https://github.com/V2beach/Tide.git
 git push -u origin main
 ```
 
-如果远程仓库还没建，建议建一个私有仓库。仓库名可以直接用 `tide`。
+当前远程仓库：
+
+```text
+https://github.com/V2beach/Tide.git
+```
+
+如果本机配置了 GitHub SSH key，也可以改用：
+
+```text
+git@github.com:V2beach/Tide.git
+```
 
 ### macOS 家里电脑
 
@@ -55,7 +65,7 @@ git lfs install
 ```bash
 mkdir -p ~/Projects
 cd ~/Projects
-git clone <你的远程仓库地址> tide
+git clone https://github.com/V2beach/Tide.git tide
 cd tide
 git lfs pull
 ```
@@ -138,4 +148,3 @@ git diff --stat
 ```
 
 确认是否只是换行导致。当前仓库已用 `.gitattributes` 固定常见文本资源为 LF，后续新文件会稳定很多。
-
