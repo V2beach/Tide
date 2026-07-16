@@ -710,6 +710,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TideSailingReefController sailingReef;
     private TideSailingSalvageController sailingSalvage;
     private TideStormRescueController stormRescue;
+    private TideForecastTideNotchController forecastTideNotches;
 
     // 旧的 Scene 预览和几何探针仍使用这些语义名称。实际存储已集中到
     // TideSailingSalvageController；这些属性只是过渡期的单源投影，不保留副本。
@@ -4824,6 +4825,29 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             GetPredictedHighWaterY(),
             true);
         bool repairNarrowsKnowledge = repairedBand.WidthMeters < lookoutBand.WidthMeters * 0.5f;
+        float expectedPostX = GetFormalHouseSprite() != null
+            ? PreviousSaltMarkPostX[0]
+            : houseAnchor.x - 1.38f;
+        bool repairedNotchesGrounded = forecastTideNotches.IsVisible &&
+            Mathf.Abs(forecastTideNotches.StaffWorldX - expectedPostX) <= 0.01f &&
+            Mathf.Abs(forecastTideNotches.LowerWorldY - repairedBand.LowerY) <= 0.01f &&
+            Mathf.Abs(forecastTideNotches.UpperWorldY - repairedBand.UpperY) <= 0.01f &&
+            !forecastTideNotches.HasCollider &&
+            forecastTideNotches.SortingOrder < foregroundWaterOcclusionRenderer.sortingOrder;
+        float repairedNotchWidth = forecastTideNotches.VisibleBandWidthMeters;
+
+        chartRadioCondition = 0;
+        lampForecastCharges = 0;
+        loftForecastRound = tideRound;
+        UpdateVisuals(5.2f);
+        float lookoutNotchWidth = forecastTideNotches.VisibleBandWidthMeters;
+        bool roughObservationIsWider = forecastTideNotches.IsVisible &&
+            Mathf.Abs(lookoutNotchWidth - lookoutBand.WidthMeters) <= 0.01f &&
+            lookoutNotchWidth > repairedNotchWidth * 2f;
+
+        loftForecastRound = -1;
+        UpdateVisuals(5.3f);
+        bool noForecastHidesNotches = !forecastTideNotches.IsVisible;
 
         TideNetForecastModel.NetChoice shallowChoice = EvaluateNetChoiceForecast(0.2f);
         TideNetForecastModel.NetChoice deepChoice = EvaluateNetChoiceForecast(0.9f);
@@ -4832,17 +4856,23 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             deepChoice.StressTier > shallowChoice.StressTier;
         bool physicalTimingRemains = forecastText.Contains("高潮") && forecastText.Contains("平流");
         bool retiredMarkerAbsent = FindDescendantByName(transform, "GeneratedStiltFirstLampForecastMarker") == null;
+        bool physicalNotchesRegistered =
+            FindDescendantByName(transform, TideForecastTideNotchController.LowerNotchName) != null &&
+            FindDescendantByName(transform, TideForecastTideNotchController.UpperNotchName) != null;
 
         string evidence =
             $"区间宽 粗/修={lookoutBand.WidthMeters:F2}/{repairedBand.WidthMeters:F2}m；" +
+            $"桩结宽={lookoutNotchWidth:F2}/{repairedNotchWidth:F2}m；" +
             $"浅/深触水={shallowChoice.PredictedExposureSeconds:F1}/{deepChoice.PredictedExposureSeconds:F1}s；" +
             $"网压={shallowChoice.StressTier}/{deepChoice.StressTier}；" +
-            $"网深保留={netSetDepth01:F2}；旧标记缺席={retiredMarkerAbsent}";
+            $"网深保留={netSetDepth01:F2}；物理桩结={physicalNotchesRegistered}/{repairedNotchesGrounded}/{noForecastHidesNotches}；旧标记缺席={retiredMarkerAbsent}";
         bool passed = forecastDoesNotMutateChoice && forecastDoesNotPrescribeAnswer &&
-            repairNarrowsKnowledge && depthKeepsTradeoff && physicalTimingRemains && retiredMarkerAbsent;
+            repairNarrowsKnowledge && repairedNotchesGrounded && roughObservationIsWider &&
+            noForecastHidesNotches && physicalNotchesRegistered && depthKeepsTradeoff &&
+            physicalTimingRemains && retiredMarkerAbsent;
         return passed
-            ? $"PASS：海图只缩窄潮位与平流信息，浅深网仍是玩家承担收益和风险的连续选择。{evidence}"
-            : $"FAIL：潮汐预报仍可能替玩家选网深、缺少物理时机，或旧发光答案标记仍在场景中。{evidence}";
+            ? $"PASS：下一高潮以同一主桩两道麻绳结显示；海图只缩窄区间，浅深网仍由玩家承担收益和风险。{evidence}"
+            : $"FAIL：潮汐预报没有落到真实桩柱、仍可能替玩家选网深，或旧发光答案标记仍在场景中。{evidence}";
     }
 
     public string RunEditorPreviousHighWaterMemoryProbe()
@@ -19409,6 +19439,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             stormRescue = gameObject.AddComponent<TideStormRescueController>();
         }
+        forecastTideNotches = GetComponent<TideForecastTideNotchController>();
+        if (forecastTideNotches == null)
+        {
+            forecastTideNotches = gameObject.AddComponent<TideForecastTideNotchController>();
+        }
         backdropRenderer = EnsureRenderer("GeneratedStiltFirstBackdrop", GetBackdropSprite(), -100);
         daySeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalDaySeaSky", GetFormalDaySeaSkySprite(), -99);
         nightSeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalNightSeaSky", GetFormalNightSeaSkySprite(), -98);
@@ -19958,6 +19993,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         SetEnabled(stormRescueRopeRenderers, false);
         SetEnabled(shelterTideZoneWearRenderers, false);
         SetEnabled(previousHighWaterSaltMarks, false);
+        forecastTideNotches.Hide();
         SetEnabled(v30RepairOwnerRenderers, false);
         SetEnabled(v34ExteriorRepairOwnerRenderers, false);
         SetEnabled(v35InteriorRepairOwnerRenderers, false);
@@ -20307,6 +20343,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         UpdateShelterWaveImpactVisuals(time);
         UpdateShelterDamageVisuals();
         UpdatePreviousHighWaterSaltMarks();
+        UpdateForecastTideNotches();
         SetEnabled(boardwalkPathRenderer, false);
         tideFlatPathRenderer.sprite = GetDeckSprite();
         float pathLeft = GetBoardwalkVisualLeft();
@@ -26817,6 +26854,24 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 markColor,
                 -3f + i * 1.9f);
         }
+    }
+
+    private void UpdateForecastTideNotches()
+    {
+        bool hasWorldForecast = HasCurrentLoftForecast() || HasLampForecast();
+        bool repairedChart = chartRadioCondition > 0;
+        TideNetForecastModel.HighWaterBand band = TideNetForecastModel.EvaluateHighWaterBand(
+            GetPredictedHighWaterY(),
+            repairedChart);
+        float postX = GetFormalHouseSprite() != null
+            ? PreviousSaltMarkPostX[0]
+            : houseAnchor.x - 1.38f;
+        forecastTideNotches.UpdatePresentation(
+            state != SliceState.FinalDeparture && hasWorldForecast,
+            postX,
+            band,
+            GetNetLineSprite(),
+            repairedChart);
     }
 
     private void UpdateTidePrepVisuals(float time)

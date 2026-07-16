@@ -51,6 +51,12 @@
 - 短航平均水位由 `GetSailingMeanWaterY` 把权威天文水位相对固定礁顶按 `1:1m` 映射；露礁、礁顶碎浪、船底净空和位移碰撞读取同一个样本，浅礁不再是按 `F` 完成的任务点。
 - 固定浅礁位于首轮住所与漂木之间。空船、进水拖载和航速改变同一礁顶上的船底净空，因此首轮往返必须选择潮窗并在边缘水深减速，而不是靠剧情锁或永久空气墙控制通行。
 
+### 潮汐观察
+
+- 预报区间：`TideNetForecastModel.HighWaterBand`；粗观潮保留 `±0.22m` 不确定性，修复海图潮尺后缩窄到 `±0.08m`，但不选择网深。
+- 世界表现：`TideForecastTideNotchController`；把区间上下界绑定成正式主桩上的两道无碰撞麻绳结，排序在房屋前、前景水后。上一潮盐痕、下一潮预测结和实际水线都使用同一世界 Y。
+- 正式 Scene 门：`RunEditorTideForecastAutonomyProbe`；验证粗/修区间宽度、主桩锚点、遮挡顺序、无预报隐藏和连续网深自主权。
+
 ### 暴潮抢救
 
 - 规则：`TideStormRescueModel`
@@ -63,7 +69,7 @@
 - 吊升差异：`TideStormRescueModel.Advance` 按水罐、船材、柴束和湿海图的重量/系固难度计算工时；顺序改变结果，但不写死固定损失名单
 - 非文字反馈：搁架首次失效由 `TideAudioController.PlayStormShelfBreakCueInScene` 合成短木裂/落水声，并复用房体既有受浪包络；物件位置仍完全来自权威状态，不加独立视觉偏移。吊升完成复用拾取确认声
 - `Present` 区分“没有这件实物”和“实物被冲失”；`PrepareStormRescueManifest` 只把真实 `4L` 水、`2` 木料、独立干柴和已有海图转成暴潮预留。抢救成功由 `RestoreSecuredStormRescueCargo` 归回可用储物，失败不再对普通库存二次扣账
-- 睡眠边界：`WouldSleepIntervalFloodLooseStormCargo` 用权威潮位、风暴压力和可能的结构破口采样到黎明前的水深；未处理物资仍在水路或即将进入水路时，`BeginSleepPresentation` 拒绝换日。`stormRescueFloodStarted` 记录实际进水，`stormRescueCargoReleased` 记录搁架已失效且实物进入水路；`RecoverSurvivingStormCargoAtRest` 只整理后者在退水后的幸存物
+- 睡眠边界：`WouldSleepIntervalFloodLooseStormCargo` 用权威潮位、风暴压力和可能的结构破口采样到黎明前的水深；未处理物资仍在水路或即将进入水路时，`BeginSleepPresentation` 拒绝换日。`TideStormRescueController.FloodStarted/CargoReleased` 分别记录实际进水与搁架失效；`RecoverSurvivingStormCargoAtRest` 只整理退水后的真实幸存物
 - 场景取舍门：`TideStormRescueTradeoffConvergenceProbe` 同时遍历峰值水况和权威自然潮全过程的 24 种完整优先级；验证不操作更差、至少可救一件、最优也不能全救、顺序产生不同实物损失，并检查吊升完成帧不跳位。运行控制器只提供房内布局与由正式潮/浪模型生成的环境采样
 
 ### 实物维修
@@ -107,7 +113,7 @@
 
 - 聚焦探针：`Assets/Editor/TideCoreLoopConvergenceProbe.cs`
 - 正式 Scene 维修门：`Assets/Editor/TideRepairSceneConvergenceProbe.cs`
-- 正式 Scene 视觉与流程门：`Assets/Editor/TideVisualSceneConvergenceProbe.cs`；每项重开权威 Scene，验证首日自主性、暴潮物资守恒、暴潮休息旁路与几何契约，防止预览状态串扰，不执行自动截图
+- 正式 Scene 视觉与流程门：`Assets/Editor/TideVisualSceneConvergenceProbe.cs`；每项重开权威 Scene，验证首日自主性、世界潮尺、暴潮物资守恒、暴潮休息旁路与几何契约，防止预览状态串扰，不执行自动截图
 - 静态门：`Tools/check-prototype-loop.ps1` / `.sh`
 - 同步门：`Tools/check-unity-sync.ps1` / `.sh`
 - 完整入口：`Tools/check-tide-play-readiness.ps1` / `.sh`

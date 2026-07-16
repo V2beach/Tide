@@ -70,6 +70,11 @@
   - [x] 搁架失效不再只靠文字：首次状态跃迁播放一次程序化木裂/落水声并复用轻微受浪晃动，实物随同一局部水流起漂；成功吊离水路复用拾取确认声，不增加音频文件或突兀标记
   - [ ] 普通 Play 验证搁架失效的声音/物件起漂是否足以无文字说明“现在必须取舍”，以及真人操作是否落在无聊与慌乱之间
 
+- 潮汐观察与正反馈
+  - [x] `TideForecastTideNotchController` 把下一高潮预报落到已有主桩的两道麻绳刻痕；粗观潮 `0.44m`、修复潮尺 `0.16m`，实际水线、上一潮盐痕和预测区间共用世界 Y
+  - [x] 原本未执行的 `RunEditorTideForecastAutonomyProbe` 纳入正式视觉门；验证桩柱锚点、区间高度、无 Collider、前景水遮挡层与无预报隐藏，且不修改玩家连续网深选择
+  - [ ] 用户原始 Game View 验证刻痕像真实系绳而非横线 UI，且涨水后自然被前景水遮挡
+
 - 视觉与所见即所得
   - [x] 新增 `TIDE_VISUAL_SCENE_PROBE`；逐项重开正式 Scene 验证开场承重、首日自主性、暴潮取舍、人物尺度、船上完整人物、行走、登船、三段梯与可走面
   - [x] 自动几何门确认人物动作统一为 `1.16m`，船上人物源图含完整双腿、世界高 `1.36m`，层级为后船体 `4 < 人物 7 < 前船舷 8`
@@ -102,4 +107,4 @@
 
 - 连续天文潮、相邻高潮不等高、实际米制潮流、潮源批次守恒、网深/张力/收网、短航打捞与船体维修已有纯模型和回归。
 - V34 外景、V35 室内、V41 接触动作、V42 生存动作、V39 船体、V43 海况、V44 瞭望、V59 潮带实物为当前运行基线；详见运行资源清册。
-- 当前聚焦门：Windows 静态、macOS shell 静态、跨平台同步 `2591` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确静态项数以脚本当次输出为准。
+- 当前聚焦门：Windows 静态、macOS shell 静态、跨平台同步 `2593` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确静态项数以脚本当次输出为准。
