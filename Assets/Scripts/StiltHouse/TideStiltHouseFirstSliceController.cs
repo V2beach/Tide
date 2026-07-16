@@ -530,7 +530,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private int extraSaltWoodBatchId;
     private int washedAwayHarvestBatchId;
     private bool primarySourcePassedNearshore;
+    private float previousOuterWreckTravel01;
     private float outerWreckTravel01;
+    private float outerNetCaptureProgress01;
     private bool outerWreckPassedNearshore;
     private HarvestKind tideSourceHarvest = HarvestKind.None;
     private HarvestPhysicalState harvestPhysicalState = HarvestPhysicalState.None;
@@ -611,6 +613,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private float netSetDepth01 = StoredNetReferenceDepth01;
     private float netWaterExposureSeconds;
     private float netCaptureProgress01;
+    private float previousIncomingHarvestTravel01;
     private float netAccumulatedTension;
     private float netPeakTension01;
     private float netFraying01;
@@ -3258,7 +3261,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         weatherClockSeconds = firstCycleStartClock;
         currentWaterY = EvaluateNaturalWaterY(tideClockSeconds);
         float firstHighPredictionY = GetPredictedHighWaterY();
-        float firstNetExposureSeconds = GetPredictedNetExposureSeconds(comparisonNetDepth01);
+        float firstNetEncounterSeconds = GetPredictedNetEncounterSeconds(comparisonNetDepth01);
         float firstWorkWindowSeconds = MeasurePredictedNearshoreWorkWindowSeconds(
             firstCycleOrdinal,
             firstCycleStartClock);
@@ -3277,7 +3280,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         weatherClockSeconds = secondCycleStartClock;
         currentWaterY = EvaluateNaturalWaterY(tideClockSeconds);
         float secondHighPredictionY = GetPredictedHighWaterY();
-        float secondNetExposureSeconds = GetPredictedNetExposureSeconds(comparisonNetDepth01);
+        float secondNetEncounterSeconds = GetPredictedNetEncounterSeconds(comparisonNetDepth01);
         float secondWorkWindowSeconds = MeasurePredictedNearshoreWorkWindowSeconds(
             secondCycleOrdinal,
             secondCycleStartClock);
@@ -3288,15 +3291,15 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         bool firstIsHigher = firstHighPredictionY >= secondHighPredictionY;
         float higherHighPredictionY = firstIsHigher ? firstHighPredictionY : secondHighPredictionY;
         float lowerHighPredictionY = firstIsHigher ? secondHighPredictionY : firstHighPredictionY;
-        float higherHighNetExposureSeconds = firstIsHigher ? firstNetExposureSeconds : secondNetExposureSeconds;
-        float lowerHighNetExposureSeconds = firstIsHigher ? secondNetExposureSeconds : firstNetExposureSeconds;
+        float higherHighNetEncounterSeconds = firstIsHigher ? firstNetEncounterSeconds : secondNetEncounterSeconds;
+        float lowerHighNetEncounterSeconds = firstIsHigher ? secondNetEncounterSeconds : firstNetEncounterSeconds;
         float higherHighWorkWindowSeconds = firstIsHigher ? firstWorkWindowSeconds : secondWorkWindowSeconds;
         float lowerHighWorkWindowSeconds = firstIsHigher ? secondWorkWindowSeconds : firstWorkWindowSeconds;
         float higherHighCurrent = firstIsHigher ? firstHighCurrent : secondHighCurrent;
         float lowerHighCurrent = firstIsHigher ? secondHighCurrent : firstHighCurrent;
         bool adjacentHighsCreateDifferentOpportunities =
             higherHighPredictionY > lowerHighPredictionY + 0.08f &&
-            higherHighNetExposureSeconds > lowerHighNetExposureSeconds + 2f &&
+            Mathf.Abs(higherHighNetEncounterSeconds - lowerHighNetEncounterSeconds) > 0.02f &&
             lowerHighWorkWindowSeconds > higherHighWorkWindowSeconds + 2f;
         bool bothHighWatersRemainSlack = Mathf.Abs(higherHighCurrent) <= 0.0001f &&
             Mathf.Abs(lowerHighCurrent) <= 0.0001f;
@@ -3326,7 +3329,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         string evidence =
             $"高潮Y={higherHighPredictionY:F3}/{lowerHighPredictionY:F3}；" +
-            $"同网触水={higherHighNetExposureSeconds:F1}/{lowerHighNetExposureSeconds:F1}s；" +
+            $"同网有效相遇={higherHighNetEncounterSeconds:F2}/{lowerHighNetEncounterSeconds:F2}s；" +
             $"潮间作业={higherHighWorkWindowSeconds:F1}/{lowerHighWorkWindowSeconds:F1}s；" +
             $"盐痕={rememberedHigherHighY:F3}/{rememberedLowerHighY:F3}；" +
             $"平流={higherHighCurrent:F4}/{lowerHighCurrent:F4}";
@@ -3335,7 +3338,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         stormFrontArrivalDays = originalStormFrontArrivalDays;
         ResetSlice();
         return passed
-            ? $"PASS：较高潮增加网的触水收益，较低高潮留下更长潮间作业窗；盐湿痕和预报读取同一结果。{evidence}"
+            ? $"PASS：相邻高潮改变同一批漂物的穿网和潮间作业窗；较高潮也可能因漫顶降低拦截，盐湿痕和预报读取同一结果。{evidence}"
             : $"FAIL：相邻高潮尚未形成可读机会差，或预报、盐痕、实际水位没有共用同一潮。{evidence}";
     }
 
@@ -4975,8 +4978,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         TideNetForecastModel.NetChoice shallowChoice = EvaluateNetChoiceForecast(0.2f);
         TideNetForecastModel.NetChoice deepChoice = EvaluateNetChoiceForecast(0.9f);
-        bool depthKeepsTradeoff =
-            deepChoice.PredictedExposureSeconds >= shallowChoice.PredictedExposureSeconds + tideCycleSeconds * 0.1f &&
+        // This snapshot carries spring-tide saltwood near the surface. A deeper bottom
+        // line cannot stop it overtopping the fixed head rope, so fabricating a generic
+        // deep-net reward here would erase the material-specific decision. The fish-depth
+        // contrast is guarded separately by TideNetEncounterModel's core probe.
+        bool floatingBatchDoesNotFakeDepthReward =
+            Mathf.Abs(deepChoice.ContactRatio - shallowChoice.ContactRatio) <= 0.04f &&
             deepChoice.StressTier > shallowChoice.StressTier;
         bool physicalTimingRemains = forecastText.Contains("高潮") && forecastText.Contains("平流");
         bool retiredMarkerAbsent = FindDescendantByName(transform, "GeneratedStiltFirstLampForecastMarker") == null;
@@ -4987,14 +4994,14 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         string evidence =
             $"区间宽 粗/修={lookoutBand.WidthMeters:F2}/{repairedBand.WidthMeters:F2}m；" +
             $"桩结宽={lookoutNotchWidth:F2}/{repairedNotchWidth:F2}m；" +
-            $"浅/深触水={shallowChoice.PredictedExposureSeconds:F1}/{deepChoice.PredictedExposureSeconds:F1}s；" +
+            $"浅/深有效相遇={shallowChoice.PredictedEffectiveContactSeconds:F2}/{deepChoice.PredictedEffectiveContactSeconds:F2}s；" +
             $"网压={shallowChoice.StressTier}/{deepChoice.StressTier}；" +
             $"网深保留={netSetDepth01:F2}；快照固定/过潮隐藏={snapshotDoesNotDrift}/{passedHighWaterHidesNotches}；" +
             $"物理桩结={physicalNotchesRegistered}/{repairedNotchesGrounded}；旧标记缺席={retiredMarkerAbsent}";
         bool passed = forecastDoesNotMutateChoice && forecastDoesNotPrescribeAnswer &&
             repairNarrowsKnowledge && repairedNotchesGrounded && roughObservationIsWider &&
             snapshotDoesNotDrift && passedHighWaterHidesNotches &&
-            physicalNotchesRegistered && depthKeepsTradeoff &&
+            physicalNotchesRegistered && floatingBatchDoesNotFakeDepthReward &&
             physicalTimingRemains && retiredMarkerAbsent;
         return passed
             ? $"PASS：下一高潮以固定潮次快照落在同一主桩；过高潮自动失效，浅深网仍由玩家承担收益和风险。{evidence}"
@@ -7533,9 +7540,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         bool stoppedAwayFromPost = !TickLiveNetDepthControl(-1f, 1f, false) &&
             Mathf.Abs(netSetDepth01 - depthAfterRaise) < 0.001f;
 
-        float shallowCaptureRate = GetNetCaptureProgressRate(0.2f, 1f);
-        float deepCaptureRate = GetNetCaptureProgressRate(0.82f, 1f);
-        bool deepNetCapturesFaster = deepCaptureRate > shallowCaptureRate * 1.18f;
+        outerWreckTravel01 = 0.78f;
+        outerNetCaptureProgress01 = 0.63f;
+        state = SliceState.TideRising;
+        CommitNetIntoNaturalTide(NetLine.Mid);
+        bool redeployClearsOldEncounter = outerNetCaptureProgress01 <= 0.0001f &&
+            Mathf.Abs(previousOuterWreckTravel01 - outerWreckTravel01) <= 0.0001f;
 
         float fishAverage = 0f;
         float woodAverage = 0f;
@@ -7565,19 +7575,19 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         netRigStep = NetRigStep.Deployed;
         netIntegrity = 3;
         tideStrength = 0.4f;
-        currentWaterY = highWaterY;
+        currentWaterY = GetNetHeadLineY();
         StartCurrentTideDrift();
-        incomingHarvestTravel01 = 1f;
-        netSetDepth01 = 0.2f;
-        TickNetWaterExposure(0.6f);
-        float shallowProgressBeforeDrop = netCaptureProgress01;
+        previousIncomingHarvestTravel01 = 0.4f;
+        incomingHarvestTravel01 = 0.4f;
         netSetDepth01 = 0.82f;
-        TickNetWaterExposure(0.05f);
-        bool depthChangeCannotCashOldSeconds = !netCatchResolved &&
-            netCaptureProgress01 > shallowProgressBeforeDrop &&
-            netCaptureProgress01 < 0.5f;
-        for (int i = 0; i < 40 && !netCatchResolved; i++)
+        TickNetWaterExposure(4f);
+        bool wetTimeCannotPreloadCatch = !netCatchResolved && netCaptureProgress01 <= 0.0001f &&
+            netWaterExposureSeconds > 0f;
+        incomingHarvestTravel01 = 0.95f;
+        for (int i = 0; i < 20 && !netCatchResolved; i++)
         {
+            previousIncomingHarvestTravel01 = incomingHarvestTravel01;
+            incomingHarvestTravel01 = Mathf.Min(1.04f, incomingHarvestTravel01 + 0.006f);
             TickNetWaterExposure(0.1f);
         }
         float finalCaptureProgress = netCaptureProgress01;
@@ -7676,14 +7686,13 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         bool haulingCanRecover = frayingAfterNeglect > frayingBeforeNeglect &&
             netFraying01 < frayingAfterNeglect;
 
-        string evidence = $"抬网={depthBeforeRaise:F2}->{depthAfterRaise:F2}/离桩冻结={stoppedAwayFromPost}/手绳={adjustingShowsHandRope}；" +
-            $"捕获速率浅深={shallowCaptureRate:F3}/{deepCaptureRate:F3}；" +
-            $"接触积分={shallowProgressBeforeDrop:F2}->{finalCaptureProgress:F2}/防旧秒套利={depthChangeCannotCashOldSeconds}/最终挂住={contactIntegrationEventuallyCatches}；" +
+        string evidence = $"抬网={depthBeforeRaise:F2}->{depthAfterRaise:F2}/离桩冻结={stoppedAwayFromPost}/手绳={adjustingShowsHandRope}/重挂清零={redeployClearsOldEncounter}；" +
+            $"运行湿时不预充={wetTimeCannotPreloadCatch}/相遇={finalCaptureProgress:F2}/最终挂住={contactIntegrationEventuallyCatches}；" +
             $"载荷鱼木废={fishAverage:F2}/{woodAverage:F2}/{trashAverage:F2}/遗物峰差={relicMax - relicMin:F2}；" +
             $"深浅崩绳增量={shallowFrayDelta:F3}/{deepFrayDelta:F3}；断网回海={neglectedBreakReturnsSaltWoodToSea}/抢收留桩={rescueSecuresSameSaltWood}；" +
             $"临界进入={lethalDamageEntersFraying}/放任={frayingBeforeNeglect:F2}->{frayingAfterNeglect:F2}/抢收={netFraying01:F2}";
-        bool passed = raiseIsContinuous && stoppedAwayFromPost && deepNetCapturesFaster &&
-            adjustingShowsHandRope && depthChangeCannotCashOldSeconds && contactIntegrationEventuallyCatches &&
+        bool passed = raiseIsContinuous && stoppedAwayFromPost &&
+            adjustingShowsHandRope && redeployClearsOldEncounter && wetTimeCannotPreloadCatch && contactIntegrationEventuallyCatches &&
             loadProfilesDiffer && raisingActuallyRelievesFray && neglectedBreakReturnsSaltWoodToSea &&
             rescueSecuresSameSaltWood && lethalDamageEntersFraying && haulingCanRecover;
         return passed
@@ -11354,7 +11363,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         extraSaltWoodBatchId = 0;
         washedAwayHarvestBatchId = 0;
         primarySourcePassedNearshore = false;
+        previousOuterWreckTravel01 = 0f;
         outerWreckTravel01 = 0f;
+        outerNetCaptureProgress01 = 0f;
         outerWreckPassedNearshore = false;
         tideSourceHarvest = HarvestKind.None;
         harvestPhysicalState = HarvestPhysicalState.None;
@@ -11438,6 +11449,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         selectedNetLine = GetNetLineFromLoweringProgress(netSetDepth01);
         netWaterExposureSeconds = 0f;
         netCaptureProgress01 = 0f;
+        previousIncomingHarvestTravel01 = 0f;
+        previousOuterWreckTravel01 = outerWreckTravel01;
+        outerNetCaptureProgress01 = 0f;
         netAccumulatedTension = 0f;
         netPeakTension01 = 0f;
         netFraying01 = 0f;
@@ -11872,12 +11886,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         return netDepthAdjustmentActive;
     }
 
-    private float GetNetCaptureProgressRate(float depth01, float contact01)
-    {
-        float requiredExposure = GetRequiredNetExposureSeconds(Mathf.Clamp01(depth01));
-        return Mathf.Clamp01(contact01) / Mathf.Max(0.1f, requiredExposure);
-    }
-
     private void HandleNetRigging(float deltaTime)
     {
         if (netDeployed || netSecuredEarly)
@@ -11973,7 +11981,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 netLoweringProgress = 0f;
                 selectedNetLine = NetLine.High;
                 ResetNetRigHoldAction();
-                lastActionHint = "第二端已系住，沉纲仍在手边。旧湿线只说明潮曾到过哪里；浅挂省网，深挂更早吃水也更吃流。重新按住 F 连续放下，松手固定。";
+                lastActionHint = "第二端已系住，沉纲仍在手边。旧湿线只说明潮曾到过哪里；浅挂省网，深挂覆盖更低水层也更吃流。重新按住 F 连续放下，松手固定。";
             }
             else if (netRigActionHeld)
             {
@@ -16042,6 +16050,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         netCatchResolved = false;
         netWaterExposureSeconds = 0f;
         netCaptureProgress01 = 0f;
+        previousIncomingHarvestTravel01 = incomingHarvestTravel01;
+        previousOuterWreckTravel01 = outerWreckTravel01;
+        outerNetCaptureProgress01 = 0f;
         netAccumulatedTension = 0f;
         netPeakTension01 = 0f;
         netFraying01 = 0f;
@@ -16076,11 +16087,17 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             StartCurrentTideDrift();
         }
         ApplyPrepBeforeTide();
-        lastActionHint = $"网已经系在 {Mathf.RoundToInt(netSetDepth01 * 100f)}% 深的位置。深度只改变触水时长、负载和断网风险；{GetTideDriftProvenanceName(currentTideDriftField.NearshoreBatch.Provenance)}里的{GetHarvestName(tideSourceHarvest)}仍按原水路漂来。";
+        lastActionHint = $"网已经系在 {Mathf.RoundToInt(netSetDepth01 * 100f)}% 深的位置。深度只改变覆盖水层、负载和断网风险；{GetTideDriftProvenanceName(currentTideDriftField.NearshoreBatch.Provenance)}里的{GetHarvestName(tideSourceHarvest)}仍按原水路漂来。";
     }
 
     private void TickHarvestPhysicalLifecycle(float deltaTime)
     {
+        // The encounter model consumes the actual segment travelled this frame. Keep the
+        // previous position even when the current is slack, so low frame rates and ebb
+        // reversals cannot skip or duplicate the visible net opening.
+        previousIncomingHarvestTravel01 = incomingHarvestTravel01;
+        previousOuterWreckTravel01 = outerWreckTravel01;
+
         if (washedAwayHarvestTimer > 0f)
         {
             // Once the net breaks, displaced objects integrate the same current used
@@ -16133,7 +16150,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                     CalculateTideStrength(OpeningMoonAgeDays),
                     storm01);
                 TryLockContinuousRoutingDecision(previousOuterTravel01, outerWreckTravel01);
-                TryCatchRoutedSaltWoodInResolvedNet();
+                TryCatchRoutedSaltWoodInResolvedNet(deltaTime);
             }
         }
 
@@ -16422,19 +16439,20 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         float activeNetY = GetSelectedNetY();
         TideOceanSample netOcean = GetNetOceanSample();
         float contact01 = EvaluateNetWaterContact01(activeNetY, netOcean.SurfaceY);
-        if (contact01 <= 0.01f)
-        {
-            return;
-        }
-
-        if (!netTouched)
+        bool netIsWet = contact01 > 0.01f;
+        if (netIsWet && !netTouched)
         {
             netTouched = true;
-            lastActionHint = "潮头刚碰到网：浮子开始下沉，网还没有立刻结算，继续让水流穿过它。";
+            lastActionHint = "潮头刚碰到网：浮子开始下沉。湿网只会变重，漂物真正进入网口前不会预先积攒收获。";
         }
 
         if (netCatchResolved)
         {
+            if (!netIsWet)
+            {
+                return;
+            }
+
             float materialLoad = GetHarvestLoadTensionMultiplier(
                 currentHarvest,
                 tideClockSeconds + netPostCatchExposureSeconds);
@@ -16449,27 +16467,43 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             return;
         }
 
-        netWaterExposureSeconds += deltaTime * contact01;
-        netCaptureProgress01 = Mathf.Clamp01(
-            netCaptureProgress01 + Mathf.Max(0f, deltaTime) * GetNetCaptureProgressRate(netSetDepth01, contact01));
-        AdvanceNetLoadLedger(deltaTime, contact01, 1f, 0f, HasRoutedLoadBonus());
+        if (netIsWet)
+        {
+            netWaterExposureSeconds += Mathf.Max(0f, deltaTime) * contact01;
+            AdvanceNetLoadLedger(deltaTime, contact01, 1f, 0f, HasRoutedLoadBonus());
+        }
 
-        if (netCaptureProgress01 >= 0.999f &&
-            harvestPhysicalState == HarvestPhysicalState.Drifting &&
-            TideDriftSourceModel.IsInsideNetCaptureWindow(incomingHarvestTravel01))
+        if (harvestPhysicalState != HarvestPhysicalState.Drifting || tideSourceHarvest == HarvestKind.None)
+        {
+            netCaptureProgress01 = 0f;
+            return;
+        }
+
+        TideNetEncounterModel.Step encounter = TideNetEncounterModel.Advance(
+            netCaptureProgress01,
+            deltaTime,
+            previousIncomingHarvestTravel01,
+            incomingHarvestTravel01,
+            GetNetHeadLineY(),
+            activeNetY,
+            netOcean.SurfaceY,
+            netIntegrity / 4f,
+            GetCurrentPrimaryDriftMaterial());
+        netCaptureProgress01 = encounter.Progress01;
+
+        if (encounter.Captured)
         {
             ResolveNetCatch();
+            return;
         }
-        else if (netCaptureProgress01 >= 0.999f)
+
+        if (encounter.ContactLost)
         {
-            lastActionHint = primarySourcePassedNearshore
-                ? "网已经吃够水量，但这批漂物从网侧越过去了；真实错过不会在退潮时补发奖励。"
-                : "网已经吃够水量，远处漂物还在沿水路接近。它真正碰到网面前不会先算进收获。";
+            lastActionHint = "漂物擦过网缘后继续沿原水路漂走，未挂稳的接触不会留成隐藏进度。退潮后它可能在岸线上留下实物。";
         }
-        else if (Mathf.FloorToInt((netWaterExposureSeconds - deltaTime) * 2f) != Mathf.FloorToInt(netWaterExposureSeconds * 2f))
+        else if (encounter.HasPhysicalContact)
         {
-            int percent = Mathf.RoundToInt(netCaptureProgress01 * 100f);
-            lastActionHint = $"海水持续穿网：浸水 {percent}%，张力 {Mathf.RoundToInt(netPeakTension01 * 100f)}%。你仍可离开网桩做别的事。";
+            lastActionHint = $"漂物正压进浸水网面：覆盖 {Mathf.RoundToInt(encounter.MeshCoverage01 * 100f)}%，缠挂 {Mathf.RoundToInt(netCaptureProgress01 * 100f)}%。抬浅会减载，也可能让它从网底漏过。";
         }
     }
 
@@ -16554,13 +16588,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         return instantaneousLoad;
     }
 
-    private float GetRequiredNetExposureSeconds()
-    {
-        // A shallow net sees less water and therefore needs longer before it reliably holds
-        // anything. A deep net catches sooner, but its tension and damage score rise faster.
-        return GetRequiredNetExposureSeconds(netSetDepth01);
-    }
-
     private void ResolveNetCatch()
     {
         if (netCatchResolved)
@@ -16571,14 +16598,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         netCatchResolved = true;
         currentHarvestFromWrack = false;
         netPostCatchExposureSeconds = 0f;
-        bool catchesExtraSaltWood = extraSaltWoodOwner == ExtraSaltWoodOwner.RoutedToNet &&
-            TideDriftSourceModel.IsInsideNetCaptureWindow(outerWreckTravel01);
-        if (catchesExtraSaltWood)
-        {
-            extraSaltWoodBundledWithNetHarvest = true;
-            SetExtraSaltWoodOwner(ExtraSaltWoodOwner.CaughtInNet);
-        }
-        netCatchBundleTier = catchesExtraSaltWood ? 2 : 1;
+        // The routed saltwood is a second physical object. Merely sharing the horizontal
+        // window with this catch is not enough: its own waterline/mesh overlap is advanced
+        // by TryCatchRoutedSaltWoodInResolvedNet before it can join the bundle.
+        netCatchBundleTier = 1;
         HarvestKind reachedHarvest = GetIncomingTideCarryKind();
         ApplyNetStress();
         if (netBrokeThisTide)
@@ -16599,8 +16622,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             : netFraying01 > 0.01f
                 ? $"{GetHarvestName()}压进网时扯开了最后几股旧绳，但网还没有断。立刻回网桩抬网或按住 F 抢收。"
             : HasRoutedLoadBonus()
-                ? $"导流把{GetHarvestName()}整束送进网，起步负载 {netCatchBundleTier}/3；累计浸水 {netWaterExposureSeconds:0.0} 秒。现在收稳，继续留会逐级加重。"
-                : $"网在水里吃够了流量，终于挂住{GetHarvestName()}；累计浸水 {netWaterExposureSeconds:0.0} 秒。{GetNetIntegrityText()}";
+            ? $"导流索仍在额外吃力；{GetHarvestName()}已经在自己的吃水高度挂稳。现在收稳，继续留会逐级加重。"
+                : $"{GetHarvestName()}沿可见水路压进网面并挂稳；湿网累计受水 {netWaterExposureSeconds:0.0} 秒。{GetNetIntegrityText()}";
     }
 
     private void BeginBrokenNetResidue(HarvestKind lostKind, int lostPieceCount)
@@ -17985,7 +18008,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         incomingHarvestTravel01 = 0f;
+        previousIncomingHarvestTravel01 = 0f;
+        previousOuterWreckTravel01 = 0f;
         outerWreckTravel01 = 0f;
+        outerNetCaptureProgress01 = 0f;
         primarySourcePassedNearshore = false;
         outerWreckPassedNearshore = false;
     }
@@ -18069,14 +18095,36 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         ResetCurrentTideRoutingAfterLoss();
     }
 
-    private void TryCatchRoutedSaltWoodInResolvedNet()
+    private void TryCatchRoutedSaltWoodInResolvedNet(float deltaTime)
     {
         if (!netDeployed ||
             !netCatchResolved ||
             currentHarvest == HarvestKind.None ||
-            extraSaltWoodOwner != ExtraSaltWoodOwner.RoutedToNet ||
-            !TideDriftSourceModel.IsInsideNetCaptureWindow(outerWreckTravel01))
+            extraSaltWoodOwner != ExtraSaltWoodOwner.RoutedToNet)
         {
+            outerNetCaptureProgress01 = 0f;
+            return;
+        }
+
+        TideOceanSample netOcean = GetNetOceanSample();
+        TideNetEncounterModel.Step encounter = TideNetEncounterModel.Advance(
+            outerNetCaptureProgress01,
+            deltaTime,
+            previousOuterWreckTravel01,
+            outerWreckTravel01,
+            GetNetHeadLineY(),
+            GetSelectedNetY(),
+            netOcean.SurfaceY,
+            netIntegrity / 4f,
+            TideDriftMaterial.SaltWood,
+            0.42f);
+        outerNetCaptureProgress01 = encounter.Progress01;
+        if (!encounter.Captured)
+        {
+            if (encounter.ContactLost)
+            {
+                lastActionHint = "导流盐木擦过浸水网缘，没有挂稳；它仍是同一根木料，继续进入短航水域。";
+            }
             return;
         }
 
@@ -18084,8 +18132,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         SetExtraSaltWoodOwner(ExtraSaltWoodOwner.CaughtInNet);
         netCatchBundleTier = Mathf.Max(netCatchBundleTier, 2);
         netCatchVisualPieceCount = Mathf.Max(netCatchVisualPieceCount, 2);
+        outerNetCaptureProgress01 = 1f;
         TideAudioController.PlayNetLoadCueInScene(netCatchBundleTier, false);
-        lastActionHint = "导流盐木随后真正压进了已经挂鱼的网面，第二份实物负载现在才成立。";
+        lastActionHint = "导流盐木在自己的吃水高度上挂稳了，随后才成为网里的第二件实物负载。";
     }
 
     private static HarvestKind ToHarvestKind(TideDriftMaterial material)
@@ -18100,6 +18149,28 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 return HarvestKind.Trash;
             default:
                 return HarvestKind.Fish;
+        }
+    }
+
+    private TideDriftMaterial GetCurrentPrimaryDriftMaterial()
+    {
+        if (tideDriftFieldInitialized && currentTideDriftField.NearshoreBatch.IsValid)
+        {
+            return currentTideDriftField.NearshoreBatch.Material;
+        }
+
+        // Editor previews may project a HarvestKind without constructing a full tide
+        // field. Keep that fallback deterministic; normal play always uses the batch.
+        switch (tideSourceHarvest)
+        {
+            case HarvestKind.Wood:
+                return TideDriftMaterial.SaltWood;
+            case HarvestKind.Relic:
+                return TideDriftMaterial.ChartParcel;
+            case HarvestKind.Trash:
+                return TideDriftMaterial.TangledDebris;
+            default:
+                return TideDriftMaterial.Fish;
         }
     }
 
@@ -27429,9 +27500,16 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             IsForecastSnapshotCurrent(chartForecastSnapshot);
     }
 
-    private float GetPredictedNetExposureSeconds(float depth01)
+    private float GetPredictedNetEncounterSeconds(float depth01)
     {
-        const int samples = 96;
+        return GetPredictedNetEncounterSeconds(depth01, out _);
+    }
+
+    private float GetPredictedNetEncounterSeconds(
+        float depth01,
+        out TideDriftMaterial forecastMaterial)
+    {
+        const int samples = 192;
         float cycle = Mathf.Max(8f, tideCycleSeconds);
         float stepSeconds = cycle / samples;
         float currentPhase01 = Mathf.Repeat(tideClockSeconds / cycle, 1f);
@@ -27447,8 +27525,24 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             weatherClockSeconds,
             tideClockSeconds,
             forecastCycleOrdinal));
-        float activeNetY = Mathf.Lerp(GetNetLineY(NetLine.High), GetNetLineY(NetLine.Low), Mathf.Clamp01(depth01));
-        float exposure = 0f;
+        bool routeKnown = sailingWreckClueClaimed || lighthouseClues > 0 || routeClueReturnRound >= 0;
+        TideDriftBatch batch = TideDriftSourceModel.BuildField(
+            forecastCycleOrdinal,
+            moonAgeDays,
+            tideStrength,
+            stormPressureAtHigh01,
+            routeKnown).NearshoreBatch;
+        forecastMaterial = batch.Material;
+        float activeNetY = Mathf.Lerp(
+            GetNetLineY(NetLine.High),
+            GetNetLineY(NetLine.Low),
+            Mathf.Clamp01(depth01));
+        float headLineY = GetNetHeadLineY();
+        float referenceStrength = CalculateTideStrength(OpeningMoonAgeDays);
+        float referenceFloodSpeed = GetReferenceFloodCurrentSpeed();
+        float travel01 = 0f;
+        float progress01 = 0f;
+        float maximumProgress01 = 0f;
         for (int i = 0; i < samples; i++)
         {
             float phase01 = (i + 0.5f) / samples;
@@ -27457,23 +27551,59 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 forecastCycleOrdinal,
                 stormPressureAtHigh01,
                 inequalityRatio);
-            exposure += Mathf.InverseLerp(activeNetY - 0.18f, activeNetY + 0.2f, waterY) * stepSeconds;
+            float signedFlowWave = TideMixedSemidiurnalModel.EvaluateSignedCurrentWave(
+                phase01,
+                forecastCycleOrdinal,
+                inequalityRatio);
+            float physicalCurrent = TideAstronomicalCurrentModel.EvaluateSignedSpeedFromWave(
+                signedFlowWave,
+                tideStrength,
+                referenceStrength,
+                MeanTidalTransportSpeed,
+                EbbCurrentBoost);
+            float waterGate01 = Mathf.InverseLerp(lowWaterY + 0.12f, lowWaterY + 1.18f, waterY);
+            float nextTravel01 = TideDriftSourceModel.AdvanceNearshoreTravel01(
+                travel01,
+                stepSeconds,
+                -physicalCurrent,
+                referenceFloodSpeed,
+                waterGate01,
+                batch,
+                referenceStrength,
+                stormPressureAtHigh01);
+            TideNetEncounterModel.Step encounter = TideNetEncounterModel.Advance(
+                progress01,
+                stepSeconds,
+                travel01,
+                nextTravel01,
+                headLineY,
+                activeNetY,
+                waterY,
+                netIntegrity / 4f,
+                batch.Material);
+            progress01 = encounter.Progress01;
+            maximumProgress01 = Mathf.Max(maximumProgress01, progress01);
+            travel01 = nextTravel01;
+            if (encounter.Captured)
+            {
+                maximumProgress01 = 1f;
+                break;
+            }
         }
 
-        return exposure;
-    }
-
-    private static float GetRequiredNetExposureSeconds(float depth01)
-    {
-        return Mathf.Lerp(2.4f, 1.35f, Mathf.Clamp01(depth01));
+        TideNetEncounterModel.MaterialProfile profile = TideNetEncounterModel.GetProfile(batch.Material);
+        return maximumProgress01 * profile.RequiredEffectiveContactSeconds;
     }
 
     private TideNetForecastModel.NetChoice EvaluateNetChoiceForecast(float depth01)
     {
         float clampedDepth = Mathf.Clamp01(depth01);
+        float predictedContactSeconds = GetPredictedNetEncounterSeconds(
+            clampedDepth,
+            out TideDriftMaterial forecastMaterial);
         return TideNetForecastModel.EvaluateNetChoice(
-            GetPredictedNetExposureSeconds(clampedDepth),
-            GetRequiredNetExposureSeconds(clampedDepth),
+            predictedContactSeconds,
+            TideNetEncounterModel.GetProfile(forecastMaterial).RequiredEffectiveContactSeconds,
             tideCycleSeconds,
             CalculateForecastNetStress(clampedDepth, tideStrength));
     }
@@ -27482,10 +27612,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     {
         TideNetForecastModel.NetChoice choice = EvaluateNetChoiceForecast(depth01);
         string contactText = choice.LikelyMissesFirstCatch
-            ? "可能来不及挂住首批潮获"
+            ? "首批漂物可能从网缘漏过"
             : choice.MarginalContact
-                ? "触水时间刚够首批潮获"
-                : $"预计约{Mathf.RoundToInt(choice.PredictedExposureSeconds)}秒触水";
+                ? "首批漂物接触余量很小"
+                : "首批漂物能在网面挂稳";
         string stressText = choice.StressTier <= 0
             ? "网压轻"
             : choice.StressTier == 1
@@ -27518,7 +27648,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         int tidePercent = Mathf.RoundToInt(tideStrength * 100f);
         int secondsToSlack = Mathf.CeilToInt(GetSecondsUntilNextHighWaterSlack());
-        return $"下一潮预报：{GetPreviousHighWaterComparisonText(chartForecastSnapshot)}，{GetForecastHighWaterRangeText(chartForecastSnapshot)}，潮强约{tidePercent}%，约{secondsToSlack}秒到高潮平流。浅挂省网，深挂更早吃水也更吃流。";
+        return $"下一潮预报：{GetPreviousHighWaterComparisonText(chartForecastSnapshot)}，{GetForecastHighWaterRangeText(chartForecastSnapshot)}，潮强约{tidePercent}%，约{secondsToSlack}秒到高潮平流。浅挂省网，深挂覆盖低水层；贴水漂物仍可能越过网顶。";
     }
 
     private int GetLoopStepIndex()
@@ -28345,7 +28475,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         if (netRigStep == NetRigStep.SecondEndTied)
         {
-            return "重新按住 F 连续放沉纲；浅挂省网，深挂更早触水也更吃流";
+            return "重新按住 F 连续放沉纲；浅挂省网，深挂覆盖更低的水层也更吃流";
         }
 
         return $"继续按住 F 放沉纲，当前 {Mathf.RoundToInt(netSetDepth01 * 100f)}%；松开固定";
@@ -28445,8 +28575,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
             if (netTouched && !netCatchResolved)
             {
-                int soakPercent = Mathf.RoundToInt(Mathf.Clamp01(netWaterExposureSeconds / Mathf.Max(0.1f, GetRequiredNetExposureSeconds())) * 100f);
-                return $"目标：网正持续吃水 {soakPercent}%；不用守在网边，可转导流绳或短航。";
+                if (netCaptureProgress01 > 0.001f)
+                {
+                    return $"目标：漂物正在网口缠挂 {Mathf.RoundToInt(netCaptureProgress01 * 100f)}%；可以抬网减载，但可能让它漏过。";
+                }
+
+                return "目标：湿网正在承受水流，但漂物还没进入网口；不用守在网边，可转导流绳或短航。";
             }
 
             if (netCatchResolved)

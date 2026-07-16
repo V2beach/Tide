@@ -37,8 +37,62 @@ public static class TideCoreLoopConvergenceProbe
         string storm = ProbeStormRescue();
         string stormRuntime = ProbeStormRescueRuntime();
         string forecast = ProbeForecastSnapshot();
+        string netEncounter = ProbeNetEncounter();
         string wrack = ProbeWrackDeposit();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {wrack}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
+    }
+
+    private static string ProbeNetEncounter()
+    {
+        const float headY = 1f;
+        const float surfaceY = 1f;
+        float shallowBottomY = headY - 0.34f;
+        float deepBottomY = headY - 1.2f;
+        TideNetEncounterModel.MaterialProfile fish = TideNetEncounterModel.GetProfile(
+            TideDriftMaterial.Fish);
+
+        TideNetEncounterModel.Step noArrivalPreload = TideNetEncounterModel.Advance(
+            0f, 8f, 0.4f, 0.4f, headY, deepBottomY, surfaceY, 1f, TideDriftMaterial.Fish);
+        Require(noArrivalPreload.Progress01 <= 0.0001f,
+            "漂物尚未进入网口，湿网却提前积攒了捕获进度");
+
+        TideNetEncounterModel.Step shallow = TideNetEncounterModel.Advance(
+            0f, 1.2f, 0.95f, 1.02f, headY, shallowBottomY, surfaceY, 1f, TideDriftMaterial.Fish);
+        TideNetEncounterModel.Step deep = TideNetEncounterModel.Advance(
+            0f, 1.2f, 0.95f, 1.02f, headY, deepBottomY, surfaceY, 1f, TideDriftMaterial.Fish);
+        Require(shallow.MeshCoverage01 < fish.MinimumCoverage01 && !shallow.Captured,
+            "浅网没有从网底漏过低走鱼群，网深失去物理意义");
+        Require(deep.MeshCoverage01 > 0.99f && deep.Captured,
+            "深网完整覆盖鱼群后仍不能在同一次可见相遇中挂稳");
+
+        TideNetEncounterModel.Step overtoppedParcel = TideNetEncounterModel.Advance(
+            0f, 1.2f, 0.95f, 1.02f, headY, deepBottomY, headY + 0.28f, 1f,
+            TideDriftMaterial.ChartParcel);
+        Require(overtoppedParcel.MeshCoverage01 <= 0.0001f && !overtoppedParcel.Captured,
+            "漂在高潮表面的纸包不能从已经没顶的网绳上方越过");
+
+        TideNetEncounterModel.Step freeSaltWood = TideNetEncounterModel.Advance(
+            0f, 1.4f, 0.95f, 1.02f, headY, deepBottomY, headY + 0.28f, 1f,
+            TideDriftMaterial.SaltWood);
+        TideNetEncounterModel.Step guidedSaltWood = TideNetEncounterModel.Advance(
+            0f, 1.4f, 0.95f, 1.02f, headY, deepBottomY, headY + 0.28f, 1f,
+            TideDriftMaterial.SaltWood, 0.42f);
+        Require(!freeSaltWood.Captured && guidedSaltWood.Captured &&
+            guidedSaltWood.MeshCoverage01 > freeSaltWood.MeshCoverage01 + 0.8f,
+            "可见导流索没有把同一根浮木压入网面，或自由浮木也获得了隐藏下压");
+
+        TideNetEncounterModel.Step partial = TideNetEncounterModel.Advance(
+            0f, 0.1f, 0.95f, 1.01f, headY, deepBottomY, surfaceY, 1f, TideDriftMaterial.Fish);
+        TideNetEncounterModel.Step slipped = TideNetEncounterModel.Advance(
+            partial.Progress01, 0.05f, 1.01f, 1.2f, headY, deepBottomY, surfaceY, 1f,
+            TideDriftMaterial.Fish);
+        Require(partial.Progress01 > 0f && slipped.ContactLost && slipped.Progress01 <= 0.0001f,
+            "擦网漏过的实物把旧接触秒数带进了下一次相遇");
+
+        float lowFrameOverlap = TideNetEncounterModel.EvaluateWindowOverlap01(0.82f, 1.2f);
+        Require(lowFrameOverlap > 0.3f && lowFrameOverlap < 0.4f,
+            "低帧率一步跨过网口时没有积分真实线段重叠");
+        return $"网遭遇=不预充/鱼覆盖{shallow.MeshCoverage01:F2}->{deep.MeshCoverage01:F2}/纸包越顶/盐木导压{freeSaltWood.MeshCoverage01:F2}->{guidedSaltWood.MeshCoverage01:F2}/擦过清零/跨帧{lowFrameOverlap:F2}";
     }
 
     private static string ProbeWrackDeposit()

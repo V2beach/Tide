@@ -53,7 +53,9 @@
 
 ### 潮汐观察
 
+- 网口相遇：`TideNetEncounterModel`；漂物到达前的湿网只累计水阻，只有实物水路线段进入网口且吃水带与网面重叠才累计缠挂。浅/深网、漫顶漏过、低帧率跨窗和擦网清零共用同一模型；可见导流索可以把指定盐木压入网面，自由漂物没有隐藏下压力。
 - 预报区间：`TideNetForecastModel.HighWaterBand`；粗观潮保留 `±0.22m` 不确定性，修复海图潮尺后缩窄到 `±0.08m`，但不选择网深。
+- 网深预报：`GetPredictedNetEncounterSeconds` 前向推进下一天文潮次的同一 `TideDriftBatch`、实际潮流和网面相遇，再由 `TideNetForecastModel.NetChoice` 整理有效接触与网压；不能恢复成整潮泡水秒数或统一深网奖励。
 - 观测生命周期：`TideForecastSnapshotModel`；使用连续天文潮次冻结观测当刻的上下界。后续天气只改变真实水位，不反向改写旧绳结；目标高潮一过，快照自然失效。这里不能使用睡眠或故事轮次 `tideRound`。
 - 世界表现：`TideForecastTideNotchController`；把区间上下界绑定成正式主桩上的两道无碰撞麻绳结，排序在房屋前、前景水后。上一潮盐痕、下一潮预测结和实际水线都使用同一世界 Y。
 - 正式 Scene 门：`RunEditorTideForecastAutonomyProbe`；验证粗/修区间宽度、主桩锚点、遮挡顺序、快照不随时钟漂移、过高潮隐藏和连续网深自主权。

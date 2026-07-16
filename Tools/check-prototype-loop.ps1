@@ -44,6 +44,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideStormRescueController.cs",
     "Assets/Scripts/StiltHouse/TideForecastTideNotchController.cs",
     "Assets/Scripts/StiltHouse/TideForecastSnapshotModel.cs",
+    "Assets/Scripts/StiltHouse/TideNetEncounterModel.cs",
     "Assets/Scripts/StiltHouse/TideWrackDepositModel.cs",
     "Assets/Scripts/StiltHouse/TideWrackLineController.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
@@ -77,20 +78,26 @@ Test-Gate ($controller.Contains("RunEditorStormManifestOwnershipProbe")) "storm 
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"
 Test-Gate ($controller.Contains("forecastTideNotches.UpdatePresentation")) "forecast is projected onto physical stilt notches"
 Test-Gate ($controller.Contains("TideForecastSnapshotModel.Capture")) "forecast observations are immutable astronomical-cycle snapshots"
+Test-Gate ($controller.Contains("TideNetEncounterModel.Advance")) "net catch uses physical batch/mesh encounters"
 Test-Gate ($controller.Contains("tideDriftFieldCycleOrdinal")) "drift batches use astronomical cycles instead of story rounds"
 Test-Gate ($controller.Contains("wrackLine.TrySettle")) "missed tide batches can leave a physical ebb deposit"
 $coreProbe = Read-ProjectText "Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 Test-Gate ($coreProbe.Contains("ProbeForecastSnapshot")) "core gate covers forecast snapshot lifetime"
+Test-Gate ($coreProbe.Contains("ProbeNetEncounter")) "core gate rejects preload, overtopping, stale contact, and skipped windows"
 Test-Gate ($coreProbe.Contains("ProbeWrackDeposit")) "core gate covers ebb deposit and refloat lifecycle"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 Test-Gate ($visualProbe.Contains("RunEditorBoatPassengerScaleProbe")) "visual gate covers complete boat passenger"
 Test-Gate ($visualProbe.Contains("RunEditorWalkSurfacePathContinuityProbe")) "visual gate covers authored walk surfaces"
 Test-Gate ($visualProbe.Contains("RunEditorFirstDayAutonomyProbe")) "visual gate covers first-day autonomy"
+Test-Gate ($visualProbe.Contains("RunEditorMixedSemidiurnalOpportunityProbe")) "visual gate covers unequal adjacent-tide opportunities"
 Test-Gate ($visualProbe.Contains("TideStormRescueTradeoffConvergenceProbe.Run")) "visual gate covers storm rescue tradeoff"
 Test-Gate ($visualProbe.Contains("RunEditorStormManifestOwnershipProbe")) "visual gate covers storm cargo conservation"
 Test-Gate ($visualProbe.Contains("RunEditorSailingTideContinuityProbe")) "visual gate covers authoritative sailing tide"
 Test-Gate ($visualProbe.Contains("RunEditorFirstSailingTideDecisionProbe")) "visual gate covers the first sailing tide decision"
 Test-Gate ($visualProbe.Contains("RunEditorTideForecastAutonomyProbe")) "visual gate covers tide-forecast autonomy and physical geometry"
+Test-Gate ($visualProbe.Contains("RunEditorLiveNetControlAndLoadPhysicsProbe")) "visual gate covers runtime net encounter integration"
+Test-Gate ($visualProbe.Contains("RunEditorNetExcursionWindowProbe")) "visual gate covers leaving the net during a natural tide"
+Test-Gate ($visualProbe.Contains("RunEditorFirstTideRouteChoiceProbe")) "visual gate covers first-tide route ownership and risk"
 Test-Gate ($visualProbe.Contains("RunEditorWrackLineLifecycleProbe")) "visual gate covers the physical wrack-line lifecycle"
 
 $buildSettings = Read-ProjectText "ProjectSettings/EditorBuildSettings.asset"
