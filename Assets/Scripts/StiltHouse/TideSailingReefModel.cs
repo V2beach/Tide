@@ -38,7 +38,7 @@ public readonly struct TideSailingReefSample
 /// </summary>
 public static class TideSailingReefModel
 {
-    public const float ReefCrownAboveLowestWaterMeters = 0.72f;
+    public const float ReefCrownAboveLowestWaterMeters = 0.35f;
     public const float ReefHalfWidthMeters = 0.56f;
     public const float BaseBoatDraftMeters = 0.3f;
     public const float MaximumIngressDraftMeters = 0.18f;

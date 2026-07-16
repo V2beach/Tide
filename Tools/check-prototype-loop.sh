@@ -51,6 +51,7 @@ gate grep -q RunEditorFirstDayAutonomyProbe "$root/Assets/Editor/TideVisualScene
 gate grep -q TideStormRescueTradeoffConvergenceProbe.Run "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorStormManifestOwnershipProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorSailingTideContinuityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
+gate grep -q RunEditorFirstSailingTideDecisionProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q 'Assets/Scenes/Tide_StiltHouse_FirstSlice.unity' "$root/ProjectSettings/EditorBuildSettings.asset"
 if grep -q 'SampleScene.unity' "$root/ProjectSettings/EditorBuildSettings.asset"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 gate grep -q 'filter=lfs' "$root/.gitattributes"

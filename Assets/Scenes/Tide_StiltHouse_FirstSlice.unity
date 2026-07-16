@@ -228,7 +228,7 @@ MonoBehaviour:
   earlyWreckClueX: 12.2
   sailingBuoyPoint: {x: -0.85, y: -0.72}
   sailingSalvagePoint: {x: 5.15, y: -0.88}
-  sailingReefPoint: {x: 18.65, y: -1.08}
+  sailingReefPoint: {x: 2.15, y: -1.08}
   sailTripSeconds: 75
   sailingTrimSpeed: 0.9
   sailingBailRate: 0.22

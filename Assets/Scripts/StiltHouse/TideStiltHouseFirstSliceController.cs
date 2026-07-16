@@ -281,7 +281,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     [SerializeField] private float earlyWreckClueX = 12.2f;
     [SerializeField] private Vector2 sailingBuoyPoint = new Vector2(-0.85f, -0.72f);
     [SerializeField] private Vector2 sailingSalvagePoint = new Vector2(5.15f, -0.88f);
-    [SerializeField] private Vector2 sailingReefPoint = new Vector2(18.65f, -1.08f);
+    [SerializeField] private Vector2 sailingReefPoint = new Vector2(2.15f, -1.08f);
     [SerializeField] private float sailTripSeconds = 75f;
     [SerializeField] private float sailingTrimSpeed = 0.9f;
     [SerializeField] private float sailingBailRate = 0.22f;
@@ -8303,6 +8303,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         float returnedToPierSeconds = -1f;
         float tierThreeSeconds = -1f;
         float breakSeconds = -1f;
+        float reefDecisionSeconds = 0f;
+        float bailedWaterBeforeReefReturn = sailingBailedWaterThisTrip;
         int expectedSaltWoodBatch = extraSaltWoodBatchId;
 
         // Leave the routing boom open and let the same natural tide lock the decision.
@@ -8376,7 +8378,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         // same throw preconditions as the player's F press. Reaching the damaged-boat
         // breaker is allowed; teleporting the boat beside the target is not.
         bool hookStarted = false;
-        for (int step = 0; step < 360 && viewMode == SliceViewMode.Sailing && !netBrokeThisTide; step++)
+        for (int step = 0; step < 600 && viewMode == SliceViewMode.Sailing && !netBrokeThisTide; step++)
         {
             if (extraSaltWoodOwner == ExtraSaltWoodOwner.SailingWater &&
                 BeginContinuousSailingHookThrow())
@@ -8386,7 +8388,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 break;
             }
 
-            AdvanceSailingSteering(stepSeconds, 1f);
+            if (AdvanceProbeSailingWithReefDecision(stepSeconds, 1f, false))
+            {
+                reefDecisionSeconds += stepSeconds;
+            }
             TickState(stepSeconds);
             elapsed += stepSeconds;
             ObserveFirstTideVoyageMilestones(
@@ -8425,13 +8430,16 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         // ingress penalties. Returning is accepted only after the runtime home window
         // reports true, then the normal disembark route moves the player onto the pier.
         for (int step = 0;
-             step < 420 &&
+              step < 600 &&
              extraSaltWoodOwner == ExtraSaltWoodOwner.HookedToBoat &&
              !CanReturnFromSailing() &&
              !netBrokeThisTide;
              step++)
         {
-            AdvanceSailingSteering(stepSeconds, -1f);
+            if (AdvanceProbeSailingWithReefDecision(stepSeconds, -1f, true))
+            {
+                reefDecisionSeconds += stepSeconds;
+            }
             TickState(stepSeconds);
             elapsed += stepSeconds;
             ObserveFirstTideVoyageMilestones(
@@ -8487,6 +8495,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         float returnMarginSeconds = breakSeconds > 0f && returnedToPierSeconds > 0f
             ? breakSeconds - returnedToPierSeconds
             : -1f;
+        float reefReturnBailedWater = sailingBailedWaterThisTrip - bailedWaterBeforeReefReturn;
         bool naturalSequence = routeLockSeconds > 0f &&
             sailingEntrySeconds > routeLockSeconds &&
             reachedBoatSeconds > routeLockSeconds &&
@@ -8494,7 +8503,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             hookStartedSeconds > boardedSeconds &&
             salvageSecuredSeconds > hookStartedSeconds &&
             reachedHomeSeconds > salvageSecuredSeconds &&
-            returnedToPierSeconds > reachedHomeSeconds;
+            returnedToPierSeconds > reachedHomeSeconds &&
+            reefDecisionSeconds > 0.2f;
         bool readableDeepPressure = stopAfterReturn ||
             (tierThreeSeconds > 0f && breakSeconds > tierThreeSeconds &&
              returnMarginSeconds >= 4f);
@@ -8502,6 +8512,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         string evidence =
             $"锁流{routeLockSeconds:F1}/盐木入海{sailingEntrySeconds:F1}/到船{reachedBoatSeconds:F1}/登船{boardedSeconds:F1}/" +
             $"抛钩{hookStartedSeconds:F1}/收妥{salvageSecuredSeconds:F1}/靠岸{reachedHomeSeconds:F1}/返木路{returnedToPierSeconds:F1}/" +
+            $"礁控{reefDecisionSeconds:F1}s/舀水{reefReturnBailedWater:F2}/" +
+            $"船木={sailingBoatX:F2}/{sailingSalvageWorldX:F2}m 速={sailingBoatWorldVelocity:F2}/{sailingSalvageVelocity:F2} " +
+            $"相对={GetSailingSalvageRelativeSpeed():F2} owner={extraSaltWoodOwner}/" +
             $"三档{tierThreeSeconds:F1}/断网{breakSeconds:F1}/余量{returnMarginSeconds:F1}s/批次{expectedSaltWoodBatch}->{extraSaltWoodBatchId}";
         bool passed = naturalSequence && returnedBeforeBreak && returnedSameBatch && readableDeepPressure;
         if (!stopAfterReturn)
@@ -8511,6 +8524,51 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         return passed
             ? $"PASS：开放岔流后的首潮短航可按真实步行、破船航行、贴流抛钩和拖带返航完成，深网仍保留断裂压力。{evidence}"
             : $"FAIL：开放岔流虽能进短航，但真实往返仍来不及、无法打捞或批次不守恒。{evidence}";
+    }
+
+    private bool AdvanceProbeSailingWithReefDecision(
+        float deltaTime,
+        float intendedDirection,
+        bool allowBailing)
+    {
+        float direction = Mathf.Clamp(intendedDirection, -1f, 1f);
+        float leftEdge = sailingReefPoint.x - TideSailingReefModel.ReefHalfWidthMeters;
+        float rightEdge = sailingReefPoint.x + TideSailingReefModel.ReefHalfWidthMeters;
+        float distanceToReef = direction > 0f
+            ? leftEdge - sailingBoatX
+            : sailingBoatX - rightEdge;
+        bool approachingReef = distanceToReef >= -0.08f && distanceToReef <= 1.65f;
+        if (!approachingReef)
+        {
+            sailingBailing = false;
+            // Once clear of the breaker the same player raises sail again; otherwise
+            // one cautious reefing input would leave the probe motoring the remaining
+            // sea sector under bare poles and test an artificial timeout.
+            AdvanceSailingSteering(deltaTime, direction, 1f);
+            return false;
+        }
+
+        TideSailingReefSample reef = GetSailingReefSample(sailingBoatVelocity);
+        bool bailing = allowBailing &&
+            sailingWaterIngress01 > 0.16f &&
+            (reef.GroundsKeel || reef.UnderKeelClearanceMeters < 0.1f);
+        sailingBailing = bailing;
+        if (bailing)
+        {
+            ApplySailingBail(deltaTime);
+        }
+
+        // The probe reacts only to the same exposed rock/breaker condition visible in
+        // play: lower sail, bleed speed, then use a small tiller input when the keel
+        // clears. It never writes boat position, tide, velocity, ingress or reef state.
+        bool needsCaution = reef.GroundsKeel ||
+            reef.UnderKeelClearanceMeters < 0.12f ||
+            Mathf.Abs(sailingBoatVelocity) > 0.36f;
+        float cautiousDirection = reef.GroundsKeel || Mathf.Abs(sailingBoatVelocity) > 0.32f
+            ? 0f
+            : direction * 0.32f;
+        AdvanceSailingSteering(deltaTime, cautiousDirection, -1f);
+        return needsCaution || bailing;
     }
 
     public string RunEditorFirstTideSaltWoodBoatRepairFeedbackProbe()
@@ -8532,7 +8590,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         const float workStepSeconds = 0.1f;
         float followUpSeconds = 0f;
-        float worldClockAtReturn = dayClockSeconds;
+        float worldElapsedAtReturn = worldElapsedRealSeconds;
 
         // Because the fish remains physically in the net, the player's hands are not
         // available for a second cargo object. Unloading therefore uses the existing
@@ -8665,8 +8723,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             0.05f,
             8f,
             ref followUpSeconds);
+        int maximumNextWindowSteps = Mathf.CeilToInt(
+            (tideCycleSeconds + 20f) / workStepSeconds);
         for (int step = 0;
-             step < 900 && returnedToBoat && !IsBoatBoardWindowOpen();
+             step < maximumNextWindowSteps && returnedToBoat && !IsBoatBoardWindowOpen();
              step++)
         {
             TickState(workStepSeconds);
@@ -8695,13 +8755,14 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             boatHullIntegrity == 2 && boatReadiness == 1 &&
             GetBoatSeaworthyRightLimit() >= rangeAfter - 0.01f &&
             sailingBoatX > nextTripStartX + 0.3f;
-        bool naturalWorldContinued = dayClockSeconds > worldClockAtReturn &&
+        bool naturalWorldContinued =
+            worldElapsedRealSeconds > worldElapsedAtReturn + 0.01f &&
             followUpSeconds > 0f;
         bool fishSurvivesBoatRepair = securedPostHarvest == HarvestKind.Fish &&
             securedPostHarvestBatchId == fishBatch;
 
         string evidence =
-            $"卸到码头={unloadedToDock}/收鱼={haulStartedSeconds:F1}->{haulFinishedSeconds:F1}s/" +
+            $"航程=[{voyageReport}]；卸到码头={unloadedToDock}/收鱼={haulStartedSeconds:F1}->{haulFinishedSeconds:F1}s/" +
             $"修船完成={repairFinishedSeconds:F1}s/阶段={sawInspection}/{sawCleaning}/{sawTrialFit}/{sawFastening}/{sawSealing}/暂停={pausePreservesWork}；" +
             $"路径={voyageCompleted}/{fishStillOwnsNet}/{reachedNet}/{fishSecuredAtPost}/{returnedToStaging}/{pickedUpSameTimber}/{reachedHull}/{hullOwnsWorkPoint}；" +
             $"船壳工位={hullArrivalX:F2}->{hullWorkPosition.x:F2}/通道{GetLaneMinX(playerLane):F2}..{GetLaneMaxX(playerLane):F2}；" +
@@ -10169,6 +10230,85 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             tideWindowChangesClearance && exposedRockTracksWater
             ? $"PASS：短航海面、浅礁净空和露礁表现随同一条天文潮连续变化。{evidence}"
             : $"FAIL：短航潮位、浅礁碰撞或露礁表现仍有一项脱离权威潮相。{evidence}";
+    }
+
+    public string RunEditorFirstSailingTideDecisionProbe()
+    {
+        EnsureScene();
+        ResetSlice();
+        arrivalVignetteActive = false;
+
+        float reefLeftEdge = sailingReefPoint.x - TideSailingReefModel.ReefHalfWidthMeters;
+        float reefRightEdge = sailingReefPoint.x + TideSailingReefModel.ReefHalfWidthMeters;
+        bool reefIsOnFirstSalvageRoute = sailingHomeX < reefLeftEdge &&
+            reefRightEdge < sailingSalvagePoint.x;
+
+        float firstHighWaterY = EvaluateNaturalWaterY(tideCycleSeconds * 0.5f);
+        float referenceSpeed = Mathf.Max(0.8f, GetEffectiveSailingMaxSpeed());
+        TideSailingReefSample lowEmpty = TideSailingReefModel.Evaluate(
+            lowWaterY, lowWaterY, 0f, 0f, 0f, referenceSpeed);
+        TideSailingReefSample highEmpty = TideSailingReefModel.Evaluate(
+            lowWaterY, firstHighWaterY, 0f, 0f, 0.18f, referenceSpeed);
+        TideSailingReefSample highTowSlow = TideSailingReefModel.Evaluate(
+            lowWaterY, firstHighWaterY, 1f, 1f, 0.18f, referenceSpeed);
+        const float sampleSeconds = 0.5f;
+        float emptyWindowSeconds = 0f;
+        float slowTowWindowSeconds = 0f;
+        float fastTowWindowSeconds = 0f;
+        int sampleCount = Mathf.CeilToInt(tideCycleSeconds / sampleSeconds);
+        for (int i = 0; i <= sampleCount; i++)
+        {
+            float sampleClock = Mathf.Min(tideCycleSeconds, i * sampleSeconds);
+            float sampleWaterY = EvaluateNaturalWaterY(sampleClock);
+            TideSailingReefSample emptySample = TideSailingReefModel.Evaluate(
+                lowWaterY,
+                sampleWaterY,
+                0f,
+                0f,
+                0.18f,
+                referenceSpeed);
+            TideSailingReefSample slowTowSample = TideSailingReefModel.Evaluate(
+                lowWaterY,
+                sampleWaterY,
+                1f,
+                1f,
+                0.18f,
+                referenceSpeed);
+            TideSailingReefSample fastTowSample = TideSailingReefModel.Evaluate(
+                lowWaterY,
+                sampleWaterY,
+                1f,
+                1f,
+                referenceSpeed,
+                referenceSpeed);
+            if (!emptySample.GroundsKeel)
+            {
+                emptyWindowSeconds += sampleSeconds;
+            }
+            if (!slowTowSample.GroundsKeel)
+            {
+                slowTowWindowSeconds += sampleSeconds;
+            }
+            if (!fastTowSample.GroundsKeel)
+            {
+                fastTowWindowSeconds += sampleSeconds;
+            }
+        }
+
+        bool physicalChoiceExists = lowEmpty.GroundsKeel &&
+            highEmpty.HasComfortableClearance &&
+            !highTowSlow.GroundsKeel &&
+            emptyWindowSeconds >= slowTowWindowSeconds + 12f &&
+            slowTowWindowSeconds >= fastTowWindowSeconds + 6f &&
+            fastTowWindowSeconds >= 8f;
+        string evidence =
+            $"路线家/礁/木={sailingHomeX:F2}/{sailingReefPoint.x:F2}/{sailingSalvagePoint.x:F2}m；" +
+            $"高潮净空空船/慢拖={highEmpty.UnderKeelClearanceMeters:F2}/" +
+            $"{highTowSlow.UnderKeelClearanceMeters:F2}m；" +
+            $"潮窗空/慢拖/快拖={emptyWindowSeconds:F1}/{slowTowWindowSeconds:F1}/{fastTowWindowSeconds:F1}s";
+        return reefIsOnFirstSalvageRoute && physicalChoiceExists
+            ? $"PASS：首航往返必须读潮；空船有余量，进水拖载需在高潮附近减速过礁。{evidence}"
+            : $"FAIL：浅礁尚未进入首轮漂木往返，或自然潮窗没有形成可解的速度/载重取舍。{evidence}";
     }
 
     private float FindWaveEventProbeTime(
@@ -21638,7 +21778,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         SetEnabled(sailingReefPointRenderer, rockVisible);
         if (rockVisible)
         {
-            const float rockHeight = 0.72f;
+            const float rockHeight = TideSailingReefModel.ReefCrownAboveLowestWaterMeters;
             sailingReefPointRenderer.sprite = TideBarrenIslandController.GetSharedReefRockSprite();
             sailingReefPointRenderer.sortingOrder = 8;
             Color submergedRock = new Color(0.12f, 0.19f, 0.2f, 0.22f);

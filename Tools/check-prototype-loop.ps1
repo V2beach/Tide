@@ -70,6 +70,7 @@ Test-Gate ($visualProbe.Contains("RunEditorFirstDayAutonomyProbe")) "visual gate
 Test-Gate ($visualProbe.Contains("TideStormRescueTradeoffConvergenceProbe.Run")) "visual gate covers storm rescue tradeoff"
 Test-Gate ($visualProbe.Contains("RunEditorStormManifestOwnershipProbe")) "visual gate covers storm cargo conservation"
 Test-Gate ($visualProbe.Contains("RunEditorSailingTideContinuityProbe")) "visual gate covers authoritative sailing tide"
+Test-Gate ($visualProbe.Contains("RunEditorFirstSailingTideDecisionProbe")) "visual gate covers the first sailing tide decision"
 
 $buildSettings = Read-ProjectText "ProjectSettings/EditorBuildSettings.asset"
 Test-Gate ($buildSettings.Contains("Assets/Scenes/Tide_StiltHouse_FirstSlice.unity")) "build settings contain the canonical scene"

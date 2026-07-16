@@ -505,6 +505,10 @@ public static class TideCoreLoopConvergenceProbe
             lowestWaterY, lowestWaterY + 1.11f, 0f, 0f, 0f, 1.2f);
         TideSailingReefSample loadedAtSameTide = TideSailingReefModel.Evaluate(
             lowestWaterY, lowestWaterY + 1.11f, 1f, 1f, 1.2f, 1.2f);
+        TideSailingReefSample marginalSlowTow = TideSailingReefModel.Evaluate(
+            lowestWaterY, lowestWaterY + 0.93f, 1f, 1f, 0.18f, 1.2f);
+        TideSailingReefSample marginalFastTow = TideSailingReefModel.Evaluate(
+            lowestWaterY, lowestWaterY + 0.93f, 1f, 1f, 1.2f, 1.2f);
         TideSailingReefSample deeperWindow = TideSailingReefModel.Evaluate(
             lowestWaterY, lowestWaterY + 1.3f, 0f, 0f, 0.18f, 1.2f);
 
@@ -512,9 +516,11 @@ public static class TideCoreLoopConvergenceProbe
             "最低潮时浅礁没有露出并阻挡船底");
         Require(!firstHighTide.GroundsKeel && firstHighTide.UnderKeelClearanceMeters > 0f,
             "同一浅礁在首个高潮窗仍然无条件封路");
-        Require(loadedAtSameTide.GroundsKeel &&
-            loadedAtSameTide.BoatDraftMeters > firstHighTide.BoatDraftMeters,
+        Require(loadedAtSameTide.BoatDraftMeters > firstHighTide.BoatDraftMeters &&
+            loadedAtSameTide.UnderKeelClearanceMeters < firstHighTide.UnderKeelClearanceMeters,
             "舱水、拖载和高速没有真实增加吃水");
+        Require(!marginalSlowTow.GroundsKeel && marginalFastTow.GroundsKeel,
+            "边缘潮窗下减速与高速拖载没有形成不同船底净空");
         Require(deeperWindow.HasComfortableClearance,
             "更深潮窗仍没有提供可辨认的安全净空");
 
@@ -533,8 +539,9 @@ public static class TideCoreLoopConvergenceProbe
             TideSailingReefModel.ShouldDamageHull(lowTide, 0.9f),
             "轻触搁浅与高速撞击没有形成不同后果");
 
-        return $"浅礁净空低/高/满载={lowTide.UnderKeelClearanceMeters:F2}/" +
-            $"{firstHighTide.UnderKeelClearanceMeters:F2}/{loadedAtSameTide.UnderKeelClearanceMeters:F2}m";
+        return $"浅礁净空低/高/边缘慢拖快拖={lowTide.UnderKeelClearanceMeters:F2}/" +
+            $"{firstHighTide.UnderKeelClearanceMeters:F2}/" +
+            $"{marginalSlowTow.UnderKeelClearanceMeters:F2}/{marginalFastTow.UnderKeelClearanceMeters:F2}m";
     }
 
     private static string ProbeStormRescue()
