@@ -43,6 +43,7 @@
 - 船体动力：`TideSailboatDynamicsModel`
 - 浅礁净空：`TideSailingReefModel`；固定礁顶、瞬时物理水位、舱水、拖载和高速浅水下沉共同决定吃水、搁浅与撞击
 - 浅礁运行时：`TideSailingReefController`；独立拥有真实越过状态、撞击冷却、连续位移约束和岩脊/碎浪表现。主控制器注入唯一 `TideOceanSample` 与吃水样本，并只结算返回的船体后果。
+- 漂木运行时：`TideSailingSalvageController`；独立拥有自由漂移、抛钩、张力、过载脱钩、收绳和拖带状态。主控制器注入唯一 `TideOceanSample`、风和潮流，保留物资 owner，并把一次性结果结算回世界实物。
 - 输入：`HandleSailingInput`
 - 积分：`AdvanceSailingSteering`
 - 表现：`UpdateSailingSceneVisuals`、`UpdateSailingReefVisuals`
@@ -79,7 +80,7 @@
 - 天气：`TideContinuousWeatherModel`
 - 潮源/实物：`TideDriftSourceModel`、`TideV59FindPresentationModel`
 - 网具：`TideNetForecastModel`、`TideNetLoadLedgerModel`、`TideNetHaulModel`、`TideV54NetPresentationModel`
-- 航海打捞：`TideContinuousSalvageModel`
+- 航海打捞公式：`TideContinuousSalvageModel`；连续运行状态见 `TideSailingSalvageController`
 - 房屋维修：V34/V35/V69 Catalog 与 Presentation Model
 - 船体维修：V39/V52/V67 Catalog 与 Presentation Model
 - 人物：V20/V41/V42 Catalog 与 Presentation Model

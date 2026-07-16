@@ -33,8 +33,9 @@ public static class TideCoreLoopConvergenceProbe
         string sailing = ProbeSailingDynamics();
         string sailingReef = ProbeSailingReefClearance();
         string sailingReefRuntime = ProbeSailingReefRuntime();
+        string sailingSalvageRuntime = ProbeSailingSalvageRuntime();
         string storm = ProbeStormRescue();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {storm}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm}";
     }
 
     private static string ProbeCistern()
@@ -649,6 +650,164 @@ public static class TideCoreLoopConvergenceProbe
             {
                 UnityEngine.Object.DestroyImmediate(probeTexture);
             }
+        }
+    }
+
+    private static string ProbeSailingSalvageRuntime()
+    {
+        GameObject root = new GameObject("TideSailingSalvageRuntimeProbe");
+        try
+        {
+            TideSailingSalvageController salvage = root.AddComponent<TideSailingSalvageController>();
+            TideOceanSample calmOcean = new TideOceanSample(-1.1f, 0.03f, 0.18f, 0.24f);
+            salvage.ResetRuntime(4.4f, new Vector2(5f, -0.9f));
+            float driftStartX = salvage.WorldX;
+            salvage.Advance(
+                1f,
+                false,
+                TideSailingSalvageAttachmentPhase.Free,
+                new Vector2(5f, -0.9f),
+                -1.1f,
+                4.4f,
+                calmOcean,
+                0.42f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0f);
+            Require(salvage.WorldX > driftStartX && salvage.Velocity > 0f,
+                "漂木运行组件没有读取统一海流形成连续漂移");
+
+            salvage.WorldX = 4.4f;
+            salvage.Velocity = 0.2f;
+            TideSailingSalvageThrowResult bowSide = salvage.BeginThrow(
+                new Vector2(4f, -0.9f),
+                -1.1f,
+                1.38f,
+                0.58f,
+                0.2f);
+            Require(!bowSide.Started && bowSide.Failure == TideSailingSalvageThrowFailure.AheadOfStern,
+                "漂物仍在船艏时抛钩没有被真实船体关系拒绝");
+
+            TideSailingSalvageThrowResult throwStarted = salvage.BeginThrow(
+                new Vector2(5f, -0.9f),
+                -1.1f,
+                1.38f,
+                0.58f,
+                0.2f);
+            salvage.Advance(
+                0.16f,
+                true,
+                TideSailingSalvageAttachmentPhase.Free,
+                new Vector2(5f, -0.9f),
+                -1.1f,
+                4.4f,
+                calmOcean,
+                0f,
+                0f,
+                0f,
+                0f,
+                0.2f,
+                0.2f);
+            float partialThrow = salvage.Throw01;
+            TideSailingSalvageAdvanceResult retracted = salvage.Advance(
+                0.24f,
+                false,
+                TideSailingSalvageAttachmentPhase.Free,
+                new Vector2(5f, -0.9f),
+                -1.1f,
+                4.4f,
+                calmOcean,
+                0f,
+                0f,
+                0f,
+                0f,
+                0.2f,
+                0.2f);
+            Require(throwStarted.Started && partialThrow > 0f && partialThrow < 1f &&
+                retracted.Outcome == TideSailingSalvageAdvanceOutcome.ThrowRetracted,
+                "连续抛钩松手后没有沿原绳路收回");
+
+            salvage.BeginThrow(
+                new Vector2(5f, -0.9f),
+                -1.1f,
+                1.38f,
+                0.58f,
+                0.2f);
+            TideSailingSalvageAdvanceResult attached = salvage.Advance(
+                0.4f,
+                true,
+                TideSailingSalvageAttachmentPhase.Free,
+                new Vector2(5f, -0.9f),
+                -1.1f,
+                4.4f,
+                calmOcean,
+                0f,
+                0f,
+                0f,
+                0f,
+                0.2f,
+                0.2f);
+            Require(attached.Outcome == TideSailingSalvageAdvanceOutcome.HookAttached,
+                "钩头抵达漂木后没有产生唯一附着事件");
+
+            TideSailingSalvageAdvanceResult hauling = default;
+            for (int i = 0; i < 40 && hauling.Outcome != TideSailingSalvageAdvanceOutcome.Secured; i++)
+            {
+                float matchedVelocity = salvage.Velocity;
+                hauling = salvage.Advance(
+                    0.1f,
+                    true,
+                    TideSailingSalvageAttachmentPhase.Hooking,
+                    new Vector2(5f, -0.9f),
+                    -1.1f,
+                    4.4f,
+                    calmOcean,
+                    0f,
+                    0f,
+                    0f,
+                    0f,
+                    matchedVelocity,
+                    matchedVelocity);
+            }
+            Require(hauling.Outcome == TideSailingSalvageAdvanceOutcome.Secured &&
+                salvage.HookProgress01 >= TideContinuousSalvageModel.SecuredProgress01,
+                "匹配流速后持续收绳仍不能把漂木收妥到船艉");
+
+            salvage.ResetRuntime(5.8f, new Vector2(3.4f, -0.9f));
+            salvage.Velocity = 2f;
+            salvage.HookProgress01 = 0.2f;
+            salvage.InitialRopeLength = 0.35f;
+            float strainedX = salvage.WorldX;
+            TideSailingSalvageAdvanceResult detached = default;
+            for (int i = 0; i < 6 && detached.Outcome != TideSailingSalvageAdvanceOutcome.Detached; i++)
+            {
+                detached = salvage.Advance(
+                    0.1f,
+                    false,
+                    TideSailingSalvageAttachmentPhase.Hooking,
+                    new Vector2(3.4f, -0.9f),
+                    -1.1f,
+                    4.4f,
+                    calmOcean,
+                    0f,
+                    0f,
+                    1f,
+                    0f,
+                    -2f,
+                    -2f);
+            }
+            Require(detached.Outcome == TideSailingSalvageAdvanceOutcome.Detached &&
+                Mathf.Abs(salvage.WorldX - strainedX) < 0.8f &&
+                Mathf.Abs(salvage.WorldX - 4.4f) > 0.25f,
+                "绳索过载脱钩后漂木没有保留失手处的真实位置");
+
+            return $"打捞组件=随流漂/艏侧拒绝/抛钩可撤/匹配收妥/过载原位脱钩，终点{salvage.WorldX:F2}m";
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(root);
         }
     }
 

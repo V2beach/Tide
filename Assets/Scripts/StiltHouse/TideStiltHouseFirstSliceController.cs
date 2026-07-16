@@ -666,17 +666,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private bool returnedSalvageAtBoat;
     private bool returnedClueAtBoat;
     private bool returnedLighthouseConfirmationAtBoat;
-    private float sailingSalvageWorldX;
-    private float sailingSalvageVelocity;
-    private float sailingSalvageHookProgress;
-    private Vector2 sailingSalvageHookStartPosition;
-    private float sailingHookThrow01;
-    private bool sailingHookThrowActive;
-    private bool sailingSalvageHauling;
-    private float sailingSalvageTension01;
-    private float sailingSalvageOverstrainSeconds;
-    private Vector2 sailingHookWorldPosition;
-    private float sailingSalvageInitialRopeLength;
     private bool nearshoreWorkDone;
     private TideRoutingMode tideRoutingMode = TideRoutingMode.Open;
     private float routingBoom01;
@@ -723,6 +712,60 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TideHeavyWreckSalvageController heavyWreckSalvage;
     private TideMooringRopeController mooringRope;
     private TideSailingReefController sailingReef;
+    private TideSailingSalvageController sailingSalvage;
+
+    // 旧的 Scene 预览和几何探针仍使用这些语义名称。实际存储已集中到
+    // TideSailingSalvageController；这些属性只是过渡期的单源投影，不保留副本。
+    private float sailingSalvageWorldX
+    {
+        get => sailingSalvage != null ? sailingSalvage.WorldX : sailingSalvagePoint.x;
+        set { if (sailingSalvage != null) sailingSalvage.WorldX = value; }
+    }
+    private float sailingSalvageVelocity
+    {
+        get => sailingSalvage != null ? sailingSalvage.Velocity : 0f;
+        set { if (sailingSalvage != null) sailingSalvage.Velocity = value; }
+    }
+    private float sailingSalvageHookProgress
+    {
+        get => sailingSalvage != null ? sailingSalvage.HookProgress01 : 0f;
+        set { if (sailingSalvage != null) sailingSalvage.HookProgress01 = value; }
+    }
+    private float sailingHookThrow01
+    {
+        get => sailingSalvage != null ? sailingSalvage.Throw01 : 0f;
+        set { if (sailingSalvage != null) sailingSalvage.Throw01 = value; }
+    }
+    private bool sailingHookThrowActive
+    {
+        get => sailingSalvage != null && sailingSalvage.ThrowActive;
+        set { if (sailingSalvage != null) sailingSalvage.ThrowActive = value; }
+    }
+    private bool sailingSalvageHauling
+    {
+        get => sailingSalvage != null && sailingSalvage.Hauling;
+        set { if (sailingSalvage != null) sailingSalvage.Hauling = value; }
+    }
+    private float sailingSalvageTension01
+    {
+        get => sailingSalvage != null ? sailingSalvage.Tension01 : 0f;
+        set { if (sailingSalvage != null) sailingSalvage.Tension01 = value; }
+    }
+    private float sailingSalvageOverstrainSeconds
+    {
+        get => sailingSalvage != null ? sailingSalvage.OverstrainSeconds : 0f;
+        set { if (sailingSalvage != null) sailingSalvage.OverstrainSeconds = value; }
+    }
+    private Vector2 sailingHookWorldPosition
+    {
+        get => sailingSalvage != null ? sailingSalvage.HookWorldPosition : sailingSalvagePoint;
+        set { if (sailingSalvage != null) sailingSalvage.HookWorldPosition = value; }
+    }
+    private float sailingSalvageInitialRopeLength
+    {
+        get => sailingSalvage != null ? sailingSalvage.InitialRopeLength : 0f;
+        set { if (sailingSalvage != null) sailingSalvage.InitialRopeLength = value; }
+    }
 
     // 旧场景与几何探针仍以这个名字读取船位。实际权威状态已经移入泊位绳
     // 组件；fallback 只覆盖组件尚未由 EnsureScene 建立的反序列化瞬间。
@@ -1275,7 +1318,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingBoatX = sailingSalvageWorldX + 3.38f;
         sailingSalvageVelocity = 0.24f;
         sailingBoatWorldVelocity = 0.31f;
-        sailingSalvageHookStartPosition = GetSailingPointPosition(SailingPointKind.Salvage);
         sailingBuoyChecked = true;
 
         int clampedStage = Mathf.Clamp(stage, 0, 2);
@@ -11301,7 +11343,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingSalvageWorldX = sailingSalvagePoint.x;
         sailingSalvageVelocity = 0f;
         sailingSalvageHookProgress = 0f;
-        sailingSalvageHookStartPosition = sailingSalvagePoint;
         sailingHookThrow01 = 0f;
         sailingHookThrowActive = false;
         sailingSalvageHauling = false;
@@ -14969,7 +15010,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingBuoyChecked = !EnableSailingBuoyGameplay;
         SetExtraSaltWoodOwner(extraSaltWoodOwner);
         sailingSalvageHookProgress = 0f;
-        sailingSalvageHookStartPosition = sailingSalvagePoint;
         sailingHookThrow01 = 0f;
         sailingHookThrowActive = false;
         sailingSalvageHauling = false;
@@ -15751,7 +15791,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         bool incompleteTow = extraSaltWoodOwner == ExtraSaltWoodOwner.HookingToBoat;
         if (incompleteTow)
         {
-            DetachSailingSalvagePreservingPosition();
+            ReleaseSailingSalvageTow();
         }
         bool broughtHomeSalvage = extraSaltWoodOwner == ExtraSaltWoodOwner.HookedToBoat;
         returnedClueAtBoat |= broughtHomeClue;
@@ -17296,7 +17336,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             if (extraSaltWoodOwner == ExtraSaltWoodOwner.HookingToBoat ||
                 extraSaltWoodOwner == ExtraSaltWoodOwner.HookedToBoat)
             {
-                DetachSailingSalvagePreservingPosition();
+                ReleaseSailingSalvageTow();
             }
             else
             {
@@ -17457,47 +17497,48 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private bool BeginContinuousSailingHookThrow()
     {
         if (viewMode != SliceViewMode.Sailing ||
-            extraSaltWoodOwner != ExtraSaltWoodOwner.SailingWater ||
-            sailingHookThrowActive)
+            extraSaltWoodOwner != ExtraSaltWoodOwner.SailingWater)
         {
             return false;
         }
 
         Vector2 sternPosition = GetSailingBoatSternWorldPosition();
         Vector2 timberPosition = GetSailingPointPosition(SailingPointKind.Salvage);
-        if (Vector2.Distance(sternPosition, timberPosition) > sailingHookReach)
+        TideSailingSalvageThrowResult result = sailingSalvage.BeginThrow(
+            sternPosition,
+            timberPosition.y,
+            sailingHookReach,
+            sailingHookMaxRelativeSpeed,
+            sailingBoatWorldVelocity);
+        if (result.Started)
+        {
+            lastActionHint = "按住 F 抛钩；钩头命中后继续按住才会逐段收绳，松手会停。";
+            return true;
+        }
+
+        if (result.Failure == TideSailingSalvageThrowFailure.OutOfReach)
         {
             lastActionHint = "浮木还在钩程外。先顺着它的尾流靠近，不要用提示范围代替真实距离。";
             return false;
         }
 
-        // The rope is tied to the left-side stern. Casting at timber still ahead of
-        // that point would draw the line through the authored hull. Pass the bundle,
-        // put it in the lee behind the stern, then match its drift before throwing.
-        if (timberPosition.x > sternPosition.x + 0.08f)
+        if (result.Failure == TideSailingSalvageThrowFailure.AheadOfStern)
         {
             lastActionHint = "浮木还在船艏一侧。先越过它并收帆，让木束落到船艉后方，再从短缆处抛钩。";
             return false;
         }
 
-        float relativeSpeed = GetSailingSalvageRelativeSpeed();
-        if (relativeSpeed > sailingHookMaxRelativeSpeed)
+        if (result.Failure == TideSailingSalvageThrowFailure.RelativeSpeedTooHigh)
         {
             // Failed throws must not become a hidden brake. The player has to use
             // sail trim and steering to match the drift before trying again.
             lastActionHint = sailingBoatWorldVelocity > sailingSalvageVelocity
-                ? $"船从浮木旁冲得太快（相对速度 {relativeSpeed:F1}）。收帆贴流后再按住 F 抛钩。"
-                : $"漂物正顺流越过船艏（相对速度 {relativeSpeed:F1}）。轻张帆追平后再抛钩。";
+                ? $"船从浮木旁冲得太快（相对速度 {result.RelativeSpeed:F1}）。收帆贴流后再按住 F 抛钩。"
+                : $"漂物正顺流越过船艏（相对速度 {result.RelativeSpeed:F1}）。轻张帆追平后再抛钩。";
             return false;
         }
 
-        sailingHookThrowActive = true;
-        sailingHookThrow01 = 0f;
-        sailingHookWorldPosition = GetSailingBoatSternWorldPosition();
-        sailingSalvageHookStartPosition = timberPosition;
-        sailingSalvageOverstrainSeconds = 0f;
-        lastActionHint = "按住 F 抛钩；钩头命中后继续按住才会逐段收绳，松手会停。";
-        return true;
+        return false;
     }
 
     private bool IsSailingSalvageInteractionActive()
@@ -17506,22 +17547,26 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             (sailingHookThrowActive || extraSaltWoodOwner == ExtraSaltWoodOwner.HookingToBoat);
     }
 
+    private TideSailingSalvageAttachmentPhase GetSailingSalvageAttachmentPhase()
+    {
+        if (extraSaltWoodOwner == ExtraSaltWoodOwner.SailingWater)
+        {
+            return TideSailingSalvageAttachmentPhase.Free;
+        }
+
+        if (extraSaltWoodOwner == ExtraSaltWoodOwner.HookingToBoat)
+        {
+            return TideSailingSalvageAttachmentPhase.Hooking;
+        }
+
+        return extraSaltWoodOwner == ExtraSaltWoodOwner.HookedToBoat
+            ? TideSailingSalvageAttachmentPhase.Secured
+            : TideSailingSalvageAttachmentPhase.Inactive;
+    }
+
     private float GetCurrentSailingTowLoad01()
     {
-        if (extraSaltWoodOwner == ExtraSaltWoodOwner.HookedToBoat)
-        {
-            return 1f;
-        }
-
-        if (extraSaltWoodOwner != ExtraSaltWoodOwner.HookingToBoat)
-        {
-            return 0f;
-        }
-
-        return TideContinuousSalvageModel.EvaluateTowLoad01(
-            sailingSalvageHookProgress,
-            sailingSalvageTension01,
-            false);
+        return sailingSalvage.EvaluateTowLoad01(GetSailingSalvageAttachmentPhase());
     }
 
     private Vector2 GetSailingBoatSternWorldPosition()
@@ -17552,211 +17597,59 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void TickContinuousSailingSalvage(float deltaTime, bool interactionHeld)
     {
-        sailingSalvageHauling = false;
         if (viewMode != SliceViewMode.Sailing || deltaTime <= 0f)
         {
             return;
         }
 
-        if (extraSaltWoodOwner == ExtraSaltWoodOwner.SailingWater)
-        {
-            TickFreeSailingSalvage(deltaTime);
-            if (!sailingHookThrowActive)
-            {
-                return;
-            }
-
-            sailingHookThrow01 = TideContinuousSalvageModel.AdvanceThrow01(
-                sailingHookThrow01,
-                deltaTime,
-                interactionHeld);
-            Vector2 stern = GetSailingBoatSternWorldPosition();
-            Vector2 timber = GetSailingPointPosition(SailingPointKind.Salvage);
-            sailingHookWorldPosition = Vector2.Lerp(stern, timber, Mathf.SmoothStep(0f, 1f, sailingHookThrow01));
-            if (!interactionHeld && sailingHookThrow01 <= 0.001f)
-            {
-                sailingHookThrowActive = false;
-                lastActionHint = "你松开绳，钩头收回船艉；浮木仍沿原来的水流漂。";
-                return;
-            }
-
-            if (sailingHookThrow01 < 0.999f)
-            {
-                return;
-            }
-
-            sailingHookThrowActive = false;
-            sailingHookThrow01 = 1f;
-            sailingSalvageHookProgress = 0f;
-            sailingSalvageInitialRopeLength = Mathf.Max(
-                0.38f,
-                Vector2.Distance(stern, timber));
-            sailingSalvageTension01 = 0f;
-            sailingSalvageOverstrainSeconds = 0f;
-            SetExtraSaltWoodOwner(ExtraSaltWoodOwner.HookingToBoat);
-            lastActionHint = "钩头扣住湿绳结。继续按住 F 收绳；若绳拉得发白，就先收帆贴流。";
-            return;
-        }
-
-        if (extraSaltWoodOwner == ExtraSaltWoodOwner.HookingToBoat)
-        {
-            TickHookedSailingSalvage(deltaTime, interactionHeld);
-            return;
-        }
-
-        if (extraSaltWoodOwner == ExtraSaltWoodOwner.HookedToBoat)
-        {
-            Vector2 stern = GetSailingBoatSternWorldPosition();
-            sailingSalvageHookProgress = 1f;
-            sailingSalvageTension01 = Mathf.Lerp(
-                sailingSalvageTension01,
-                Mathf.Clamp01(Mathf.Abs(sailingBoatWorldVelocity) * 0.28f + GetStormPressure01() * 0.16f),
-                Mathf.Clamp01(deltaTime * 3f));
-            sailingSalvageWorldX = stern.x - 0.3f;
-            sailingSalvageVelocity = sailingBoatWorldVelocity;
-        }
-    }
-
-    private void TickFreeSailingSalvage(float deltaTime)
-    {
-        // The bundle samples the same coherent field as the boat and swimmer. Perlin
-        // modulates wave groups, so the result varies naturally without frame noise.
-        TideOceanSample ocean = GetSailingOceanSample(sailingSalvageWorldX);
-        float flowTarget = GetSailingSurfaceFlowSpeed() * 0.72f +
-            GetNaturalSailingWindSpeed() * 0.14f +
-            ocean.HorizontalVelocity * Mathf.Lerp(0.7f, 1.2f, ocean.Agitation01);
-        float wrackPull = (sailingSalvagePoint.x - sailingSalvageWorldX) * 0.16f;
-        float targetVelocity = Mathf.Clamp(flowTarget + wrackPull, -0.82f, 0.82f);
-        float response = Mathf.Lerp(0.28f, 0.52f, ocean.Agitation01);
-        sailingSalvageVelocity = Mathf.MoveTowards(
-            sailingSalvageVelocity,
-            targetVelocity,
-            deltaTime * response);
-        sailingSalvageWorldX += sailingSalvageVelocity * deltaTime;
-
-        float minimumX = sailingSalvagePoint.x - 1.75f;
-        float maximumX = sailingSalvagePoint.x + 2.05f;
-        float edgePush = 0f;
-        if (sailingSalvageWorldX < minimumX)
-        {
-            edgePush = minimumX - sailingSalvageWorldX;
-        }
-        else if (sailingSalvageWorldX > maximumX)
-        {
-            edgePush = maximumX - sailingSalvageWorldX;
-        }
-        if (Mathf.Abs(edgePush) > 0.001f)
-        {
-            sailingSalvageVelocity = Mathf.MoveTowards(sailingSalvageVelocity, edgePush * 0.4f, deltaTime * 0.48f);
-            sailingSalvageWorldX += edgePush * Mathf.Clamp01(deltaTime * 0.75f);
-        }
-    }
-
-    private void TickHookedSailingSalvage(float deltaTime, bool interactionHeld)
-    {
         Vector2 stern = GetSailingBoatSternWorldPosition();
-        Vector2 timber = GetSailingPointPosition(SailingPointKind.Salvage);
-        float ropeDistance = Vector2.Distance(stern, timber);
-        if (sailingSalvageInitialRopeLength <= 0.01f)
-        {
-            sailingSalvageInitialRopeLength = Mathf.Max(
-                0.38f,
-                Mathf.Min(sailingHookReach, ropeDistance));
-        }
-
-        float relativeSpeed = GetSailingSalvageRelativeSpeed();
-        float allowedLength = Mathf.Lerp(
-            sailingSalvageInitialRopeLength,
-            0.32f,
-            Mathf.SmoothStep(0f, 1f, sailingSalvageHookProgress));
-        sailingSalvageTension01 = TideContinuousSalvageModel.EvaluateTension01(
-            ropeDistance,
-            allowedLength,
-            relativeSpeed,
-            GetStormPressure01());
-        sailingSalvageOverstrainSeconds = TideContinuousSalvageModel.AdvanceOverstrainSeconds(
-            sailingSalvageOverstrainSeconds,
-            sailingSalvageTension01,
-            deltaTime);
-        if (TideContinuousSalvageModel.ShouldDetach(sailingSalvageOverstrainSeconds))
-        {
-            DetachSailingSalvagePreservingPosition();
-            lastActionHint = "绳被反向硬拽脱开了。浮木没有消失，仍从失手处顺流漂；收帆追平后可再试。";
-            return;
-        }
-
-        float previousProgress = sailingSalvageHookProgress;
-        sailingSalvageHookProgress = TideContinuousSalvageModel.AdvanceHaul01(
-            sailingSalvageHookProgress,
+        TideOceanSample salvageOcean = GetSailingOceanSample(sailingSalvageWorldX);
+        TideSailingSalvageAdvanceResult result = sailingSalvage.Advance(
             deltaTime,
             interactionHeld,
-            relativeSpeed,
-            sailingSalvageTension01,
+            GetSailingSalvageAttachmentPhase(),
+            stern,
+            salvageOcean.SurfaceY - 0.01f,
+            sailingSalvagePoint.x,
+            salvageOcean,
+            GetSailingSurfaceFlowSpeed(),
+            GetNaturalSailingWindSpeed(),
             GetStormPressure01(),
-            sailingWaterIngress01);
-        sailingSalvageHauling = sailingSalvageHookProgress > previousProgress + 0.0001f;
+            sailingWaterIngress01,
+            sailingBoatWorldVelocity,
+            sailingBoatVelocity);
+        sailingBoatVelocity = result.ResolvedBoatVelocity;
 
-        float desiredLength = Mathf.Lerp(
-            sailingSalvageInitialRopeLength,
-            0.32f,
-            Mathf.SmoothStep(0f, 1f, sailingSalvageHookProgress));
-        float signedOffset = sailingSalvageWorldX - stern.x;
-        float side = Mathf.Abs(signedOffset) > 0.001f ? Mathf.Sign(signedOffset) : 1f;
-        float targetX = stern.x + side * desiredLength;
-        float previousX = sailingSalvageWorldX;
-        if (Mathf.Abs(signedOffset) > desiredLength || sailingSalvageHauling)
+        if (result.Outcome == TideSailingSalvageAdvanceOutcome.ThrowRetracted)
         {
-            float correctionSpeed = Mathf.Lerp(0.28f, 1.08f, sailingSalvageHauling ? 1f : sailingSalvageTension01);
-            sailingSalvageWorldX = Mathf.MoveTowards(sailingSalvageWorldX, targetX, correctionSpeed * deltaTime);
+            lastActionHint = "你松开绳，钩头收回船艉；浮木仍沿原来的水流漂。";
         }
-        else
+        else if (result.Outcome == TideSailingSalvageAdvanceOutcome.HookAttached)
         {
-            sailingSalvageWorldX += sailingSalvageVelocity * deltaTime;
+            SetExtraSaltWoodOwner(ExtraSaltWoodOwner.HookingToBoat);
+            lastActionHint = "钩头扣住湿绳结。继续按住 F 收绳；若绳拉得发白，就先收帆贴流。";
         }
-
-        float actualVelocity = deltaTime > 0.0001f
-            ? (sailingSalvageWorldX - previousX) / deltaTime
-            : sailingSalvageVelocity;
-        sailingSalvageVelocity = Mathf.Lerp(sailingSalvageVelocity, actualVelocity, Mathf.Clamp01(deltaTime * 4f));
-        sailingBoatVelocity = Mathf.MoveTowards(
-            sailingBoatVelocity,
-            sailingSalvageVelocity,
-            sailingSalvageTension01 * deltaTime * 0.22f);
-
-        if (sailingSalvageHookProgress >= TideContinuousSalvageModel.SecuredProgress01 &&
-            Mathf.Abs(sailingSalvageWorldX - stern.x) <= 0.48f)
+        else if (result.Outcome == TideSailingSalvageAdvanceOutcome.Detached)
         {
-            sailingSalvageHookProgress = 1f;
-            sailingSalvageWorldX = stern.x - 0.3f;
-            sailingSalvageVelocity = sailingBoatWorldVelocity;
-            sailingSalvageTension01 = 0.24f;
-            sailingSalvageOverstrainSeconds = 0f;
-            sailingSalvageHauling = false;
+            SetExtraSaltWoodOwner(ExtraSaltWoodOwner.SailingWater, true);
+            lastActionHint = "绳被反向硬拽脱开了。浮木没有消失，仍从失手处顺流漂；收帆追平后可再试。";
+        }
+        else if (result.Outcome == TideSailingSalvageAdvanceOutcome.Secured)
+        {
             SetExtraSaltWoodOwner(ExtraSaltWoodOwner.HookedToBoat);
             lastActionHint = "盐木已经逐段收进船艉短缆。拖带会减慢起速，但现在可以自己返航。";
         }
     }
 
-    private void DetachSailingSalvagePreservingPosition()
-    {
-        float preservedX = sailingSalvageWorldX;
-        float preservedVelocity = sailingSalvageVelocity;
-        SetExtraSaltWoodOwner(ExtraSaltWoodOwner.SailingWater, true);
-        sailingSalvageWorldX = preservedX;
-        sailingSalvageVelocity = preservedVelocity;
-        sailingHookThrow01 = 0f;
-        sailingHookThrowActive = false;
-        sailingSalvageHauling = false;
-        sailingSalvageHookProgress = 0f;
-        sailingSalvageTension01 = 0f;
-        sailingSalvageOverstrainSeconds = 0f;
-        sailingSalvageInitialRopeLength = 0f;
-        sailingHookWorldPosition = GetSailingBoatSternWorldPosition();
-    }
-
     private float GetSailingSalvageRelativeSpeed()
     {
-        return Mathf.Abs(sailingBoatWorldVelocity - sailingSalvageVelocity);
+        return sailingSalvage.GetRelativeSpeed(sailingBoatWorldVelocity);
+    }
+
+    private void ReleaseSailingSalvageTow()
+    {
+        sailingSalvage.DetachPreservingWorld(GetSailingBoatSternWorldPosition());
+        SetExtraSaltWoodOwner(ExtraSaltWoodOwner.SailingWater, true);
     }
 
     private void AdvanceDayNight(float deltaTime)
@@ -17835,7 +17728,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             sailingSalvageWorldX = sailingSalvagePoint.x;
             sailingSalvageVelocity = 0f;
             sailingSalvageHookProgress = 0f;
-            sailingSalvageHookStartPosition = sailingSalvagePoint;
         }
 
         // These fields predate the conservation model and are still read by the
@@ -19111,7 +19003,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingBuoyChecked = !EnableSailingBuoyGameplay;
         SetExtraSaltWoodOwner(extraSaltWoodOwner);
         sailingSalvageHookProgress = 0f;
-        sailingSalvageHookStartPosition = sailingSalvagePoint;
         sailingHookThrow01 = 0f;
         sailingHookThrowActive = false;
         sailingSalvageHauling = false;
@@ -19607,6 +19498,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         if (sailingReef == null)
         {
             sailingReef = gameObject.AddComponent<TideSailingReefController>();
+        }
+        sailingSalvage = GetComponent<TideSailingSalvageController>();
+        if (sailingSalvage == null)
+        {
+            sailingSalvage = gameObject.AddComponent<TideSailingSalvageController>();
         }
         backdropRenderer = EnsureRenderer("GeneratedStiltFirstBackdrop", GetBackdropSprite(), -100);
         daySeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalDaySeaSky", GetFormalDaySeaSkySprite(), -99);
