@@ -23,10 +23,11 @@ public static class TideCoreLoopConvergenceProbe
     {
         string cistern = ProbeCistern();
         string island = ProbeIslandOwnership();
+        string context = ProbeIslandContextPriority();
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
         string storm = ProbeStormRescue();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {rope} | {sailing} | {storm}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {rope} | {sailing} | {storm}";
     }
 
     private static string ProbeCistern()
@@ -52,25 +53,129 @@ public static class TideCoreLoopConvergenceProbe
                 true,
                 -1f,
                 new Vector2(-12.73f, -0.42f),
+                new Vector2(-5.65f, -0.98f),
+                new Vector2(8.23f, -0.98f),
                 -0.3f,
                 -1.5f,
                 1f);
             bool took = island.TryTakeNearestPart(
                 new Vector2(-12.73f, -0.42f),
                 out TideIslandSalvagePart part);
-            bool committed = island.TryCommitCarriedPart(
+            bool stagedAtShelter = island.TryStageCarriedPart(
                 TideIslandSalvageUse.Shelter,
-                out TideIslandSalvagePart committedPart);
+                out TideIslandSalvagePart shelterPart);
             Require(took && part != TideIslandSalvagePart.None, "船骸可拆件无法取得");
-            Require(committed && committedPart == part, "搬运时实物身份发生变化");
-            Require(island.CarriedPart == TideIslandSalvagePart.None && island.ShelterCommittedParts == 1,
-                "拆件没有从手中转移到住所用途");
-            return $"船骸 {part}->住所/计数{island.ShelterCommittedParts}";
+            Require(stagedAtShelter && shelterPart == part, "搬运时实物身份发生变化");
+            Require(island.CarriedPart == TideIslandSalvagePart.None && island.ShelterStagedParts == 1,
+                "拆件没有从手中转移到住所施工位");
+            Require(island.GetDestination(part) == TideIslandSalvageDestination.ShelterStaging,
+                "住所施工位没有继续拥有同一件原物");
+            island.UpdatePresentation(
+                true,
+                -1f,
+                new Vector2(-5.65f, -0.98f),
+                new Vector2(-5.65f, -0.98f),
+                new Vector2(8.23f, -0.98f),
+                -0.3f,
+                -1.5f,
+                1.1f);
+            RequireSingleVisibleOwner(root.transform, part, TideIslandSalvageDestination.ShelterStaging);
+
+            bool tookCloth = island.TryTakeNearestPart(
+                new Vector2(-11.83f, -0.04f),
+                out TideIslandSalvagePart secondPart);
+            bool stagedAtBoat = island.TryStageCarriedPart(
+                TideIslandSalvageUse.EscapeBoat,
+                out TideIslandSalvagePart boatPart);
+            Require(tookCloth && stagedAtBoat && boatPart == secondPart,
+                "第二件原物无法独立转移到逃生船施工位");
+            Require(island.GetDestination(secondPart) == TideIslandSalvageDestination.EscapeBoatStaging,
+                "逃生船施工位没有继续拥有同一件原物");
+            island.UpdatePresentation(
+                true,
+                -1f,
+                new Vector2(8.23f, -0.98f),
+                new Vector2(-5.65f, -0.98f),
+                new Vector2(8.23f, -0.98f),
+                -0.3f,
+                -1.5f,
+                1.2f);
+            RequireSingleVisibleOwner(root.transform, secondPart, TideIslandSalvageDestination.EscapeBoatStaging);
+            return $"船骸 {part}->住所/{secondPart}->船/实物未入账";
         }
         finally
         {
             UnityEngine.Object.DestroyImmediate(root);
         }
+    }
+
+    private static void RequireSingleVisibleOwner(
+        Transform root,
+        TideIslandSalvagePart part,
+        TideIslandSalvageDestination expectedDestination)
+    {
+        Transform visualRoot = root.Find("GeneratedBarrenIslandRoot");
+        Require(visualRoot != null, "岩礁岛表现根节点不存在");
+
+        string sourceName = part == TideIslandSalvagePart.HullPlank ? "SalvageHullPlank" :
+            part == TideIslandSalvagePart.Sailcloth ? "SalvageSailcloth" : "SalvageRivetedPlate";
+        SpriteRenderer source = FindRenderer(visualRoot, sourceName);
+        SpriteRenderer carried = FindRenderer(visualRoot, "CarriedWreckPart");
+        SpriteRenderer shelter = FindRenderer(visualRoot, $"StagedAtShelter_{part}");
+        SpriteRenderer boat = FindRenderer(visualRoot, $"StagedAtBoat_{part}");
+
+        Require(!source.enabled && !carried.enabled, $"{part} 在原船骸或玩家手中仍有重复显示");
+        Require(shelter.enabled == (expectedDestination == TideIslandSalvageDestination.ShelterStaging),
+            $"{part} 的住所施工位显示归属错误");
+        Require(boat.enabled == (expectedDestination == TideIslandSalvageDestination.EscapeBoatStaging),
+            $"{part} 的逃生船施工位显示归属错误");
+    }
+
+    private static SpriteRenderer FindRenderer(Transform visualRoot, string childName)
+    {
+        Transform child = visualRoot.Find(childName);
+        Require(child != null, $"缺少表现节点 {childName}");
+        SpriteRenderer renderer = child.GetComponent<SpriteRenderer>();
+        Require(renderer != null, $"表现节点 {childName} 缺少 SpriteRenderer");
+        return renderer;
+    }
+
+    private static string ProbeIslandContextPriority()
+    {
+        TideIslandContextAction carriedAtBoat = TideIslandInteractionModel.Resolve(
+            TideIslandSalvagePart.HullPlank,
+            false,
+            true,
+            false,
+            false);
+        TideIslandContextAction emptyAtBoat = TideIslandInteractionModel.Resolve(
+            TideIslandSalvagePart.None,
+            false,
+            true,
+            false,
+            false);
+        TideIslandContextAction carriedAtCistern = TideIslandInteractionModel.Resolve(
+            TideIslandSalvagePart.Sailcloth,
+            false,
+            false,
+            false,
+            true);
+        TideIslandContextAction emptyAtCistern = TideIslandInteractionModel.Resolve(
+            TideIslandSalvagePart.None,
+            false,
+            false,
+            false,
+            true);
+
+        Require(carriedAtBoat == TideIslandContextAction.StageAtEscapeBoat,
+            "携带船骸原物时泊船绳抢走了施工位交互");
+        Require(emptyAtBoat == TideIslandContextAction.None,
+            "空手经过船边时岩礁岛错误吞掉泊船交互");
+        Require(carriedAtCistern == TideIslandContextAction.None,
+            "携带大型原物时仍能顺手饮水或复制操作");
+        Require(emptyAtCistern == TideIslandContextAction.DrinkFromCistern,
+            "空手靠近蓄水池时无法饮水");
+        return "交互优先级=施工位>绳船/携物禁饮水";
     }
 
     private static string ProbeMooringRope()

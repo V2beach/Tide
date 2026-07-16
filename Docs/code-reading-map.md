@@ -15,6 +15,7 @@
 
 - 表现/实物所有权：`TideBarrenIslandController`
 - 流量规则：`TideRainCisternModel`
+- `F` 交互优先级：`TideIslandInteractionModel`；携带原物时只允许在明确施工位暂存，不能同时饮水或触发泊船绳
 - 编排入口：`TickBarrenIslandNaturalState`、`TryHandleBarrenIslandInteraction`
 - 核心单位：雨 `mm/h`、屋顶 `m²`、水量 `L`、现实秒
 

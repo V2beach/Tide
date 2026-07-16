@@ -28,6 +28,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     // 归处与泊位属于同一连续世界。固定木路按两段 V53 原生跨度铺设，
     // 船艉位于第二段末端之外，最后只留一块会随船升沉的活动跳板。
     private const float OutdoorBoatAnchorX = 9.65f;
+    private const float EscapeBoatStagingX = OutdoorBoatAnchorX - 1.42f;
     private const float OutdoorCameraFollowStartX = 2.9f;
     private const float OutdoorCameraFollowSpeed = 6.5f;
     private const float OutdoorWaterCenterX = 3.1f;
@@ -263,7 +264,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     [SerializeField] private float shoreWorkX = -0.48f;
     [SerializeField] private float shoreWorkDistance = 0.64f;
     [SerializeField] private float shoreWorkMaxWaterOffset = 1.22f;
-    [SerializeField] private float sailingLaneMoveSpeed = 1.15f;
     [SerializeField] private float sailingAcceleration = 4.8f;
     [SerializeField] private float sailingDrag = 3.4f;
     [SerializeField] private float sailingMaxSpeed = 2.75f;
@@ -12168,35 +12168,34 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             return false;
         }
 
-        if (barrenIsland.CarriedPart != TideIslandSalvagePart.None)
+        bool nearShelterStaging = Mathf.Abs(
+            playerPosition.x - TideBarrenIslandController.ShelterDeliveryX) <= 0.52f;
+        bool nearBoatStaging = Mathf.Abs(playerPosition.x - EscapeBoatStagingX) <= 0.52f;
+        TideIslandContextAction action = TideIslandInteractionModel.Resolve(
+            barrenIsland.CarriedPart,
+            nearShelterStaging,
+            nearBoatStaging,
+            barrenIsland.IsNearWreck(playerPosition),
+            barrenIsland.IsNearCistern(playerPosition));
+
+        if (action == TideIslandContextAction.StageAtShelter ||
+            action == TideIslandContextAction.StageAtEscapeBoat)
         {
-            TideIslandSalvageUse use;
-            if (Mathf.Abs(playerPosition.x - TideBarrenIslandController.ShelterDeliveryX) <= 0.52f)
-            {
-                use = TideIslandSalvageUse.Shelter;
-            }
-            else if (IsPlayerNearBoat())
-            {
-                use = TideIslandSalvageUse.EscapeBoat;
-            }
-            else
+            TideIslandSalvageUse use = action == TideIslandContextAction.StageAtShelter
+                ? TideIslandSalvageUse.Shelter
+                : TideIslandSalvageUse.EscapeBoat;
+            if (!barrenIsland.TryStageCarriedPart(use, out TideIslandSalvagePart stagedPart))
             {
                 return false;
             }
 
-            if (!barrenIsland.TryCommitCarriedPart(use, out TideIslandSalvagePart committedPart))
-            {
-                return false;
-            }
-
-            RegisterIslandSalvageMaterial(committedPart);
             lastActionHint = use == TideIslandSalvageUse.Shelter
-                ? "拆件已经搬到屋侧施工位；船骸上对应的缺口不会复原。"
-                : "拆件已经搬到逃生船旁；它要经过检查、试装和固定才会成为船的一部分。";
+                ? $"{stagedPart} 留在屋侧施工位；它尚未固定，也没有变成材料数字。"
+                : $"{stagedPart} 留在船边检修位；检查、试装和固定后才会成为船的一部分。";
             return true;
         }
 
-        if (barrenIsland.IsNearWreck(playerPosition) &&
+        if (action == TideIslandContextAction.TakeWreckPart &&
             barrenIsland.TryTakeNearestPart(playerPosition, out TideIslandSalvagePart part))
         {
             arrivalInspected = true;
@@ -12208,7 +12207,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             return true;
         }
 
-        if (barrenIsland.IsNearCistern(playerPosition))
+        if (action == TideIslandContextAction.DrinkFromCistern)
         {
             bool drank = barrenIsland.TryDrink(playerPosition, 0.45f);
             lastActionHint = drank
@@ -12218,23 +12217,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         return false;
-    }
-
-    private void RegisterIslandSalvageMaterial(TideIslandSalvagePart part)
-    {
-        if (part == TideIslandSalvagePart.HullPlank)
-        {
-            timberStock += 2;
-        }
-        else if (part == TideIslandSalvagePart.Sailcloth)
-        {
-            clothStock += 2;
-            ropeStock += 1;
-        }
-        else if (part == TideIslandSalvagePart.RivetedPlate)
-        {
-            metalStock += 2;
-        }
     }
 
     private void InitializeStormRescueItems()
@@ -18960,6 +18942,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 viewMode == SliceViewMode.Shelter && state != SliceState.FinalDeparture,
                 GetPlayerStandingFeetY(WalkLane.TideFlat),
                 playerPosition,
+                new Vector2(
+                    TideBarrenIslandController.ShelterDeliveryX,
+                    GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.02f),
+                new Vector2(
+                    EscapeBoatStagingX,
+                    GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.02f),
                 GetNaturalSailingWindSpeed(),
                 GetOceanSample(TideBarrenIslandController.CisternX).SurfaceY,
                 time);

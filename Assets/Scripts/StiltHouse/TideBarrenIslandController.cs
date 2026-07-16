@@ -15,6 +15,13 @@ public enum TideIslandSalvageUse
     EscapeBoat
 }
 
+public enum TideIslandSalvageDestination
+{
+    None,
+    ShelterStaging,
+    EscapeBoatStaging
+}
+
 /// <summary>
 /// 外海岩礁岛的独立表现与实物所有权。它只拥有岛、船骸可拆件和蓄水池；
 /// 玩家移动、海况、库存和维修仍由第一切片编排器拥有。
@@ -51,8 +58,11 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     [SerializeField] private bool hullPlankRemoved;
     [SerializeField] private bool sailclothRemoved;
     [SerializeField] private bool rivetedPlateRemoved;
-    [SerializeField] private int shelterCommittedParts;
-    [SerializeField] private int boatCommittedParts;
+    [SerializeField] private int shelterStagedParts;
+    [SerializeField] private int boatStagedParts;
+    [SerializeField] private TideIslandSalvageDestination hullPlankDestination;
+    [SerializeField] private TideIslandSalvageDestination sailclothDestination;
+    [SerializeField] private TideIslandSalvageDestination rivetedPlateDestination;
 
     private Transform visualRoot;
     private SpriteRenderer rockBackRenderer;
@@ -62,6 +72,8 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     private SpriteRenderer cisternSaltLineRenderer;
     private SpriteRenderer carriedPartRenderer;
     private readonly SpriteRenderer[] salvageRenderers = new SpriteRenderer[3];
+    private readonly SpriteRenderer[] shelterStagedRenderers = new SpriteRenderer[3];
+    private readonly SpriteRenderer[] boatStagedRenderers = new SpriteRenderer[3];
     private readonly SpriteRenderer[] plants = new SpriteRenderer[8];
     private readonly SpriteRenderer[] gutters = new SpriteRenderer[3];
     private float groundY;
@@ -69,8 +81,16 @@ public sealed class TideBarrenIslandController : MonoBehaviour
 
     public TideRainCisternState Cistern => cistern;
     public TideIslandSalvagePart CarriedPart => carriedPart;
-    public int ShelterCommittedParts => shelterCommittedParts;
-    public int BoatCommittedParts => boatCommittedParts;
+    public int ShelterStagedParts => shelterStagedParts;
+    public int BoatStagedParts => boatStagedParts;
+
+    public TideIslandSalvageDestination GetDestination(TideIslandSalvagePart part)
+    {
+        return part == TideIslandSalvagePart.HullPlank ? hullPlankDestination :
+            part == TideIslandSalvagePart.Sailcloth ? sailclothDestination :
+            part == TideIslandSalvagePart.RivetedPlate ? rivetedPlateDestination :
+            TideIslandSalvageDestination.None;
+    }
 
     private void OnEnable()
     {
@@ -88,8 +108,11 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         hullPlankRemoved = false;
         sailclothRemoved = false;
         rivetedPlateRemoved = false;
-        shelterCommittedParts = 0;
-        boatCommittedParts = 0;
+        shelterStagedParts = 0;
+        boatStagedParts = 0;
+        hullPlankDestination = TideIslandSalvageDestination.None;
+        sailclothDestination = TideIslandSalvageDestination.None;
+        rivetedPlateDestination = TideIslandSalvageDestination.None;
         UpdateVisibility(true);
     }
 
@@ -146,7 +169,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         return true;
     }
 
-    public bool TryCommitCarriedPart(TideIslandSalvageUse use, out TideIslandSalvagePart part)
+    public bool TryStageCarriedPart(TideIslandSalvageUse use, out TideIslandSalvagePart part)
     {
         part = carriedPart;
         if (part == TideIslandSalvagePart.None)
@@ -155,13 +178,17 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         }
 
         carriedPart = TideIslandSalvagePart.None;
+        TideIslandSalvageDestination destination = use == TideIslandSalvageUse.Shelter
+            ? TideIslandSalvageDestination.ShelterStaging
+            : TideIslandSalvageDestination.EscapeBoatStaging;
+        SetDestination(part, destination);
         if (use == TideIslandSalvageUse.Shelter)
         {
-            shelterCommittedParts++;
+            shelterStagedParts++;
         }
         else
         {
-            boatCommittedParts++;
+            boatStagedParts++;
         }
 
         UpdateVisibility(true);
@@ -194,6 +221,8 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         bool visible,
         float walkSurfaceY,
         Vector2 playerPosition,
+        Vector2 shelterStagingAnchor,
+        Vector2 boatStagingAnchor,
         float signedWind,
         float waterSurfaceY,
         float time)
@@ -237,6 +266,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         UpdateGutters();
         UpdatePlants(signedWind, time);
         UpdateCarriedPart(playerPosition);
+        UpdateStagedParts(shelterStagingAnchor, boatStagingAnchor);
 
         // 岛前缘与水面只在真实高度相交，不能另画一条局部水线。
         float submerged01 = Mathf.InverseLerp(groundY - 0.55f, groundY + 0.2f, waterSurfaceY);
@@ -264,6 +294,18 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         cisternRenderer = EnsureRenderer("CrackedRainCistern", GetCisternSprite(), 4);
         cisternSaltLineRenderer = EnsureRenderer("CisternSaltLine", GetSaltLineSprite(), 5);
         carriedPartRenderer = EnsureRenderer("CarriedWreckPart", null, 15);
+        for (int i = 0; i < salvageRenderers.Length; i++)
+        {
+            TideIslandSalvagePart part = (TideIslandSalvagePart)(i + 1);
+            shelterStagedRenderers[i] = EnsureRenderer(
+                $"StagedAtShelter_{part}",
+                GetSpriteForPart(part),
+                7);
+            boatStagedRenderers[i] = EnsureRenderer(
+                $"StagedAtBoat_{part}",
+                GetSpriteForPart(part),
+                7);
+        }
         for (int i = 0; i < plants.Length; i++)
         {
             plants[i] = EnsureRenderer($"WindPressedPlant_{i:00}", GetPlantSprite(), 3);
@@ -311,6 +353,12 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         salvageRenderers[1].enabled = !sailclothRemoved;
         salvageRenderers[2].enabled = !rivetedPlateRemoved;
         carriedPartRenderer.enabled = carriedPart != TideIslandSalvagePart.None;
+        for (int i = 0; i < salvageRenderers.Length; i++)
+        {
+            TideIslandSalvageDestination destination = GetDestination((TideIslandSalvagePart)(i + 1));
+            shelterStagedRenderers[i].enabled = destination == TideIslandSalvageDestination.ShelterStaging;
+            boatStagedRenderers[i].enabled = destination == TideIslandSalvageDestination.EscapeBoatStaging;
+        }
     }
 
     private void UpdateGutters()
@@ -353,6 +401,41 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         SetWorldSize(carriedPartRenderer, playerPosition + new Vector2(0f, 0.03f), size, -7f);
     }
 
+    private void UpdateStagedParts(Vector2 shelterAnchor, Vector2 boatAnchor)
+    {
+        for (int i = 0; i < salvageRenderers.Length; i++)
+        {
+            TideIslandSalvagePart part = (TideIslandSalvagePart)(i + 1);
+            TideIslandSalvageDestination destination = GetDestination(part);
+            SpriteRenderer renderer = destination == TideIslandSalvageDestination.ShelterStaging
+                ? shelterStagedRenderers[i]
+                : boatStagedRenderers[i];
+            if (destination == TideIslandSalvageDestination.None)
+            {
+                continue;
+            }
+
+            // 三件原物分别靠在施工位、叠在干木面和放在可见检修面上；它们不跟
+            // 船的浪上浮沉，因为此时尚未固定到船体，也不能提前获得维修收益。
+            Vector2 anchor = destination == TideIslandSalvageDestination.ShelterStaging
+                ? shelterAnchor
+                : boatAnchor;
+            Vector2 offset = part == TideIslandSalvagePart.HullPlank
+                ? new Vector2(0f, 0.11f)
+                : part == TideIslandSalvagePart.Sailcloth
+                    ? new Vector2(-0.32f, 0.24f)
+                    : new Vector2(0.35f, 0.2f);
+            Vector2 size = part == TideIslandSalvagePart.HullPlank
+                ? new Vector2(1.08f, 0.16f)
+                : part == TideIslandSalvagePart.Sailcloth
+                    ? new Vector2(0.54f, 0.4f)
+                    : new Vector2(0.4f, 0.24f);
+            float rotation = part == TideIslandSalvagePart.HullPlank ? 0f :
+                part == TideIslandSalvagePart.Sailcloth ? -9f : 4f;
+            SetWorldSize(renderer, anchor + offset, size, rotation);
+        }
+    }
+
     private Vector2 GetWreckCenter()
     {
         return new Vector2(-12.25f, groundY + 0.4f);
@@ -378,6 +461,22 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         else if (part == TideIslandSalvagePart.RivetedPlate)
         {
             rivetedPlateRemoved = removed;
+        }
+    }
+
+    private void SetDestination(TideIslandSalvagePart part, TideIslandSalvageDestination destination)
+    {
+        if (part == TideIslandSalvagePart.HullPlank)
+        {
+            hullPlankDestination = destination;
+        }
+        else if (part == TideIslandSalvagePart.Sailcloth)
+        {
+            sailclothDestination = destination;
+        }
+        else if (part == TideIslandSalvagePart.RivetedPlate)
+        {
+            rivetedPlateDestination = destination;
         }
     }
 
