@@ -21,7 +21,7 @@ if (-not (Test-Path -LiteralPath $UnityPath)) {
     throw "Unity executable not found: $UnityPath"
 }
 
-$logPath = Join-Path $root "Logs\readiness-core-loop-probe.log"
+$logPath = Join-Path $root "Logs\readiness-convergence-probes.log"
 $arguments = @(
     "-batchmode",
     "-nographics",
@@ -30,19 +30,23 @@ $arguments = @(
     "-executeMethod", "TideCoreLoopConvergenceProbe.RunFromCommandLine",
     "-logFile", $logPath
 )
-$process = Start-Process -FilePath $UnityPath -ArgumentList $arguments -Wait -PassThru
+$process = Start-Process -FilePath $UnityPath -ArgumentList $arguments -WindowStyle Hidden -Wait -PassThru
 $log = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8
 if ($process.ExitCode -ne 0 -or
     $log -match "error CS\d+" -or
     $log -match "TIDE_CORE_LOOP_PROBE FAIL" -or
-    $log -notmatch "TIDE_CORE_LOOP_PROBE PASS") {
+    $log -match "TIDE_REPAIR_SCENE_PROBE FAIL" -or
+    $log -notmatch "TIDE_CORE_LOOP_PROBE PASS" -or
+    $log -notmatch "TIDE_REPAIR_SCENE_PROBE PASS") {
     $evidence = $log -split "`r?`n" |
-        Select-String -Pattern "error CS|TIDE_CORE_LOOP_PROBE|executeMethod method" |
+        Select-String -Pattern "error CS|TIDE_CORE_LOOP_PROBE|TIDE_REPAIR_SCENE_PROBE|executeMethod method" |
         Select-Object -Last 12
     $evidence | ForEach-Object { Write-Host $_.Line }
     throw "Unity core-loop probe failed; see $logPath"
 }
 
 ($log -split "`r?`n" | Select-String -Pattern "TIDE_CORE_LOOP_PROBE PASS" | Select-Object -Last 1).Line |
+    Write-Host
+($log -split "`r?`n" | Select-String -Pattern "TIDE_REPAIR_SCENE_PROBE PASS" | Select-Object -Last 1).Line |
     Write-Host
 Write-Host "Tide play readiness passed. Visual acceptance still requires the user's original Game View/video."

@@ -65,17 +65,21 @@ public static class TideV52BoatRepairPresentationModel
             return committedStage;
         }
 
-        // 第一轮必须保留三个可辨认的物理动作；0.34/0.72 与控制器现有的
-        // 检查清理、试装、固定密封三段工作指令保持同一节拍。
+        // 第一轮的五步玩法映射到现有三张中间资源：检查不提前改画面，清理后
+        // 显示 Cleared，随后才是 TestFit 和 Fastened。材料仍只在提交点消耗。
         float progress = Mathf.Clamp01(repairProgress01);
         if (committedStage == TideV52BoatRepairStage.Damage)
         {
-            if (progress < 0.34f)
+            if (progress < 0.12f)
+            {
+                return TideV52BoatRepairStage.Damage;
+            }
+            if (progress < 0.3f)
             {
                 return TideV52BoatRepairStage.Cleared;
             }
 
-            return progress < 0.72f
+            return progress < 0.56f
                 ? TideV52BoatRepairStage.TestFit
                 : TideV52BoatRepairStage.Fastened;
         }

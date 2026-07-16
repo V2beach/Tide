@@ -1434,7 +1434,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 harvestPlacedRepairChoice = RepairChoice.Stilt;
                 harvestPhysicalState = HarvestPhysicalState.PlacedAtWork;
                 harvestPlacementTransition01 = 1f;
-                repairWorkStep = 1;
+                repairWorkStep = (int)TideRepairWorkPhaseModel.Evaluate(repairWorkProgress);
                 repairWorkProgress = 0.18f;
                 repairWorkActive = true;
             }
@@ -1773,7 +1773,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         harvestPlacementTransition01 = 1f;
         repairChoiceApplied = false;
         pendingRepairChoice = RepairChoice.Stilt;
-        repairWorkStep = 2;
+        repairWorkStep = (int)TideRepairWorkPhaseModel.Evaluate(repairWorkProgress);
         repairWorkProgress = 0.58f;
         repairWorkActive = true;
         stiltIntegrity = 1;
@@ -2448,7 +2448,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             harvestPlacedRepairChoice = RepairChoice.InteriorSeal;
             harvestPlacementTransition01 = 1f;
             pendingRepairChoice = RepairChoice.InteriorSeal;
-            repairWorkStep = 2;
+            repairWorkStep = (int)TideRepairWorkPhaseModel.Evaluate(repairWorkProgress);
             repairWorkProgress = 0.58f;
             repairWorkActive = true;
             SetExtraSaltWoodOwner(ExtraSaltWoodOwner.PlacedAtWork);
@@ -4941,7 +4941,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             ropeStock == ropeAfterCommit &&
             stiltIntegrity == stiltAfterCommit;
 
-        bool stagedPreview = step20 == 1 && step50 == 2 && step85 == 3 &&
+        bool stagedPreview = step20 == (int)TideRepairWorkPhase.Clean &&
+            step50 == (int)TideRepairWorkPhase.TestFit &&
+            step85 == (int)TideRepairWorkPhase.Seal &&
             progress20 > 0.19f && progress50 > progress20 && progress85 > progress50 &&
             preview20 > 0.05f && preview20 < preview50 && preview50 < preview85 && preview85 < 0.95f;
         bool completionStopsWork = !repairWorkActive && previewAfterCommit >= 0.999f;
@@ -8510,16 +8512,19 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             !currentHarvestBanked;
 
         // Start the same held-F repair, release it once, let the natural world advance,
-        // then resume. This proves the three-step work is interruptible and that the
+        // then resume. This proves the five-step work is interruptible and that the
         // material is consumed only at the final physical fastening.
         bool sawInspection = false;
+        bool sawCleaning = false;
         bool sawTrialFit = false;
         bool sawFastening = false;
+        bool sawSealing = false;
         for (int step = 0; step < 8 && hullOwnsWorkPoint; step++)
         {
             TickRepairWorkAtWorldTarget(workStepSeconds, step == 0, true);
-            sawInspection |= repairWorkStep == 1;
-            sawTrialFit |= repairWorkStep == 2;
+            sawInspection |= repairWorkStep == (int)TideRepairWorkPhase.Inspect;
+            sawCleaning |= repairWorkStep == (int)TideRepairWorkPhase.Clean;
+            sawTrialFit |= repairWorkStep == (int)TideRepairWorkPhase.TestFit;
             TickState(workStepSeconds);
             followUpSeconds += workStepSeconds;
         }
@@ -8540,9 +8545,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         for (int step = 0; step < 80 && hullOwnsWorkPoint && !repairChoiceApplied; step++)
         {
             TickRepairWorkAtWorldTarget(workStepSeconds, false, true);
-            sawInspection |= repairWorkStep == 1;
-            sawTrialFit |= repairWorkStep == 2;
-            sawFastening |= repairWorkStep == 3;
+            sawInspection |= repairWorkStep == (int)TideRepairWorkPhase.Inspect;
+            sawCleaning |= repairWorkStep == (int)TideRepairWorkPhase.Clean;
+            sawTrialFit |= repairWorkStep == (int)TideRepairWorkPhase.TestFit;
+            sawFastening |= repairWorkStep == (int)TideRepairWorkPhase.Fasten;
+            sawSealing |= repairWorkStep == (int)TideRepairWorkPhase.Seal;
             TickState(workStepSeconds);
             followUpSeconds += workStepSeconds;
         }
@@ -8561,7 +8568,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         bool handlingImproves = speedAfter > speedBefore * 1.08f &&
             leakAfter < leakBefore * 0.78f &&
             rangeAfter > rangeBefore + 0.5f;
-        bool threeWorkPhases = sawInspection && sawTrialFit && sawFastening;
+        bool fiveWorkPhases = sawInspection && sawCleaning && sawTrialFit && sawFastening && sawSealing;
 
         bool returnedToBoat = AdvanceProbePlayerToWorldX(
             GetBoatBoardingX(),
@@ -8605,7 +8612,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         string evidence =
             $"卸到码头={unloadedToDock}/收鱼={haulStartedSeconds:F1}->{haulFinishedSeconds:F1}s/" +
-            $"修船完成={repairFinishedSeconds:F1}s/阶段={sawInspection}/{sawTrialFit}/{sawFastening}/暂停={pausePreservesWork}；" +
+            $"修船完成={repairFinishedSeconds:F1}s/阶段={sawInspection}/{sawCleaning}/{sawTrialFit}/{sawFastening}/{sawSealing}/暂停={pausePreservesWork}；" +
             $"路径={voyageCompleted}/{fishStillOwnsNet}/{reachedNet}/{fishSecuredAtPost}/{returnedToStaging}/{pickedUpSameTimber}/{reachedHull}/{hullOwnsWorkPoint}；" +
             $"船壳工位={hullArrivalX:F2}->{hullWorkPosition.x:F2}/通道{GetLaneMinX(playerLane):F2}..{GetLaneMaxX(playerLane):F2}；" +
             $"船壳={boatHullIntegrity}/船况={boatReadiness}/提交={repairCommittedOnce}/账本={materialLedgerIsPhysical}/" +
@@ -8614,12 +8621,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             $"再开窗={nextWindowOpened}/再出航={nextTripUsesRepair}/世界继续={naturalWorldContinued}";
         bool passed = voyageCompleted && fishStillOwnsNet && unloadedToDock &&
             reachedNet && fishSecuredAtPost && pickedUpSameTimber && hullOwnsWorkPoint &&
-            pausePreservesWork && threeWorkPhases && repairCommittedOnce &&
+            pausePreservesWork && fiveWorkPhases && repairCommittedOnce &&
             materialLedgerIsPhysical && handlingImproves && nextWindowOpened &&
             nextTripUsesRepair && naturalWorldContinued && fishSurvivesBoatRepair;
         ResetSlice();
         return passed
-            ? $"PASS：首潮盐木经过船艉暂放、收网腾手、搬运和三段船壳施工后，下一航次真实获得更低漏水、更高航速与更远航界。{evidence}"
+            ? $"PASS：首潮盐木经过船艉暂放、收网腾手、搬运和五段船壳施工后，下一航次真实获得更低漏水、更高航速与更远航界。{evidence}"
             : $"FAIL：首潮返航物仍在卸货、网获并存、搬运、施工材料或下一航次反馈中断链。{evidence}";
     }
 
@@ -11892,7 +11899,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
             pendingRepairChoice = choice;
             repairWorkProgress = 0f;
-            repairWorkStep = 1;
+            repairWorkStep = (int)TideRepairWorkPhase.Inspect;
             repairWorkActive = false;
             if (!currentHarvestBanked && currentHarvest != HarvestKind.None)
             {
@@ -11934,7 +11941,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         repairWorkActive = true;
         repairWorkProgress = Mathf.Clamp01(repairWorkProgress + deltaTime / GetRepairWorkDuration(choice));
-        repairWorkStep = repairWorkProgress < 0.34f ? 1 : repairWorkProgress < 0.72f ? 2 : 3;
+        repairWorkStep = (int)TideRepairWorkPhaseModel.Evaluate(repairWorkProgress);
         int percent = Mathf.RoundToInt(repairWorkProgress * 100f);
         lastActionHint = $"{GetRepairChoiceName(choice)} {percent}%：{GetRepairWorkInstruction(choice, repairWorkStep)}";
         if (repairWorkProgress < 0.999f)
@@ -11950,7 +11957,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         repairWorkActive = false;
-        repairWorkStep = 3;
+        repairWorkStep = (int)TideRepairWorkPhase.Seal;
         repairWorkProgress = 1f;
         repairChoiceApplied = true;
         harvestPhysicalState = currentHarvestBanked
@@ -17375,11 +17382,20 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private string GetRepairWorkInstruction(RepairChoice choice, int step)
     {
+        if (step == (int)TideRepairWorkPhase.Clean)
+        {
+            return GetRepairCleaningInstruction(choice);
+        }
+        if (step >= (int)TideRepairWorkPhase.Seal)
+        {
+            return GetRepairSealingInstruction(choice);
+        }
+
         if (choice == RepairChoice.Stilt)
         {
             return step <= 1
                 ? "刮掉柱脚软木，找到真正承重的裂口。"
-                : step == 2
+                : step == 3
                     ? "把盐木楔进裂口，顶起并校正斜撑。"
                     : "钻穿补木与旧桩，收紧湿绳，再检查平台是否回平。";
         }
@@ -17388,7 +17404,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             return step <= 1
                 ? "用淡水冲掉泥沙，沿浮纲和沉纲逐眼查裂口。"
-                : step == 2
+                : step == 3
                     ? "把旧纤维重新捻紧，照原网目逐结补片。"
                     : "拉开整张网检查受力，剪掉会继续散开的毛边。";
         }
@@ -17397,7 +17413,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             return step <= 1
                 ? "从屋内追着水痕，找出滴水缝和松动压条。"
-                : step == 2
+                : step == 3
                     ? "替换漏雨板，让新板压在旧板的顺水方向。"
                     : "钉住压条并封边，再泼水确认没有倒灌。";
         }
@@ -17406,7 +17422,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             return step <= 1
                 ? "沿雨痕和盐霜检查墙缝、门槛与迎风面的漏口。"
-                : step == 2
+                : step == 3
                     ? "裁出顺水补板，先压旧布，再把门框校回方正。"
                     : "钉紧压条并留出木料伸缩缝，从外侧泼水复查渗漏。";
         }
@@ -17415,7 +17431,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             return step <= 1
                 ? "刮掉台面软木，检查松腿、断榫和还能承力的横撑。"
-                : step == 2
+                : step == 3
                     ? "削平替换木，补上缺腿并让台面重新找平。"
                     : "穿绳锁住榫口，压重物确认锯切和敲击时不会晃动。";
         }
@@ -17424,7 +17440,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             return step <= 1
                 ? "清掉湿霉和虫鼠碎屑，拆出还能留下的干燥床条。"
-                : step == 2
+                : step == 3
                     ? "铺平睡板，用旧布做隔潮层，把身体抬离湿地板。"
                     : "拉紧床布并固定边角，躺下检查承重处不会突然塌落。";
         }
@@ -17433,7 +17449,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             return step <= 1
                 ? "擦掉盐壳，分开海图、潮尺与锈住的无线电接点。"
-                : step == 2
+                : step == 3
                     ? "按旧航迹校准潮尺，用金属片接回断开的触点。"
                     : "对照月相和桩上湿线复核读数，把下一潮窗口标在图边。";
         }
@@ -17442,7 +17458,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             return step <= 1
                 ? "掏净冷灰、通烟道，检查灶门和火床裂缝。"
-                : step == 2
+                : step == 3
                     ? "试装灶门，重新垫平能托住火的石块。"
                     : "用湿泥填实漏烟缝，点小火确认烟确实往上走。";
         }
@@ -17453,13 +17469,13 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             {
                 return step <= 1
                     ? "擦干初补后的船缝，找出负重后仍会渗水和冒泡的位置。"
-                    : step == 2
+                    : step == 3
                         ? "把细麻重新捻进渗缝，薄涂油脂并压紧边缘。"
                         : "装入压舱物做吃水复查，确认补板和钉排都没有松动。";
             }
             return step <= 1
                 ? "舀干舱水，从内侧找出透光和渗水的船缝。"
-                : step == 2
+                : step == 3
                     ? "塞入捻开的麻绳，试合补板并校正船壳弧度。"
                     : "从内侧压紧钉牢，抹上油脂后再下水看是否冒泡。";
         }
@@ -17470,13 +17486,13 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             {
                 return step <= 1
                     ? "搬动现有货物，检查舱盖边缘、桶座和排水槽的受力痕。"
-                    : step == 2
+                    : step == 3
                         ? "给舱盖加挡水沿，补齐绑货点并留出舀水通道。"
                         : "装入同等重量摇船复查，确认货物、积水都不会偏到一舷。";
             }
             return step <= 1
                 ? "清空舱底，量出舱盖、压舱格和排水位置。"
-                : step == 2
+                : step == 3
                     ? "试装舱盖、桶座和不会挡住舀水的绑货横木。"
                     : "穿绳固定各处，摇船检查货物不会滑向一边。";
         }
@@ -17485,16 +17501,70 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             return step <= 1
                 ? "把初补帆升到半高，检查缝线、帆角和夹条有没有继续走形。"
-                : step == 2
+                : step == 3
                     ? "在受力边加一层折边搭接，补齐帆脚绳和磨损索环。"
                     : "迎着小风逐段张紧，收放两次确认补口不会再次撕开。";
         }
 
         return step <= 1
             ? "拆掉腐线，摊平破帆并检查帆骨和受力边。"
-            : step == 2
+            : step == 3
                 ? "把补布压在背风面，从裂口两端交叉走线。"
                 : "逐段张紧帆脚与升帆索，收一档确认补口不会再撕。";
+    }
+
+    private string GetRepairCleaningInstruction(RepairChoice choice)
+    {
+        if (choice == RepairChoice.Net || choice == RepairChoice.Sail)
+        {
+            return "先用少量淡水洗去盐泥，拆掉失去强度的腐线，再把纤维摊开晾到不滴水。";
+        }
+        if (choice == RepairChoice.Hull || choice == RepairChoice.Cabin)
+        {
+            return "舀走积水，刮净松动木屑、锈钉和盐壳，让接触面露出仍能承力的干净材料。";
+        }
+        if (choice == RepairChoice.ChartRadio)
+        {
+            return "用干布和细刷分开盐壳与锈蚀，擦干触点；潮湿时不接通任何电路。";
+        }
+        if (choice == RepairChoice.Lamp)
+        {
+            return "清空冷灰和烟道积碳，刷掉灶门浮锈，把仍会漏烟的裂缝全部露出来。";
+        }
+        return "去掉软烂木、霉层和盐壳，晾干接触面；没有清到硬实材料前不放新部件。";
+    }
+
+    private string GetRepairSealingInstruction(RepairChoice choice)
+    {
+        if (choice == RepairChoice.Stilt || choice == RepairChoice.Workbench || choice == RepairChoice.Bed)
+        {
+            return "逐步加上真实负重，观察接缝和支点；确认不再位移后才收走工具与余料。";
+        }
+        if (choice == RepairChoice.Net)
+        {
+            return "把网浸湿后重新张紧，逐段摸查跳线和松结；受流后不继续散开才算完成。";
+        }
+        if (choice == RepairChoice.Roof || choice == RepairChoice.InteriorSeal)
+        {
+            return "沿顺水方向压实边缝，从外侧少量泼水；屋内不再出现新水痕才算密封。";
+        }
+        if (choice == RepairChoice.Hull)
+        {
+            return "在补缝处压入油麻并薄涂防水脂，下水负重观察；没有连续冒泡才算密封。";
+        }
+        if (choice == RepairChoice.Sail)
+        {
+            return "迎小风分档升降两次，复查受力边和索环；缝口不再扩张才收紧最后一道线。";
+        }
+        if (choice == RepairChoice.Cabin)
+        {
+            return "装回等重货物并左右摇船，确认舱盖挡水、排水槽畅通且载荷不会滑向一舷。";
+        }
+        if (choice == RepairChoice.ChartRadio)
+        {
+            return "接通后对照月相、湿线和旧航迹复核读数；三处相符才记录下一次潮窗。";
+        }
+        return "先点一小团火检查抽烟和裂缝，确认烟只进烟道、火床不掉灰后再逐步添柴。";
     }
 
     private bool TryConsumeRepairMaterials(RepairChoice choice, out string missing)
@@ -17513,6 +17583,26 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         // A catch remains vulnerable cargo while it is visibly being carried. It is
         // only added to the shelter stock when the player commits it to a real repair.
         BankCurrentHarvestMaterials();
+
+        TideMaterialBundle needs = new TideMaterialBundle(
+            timberNeed,
+            ropeNeed,
+            clothNeed,
+            metalNeed,
+            foodNeed);
+        TideMaterialBundle secured = GetSecuredMaterialBundle();
+        TideIslandSalvageDestination stagingDestination = GetStagingDestinationForRepair(choice);
+        int stagedMask = barrenIsland != null
+            ? barrenIsland.GetStagedPartMask(stagingDestination)
+            : 0;
+        int selectedMask = TideSalvageMaterialModel.SelectMinimumParts(stagedMask, secured, needs);
+        if (selectedMask < 0 || !TryIntegrateSelectedSalvageParts(selectedMask, stagingDestination))
+        {
+            // HasRepairMaterials uses the same selector, so this branch only protects
+            // a future caller that mutates the worksite between preview and commit.
+            missing = "施工位上的原物已被移走，无法完成最终固定";
+            return false;
+        }
 
         timberStock -= timberNeed;
         ropeStock -= ropeNeed;
@@ -17551,15 +17641,84 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             availableFood += foodYield;
         }
 
-        bool available = availableTimber >= timberNeed &&
-            availableRope >= ropeNeed &&
-            availableCloth >= clothNeed &&
-            availableMetal >= metalNeed &&
-            availableFood >= foodNeed;
+        TideMaterialBundle availableMaterials = new TideMaterialBundle(
+            availableTimber,
+            availableRope,
+            availableCloth,
+            availableMetal,
+            availableFood);
+        TideMaterialBundle needs = new TideMaterialBundle(
+            timberNeed,
+            ropeNeed,
+            clothNeed,
+            metalNeed,
+            foodNeed);
+        TideIslandSalvageDestination stagingDestination = GetStagingDestinationForRepair(choice);
+        int stagedMask = barrenIsland != null
+            ? barrenIsland.GetStagedPartMask(stagingDestination)
+            : 0;
+        bool available = TideSalvageMaterialModel.SelectMinimumParts(
+            stagedMask,
+            availableMaterials,
+            needs) >= 0;
         missing = available
             ? string.Empty
             : $"需要 木{timberNeed}/绳{ropeNeed}/布{clothNeed}/铁{metalNeed}/食{foodNeed}";
         return available;
+    }
+
+    private TideMaterialBundle GetSecuredMaterialBundle()
+    {
+        return new TideMaterialBundle(timberStock, ropeStock, clothStock, metalStock, foodStock);
+    }
+
+    private TideIslandSalvageDestination GetStagingDestinationForRepair(RepairChoice choice)
+    {
+        bool repairsEscapeBoat = choice == RepairChoice.Hull ||
+            choice == RepairChoice.Sail ||
+            choice == RepairChoice.Cabin;
+        return repairsEscapeBoat
+            ? TideIslandSalvageDestination.EscapeBoatStaging
+            : TideIslandSalvageDestination.ShelterStaging;
+    }
+
+    private bool TryIntegrateSelectedSalvageParts(
+        int selectedMask,
+        TideIslandSalvageDestination stagingDestination)
+    {
+        if (selectedMask == 0)
+        {
+            return true;
+        }
+
+        if (barrenIsland == null ||
+            (barrenIsland.GetStagedPartMask(stagingDestination) & selectedMask) != selectedMask)
+        {
+            return false;
+        }
+
+        for (int partIndex = 1; partIndex <= 3; partIndex++)
+        {
+            TideIslandSalvagePart part = (TideIslandSalvagePart)partIndex;
+            if ((selectedMask & TideSalvageMaterialModel.GetPartBit(part)) == 0)
+            {
+                continue;
+            }
+
+            if (!barrenIsland.TryIntegrateStagedPart(part, stagingDestination))
+            {
+                return false;
+            }
+
+            TideMaterialBundle materialYield = TideSalvageMaterialModel.GetYield(part);
+            timberStock += materialYield.Timber;
+            ropeStock += materialYield.Rope;
+            clothStock += materialYield.Cloth;
+            metalStock += materialYield.Metal;
+            foodStock += materialYield.Food;
+        }
+
+        return true;
     }
 
     private void GetRepairMaterialNeeds(
@@ -28789,9 +28948,14 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TideV69HouseRepairStage GetV69HouseRepairStage(TideV69HouseStructuralOwner owner)
     {
         RepairChoice choice = GetV69HouseRepairChoice(owner);
-        float progress = GetUncommittedRepairPreview01(choice);
+        bool activeRepair = state == SliceState.RepairMoment &&
+            !repairChoiceApplied &&
+            pendingRepairChoice == choice;
+        // V69 的离散施工帧必须读取原始工序进度。GetRepairPreview01 为连续淡入
+        // 做了 SmoothStep，若把它再当工序时间会让清理/试装阈值整体错位。
+        float progress = activeRepair ? repairWorkProgress : 0f;
         int committedSteps = GetV69HouseCommittedChannelSteps(owner);
-        bool targetsCurrentOwner = progress > 0f &&
+        bool targetsCurrentOwner = activeRepair && progress > 0f &&
             committedSteps == TideV69HouseRepairPresentationModel.GetRequiredStep(owner) - 1;
         return TideV69HouseRepairPresentationModel.EvaluateStage(
             owner,

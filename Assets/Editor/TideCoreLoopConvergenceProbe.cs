@@ -17,6 +17,7 @@ public static class TideCoreLoopConvergenceProbe
     public static void RunFromCommandLine()
     {
         Debug.Log(RunAll());
+        TideRepairSceneConvergenceProbe.RunFromCommandLine();
     }
 
     private static string RunAll()
@@ -24,10 +25,12 @@ public static class TideCoreLoopConvergenceProbe
         string cistern = ProbeCistern();
         string island = ProbeIslandOwnership();
         string context = ProbeIslandContextPriority();
+        string salvage = ProbeSalvageMaterialCommit();
+        string repairPhases = ProbeRepairWorkPhases();
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
         string storm = ProbeStormRescue();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {rope} | {sailing} | {storm}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {rope} | {sailing} | {storm}";
     }
 
     private static string ProbeCistern()
@@ -80,6 +83,14 @@ public static class TideCoreLoopConvergenceProbe
                 -1.5f,
                 1.1f);
             RequireSingleVisibleOwner(root.transform, part, TideIslandSalvageDestination.ShelterStaging);
+            bool integrated = island.TryIntegrateStagedPart(
+                part,
+                TideIslandSalvageDestination.ShelterStaging);
+            Require(integrated && island.ShelterStagedParts == 0,
+                "最终固定后原物仍滞留在住所暂存计数中");
+            Require(island.GetDestination(part) == TideIslandSalvageDestination.IntegratedIntoShelter,
+                "最终固定后原物没有归入住所正式 owner");
+            RequireNoLooseOwner(root.transform, part);
 
             bool tookCloth = island.TryTakeNearestPart(
                 new Vector2(-11.83f, -0.04f),
@@ -107,6 +118,17 @@ public static class TideCoreLoopConvergenceProbe
         {
             UnityEngine.Object.DestroyImmediate(root);
         }
+    }
+
+    private static void RequireNoLooseOwner(Transform root, TideIslandSalvagePart part)
+    {
+        Transform visualRoot = root.Find("GeneratedBarrenIslandRoot");
+        string sourceName = part == TideIslandSalvagePart.HullPlank ? "SalvageHullPlank" :
+            part == TideIslandSalvagePart.Sailcloth ? "SalvageSailcloth" : "SalvageRivetedPlate";
+        Require(!FindRenderer(visualRoot, sourceName).enabled, $"{part} 已固定却仍在船骸显示");
+        Require(!FindRenderer(visualRoot, "CarriedWreckPart").enabled, $"{part} 已固定却仍在玩家手中显示");
+        Require(!FindRenderer(visualRoot, $"StagedAtShelter_{part}").enabled, $"{part} 已固定却仍在住所施工位显示");
+        Require(!FindRenderer(visualRoot, $"StagedAtBoat_{part}").enabled, $"{part} 已固定却仍在船施工位显示");
     }
 
     private static void RequireSingleVisibleOwner(
@@ -176,6 +198,54 @@ public static class TideCoreLoopConvergenceProbe
         Require(emptyAtCistern == TideIslandContextAction.DrinkFromCistern,
             "空手靠近蓄水池时无法饮水");
         return "交互优先级=施工位>绳船/携物禁饮水";
+    }
+
+    private static string ProbeSalvageMaterialCommit()
+    {
+        TideMaterialBundle hullNeeds = new TideMaterialBundle(2, 1, 0, 0, 0);
+        int hullSelection = TideSalvageMaterialModel.SelectMinimumParts(
+            TideSalvageMaterialModel.HullPlankBit |
+            TideSalvageMaterialModel.SailclothBit |
+            TideSalvageMaterialModel.RivetedPlateBit,
+            new TideMaterialBundle(),
+            hullNeeds);
+        Require(hullSelection == TideSalvageMaterialModel.HullPlankBit,
+            "补船体没有选择正好满足木料与短索的单块船板");
+
+        int stockOnlySelection = TideSalvageMaterialModel.SelectMinimumParts(
+            TideSalvageMaterialModel.HullPlankBit,
+            hullNeeds,
+            hullNeeds);
+        Require(stockOnlySelection == 0, "库存已足时仍误吞可见船骸原物");
+
+        TideMaterialBundle cabinNeeds = new TideMaterialBundle(1, 0, 0, 1, 0);
+        int plateAlone = TideSalvageMaterialModel.SelectMinimumParts(
+            TideSalvageMaterialModel.RivetedPlateBit,
+            new TideMaterialBundle(),
+            cabinNeeds);
+        Require(plateAlone < 0, "铆接板凭空提供了不存在的木料");
+        int plateWithStoredWood = TideSalvageMaterialModel.SelectMinimumParts(
+            TideSalvageMaterialModel.RivetedPlateBit,
+            new TideMaterialBundle(1, 0, 0, 0, 0),
+            cabinNeeds);
+        Require(plateWithStoredWood == TideSalvageMaterialModel.RivetedPlateBit,
+            "已有木料时铆接板仍不能进入船舱维修");
+        return "原物最终固定=最少组合/库存足不误吞/铆板不生木";
+    }
+
+    private static string ProbeRepairWorkPhases()
+    {
+        Require(TideRepairWorkPhaseModel.Evaluate(0.05f) == TideRepairWorkPhase.Inspect,
+            "施工开始时跳过了检查");
+        Require(TideRepairWorkPhaseModel.Evaluate(0.2f) == TideRepairWorkPhase.Clean,
+            "检查后没有进入清理");
+        Require(TideRepairWorkPhaseModel.Evaluate(0.42f) == TideRepairWorkPhase.TestFit,
+            "清理后没有进入试装");
+        Require(TideRepairWorkPhaseModel.Evaluate(0.66f) == TideRepairWorkPhase.Fasten,
+            "试装后没有进入固定");
+        Require(TideRepairWorkPhaseModel.Evaluate(0.9f) == TideRepairWorkPhase.Seal,
+            "最终提交前没有密封与复核");
+        return "施工=检查>清理>试装>固定>密封";
     }
 
     private static string ProbeMooringRope()

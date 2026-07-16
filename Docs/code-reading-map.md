@@ -43,6 +43,14 @@
 - 表现：`UpdateStormRescueVisuals`
 - 物件由浮力、局部水深、潮流和系固决定冲失，剧情不写死次序。
 
+### 实物维修
+
+- 工序节拍：`TideRepairWorkPhaseModel`，统一为检查 -> 清理 -> 试装 -> 固定 -> 密封
+- 船骸材料选择：`TideSalvageMaterialModel`，最终固定时才选择能满足需求的最少原物组合
+- 实物归属：`TideBarrenIslandController.TryIntegrateStagedPart`
+- 表现投影：`TideV52BoatRepairPresentationModel`、`TideV69HouseRepairPresentationModel`
+- 正式 Scene 门：`TideRepairSceneConvergenceProbe`
+
 ## 既有核心
 
 - 天文水位/潮流：`TideMixedSemidiurnalModel`、`TideAstronomicalCurrentModel`
@@ -77,3 +85,4 @@
 - 静态门：`Tools/check-prototype-loop.ps1` / `.sh`
 - 同步门：`Tools/check-unity-sync.ps1` / `.sh`
 - 完整入口：`Tools/check-tide-play-readiness.ps1` / `.sh`
+- 完整入口同时要求 `TIDE_CORE_LOOP_PROBE PASS` 与 `TIDE_REPAIR_SCENE_PROBE PASS`。

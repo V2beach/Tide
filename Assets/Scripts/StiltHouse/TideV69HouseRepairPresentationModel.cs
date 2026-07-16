@@ -85,15 +85,20 @@ public static class TideV69HouseRepairPresentationModel
         }
 
         float progress = UnityEngine.Mathf.Clamp01(repairProgress01);
-        if (progress < 0.22f)
+        if (progress < 0.12f)
+        {
+            // 检查阶段只改变知识，不应在玩家摸到部件的一瞬间清空腐料。
+            return TideV69HouseRepairStage.Damage;
+        }
+        if (progress < 0.3f)
         {
             return TideV69HouseRepairStage.Cleared;
         }
-        if (progress < 0.48f)
+        if (progress < 0.56f)
         {
             return TideV69HouseRepairStage.TestFit;
         }
-        if (progress < 0.74f)
+        if (progress < 0.78f)
         {
             return TideV69HouseRepairStage.Fastened;
         }

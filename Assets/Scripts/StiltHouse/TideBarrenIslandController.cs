@@ -19,7 +19,9 @@ public enum TideIslandSalvageDestination
 {
     None,
     ShelterStaging,
-    EscapeBoatStaging
+    EscapeBoatStaging,
+    IntegratedIntoShelter,
+    IntegratedIntoEscapeBoat
 }
 
 /// <summary>
@@ -90,6 +92,53 @@ public sealed class TideBarrenIslandController : MonoBehaviour
             part == TideIslandSalvagePart.Sailcloth ? sailclothDestination :
             part == TideIslandSalvagePart.RivetedPlate ? rivetedPlateDestination :
             TideIslandSalvageDestination.None;
+    }
+
+    public int GetStagedPartMask(TideIslandSalvageDestination stagingDestination)
+    {
+        int mask = 0;
+        for (int i = 0; i < SalvageOffsets.Length; i++)
+        {
+            TideIslandSalvagePart part = (TideIslandSalvagePart)(i + 1);
+            if (GetDestination(part) == stagingDestination)
+            {
+                mask |= TideSalvageMaterialModel.GetPartBit(part);
+            }
+        }
+        return mask;
+    }
+
+    public bool TryIntegrateStagedPart(
+        TideIslandSalvagePart part,
+        TideIslandSalvageDestination stagingDestination)
+    {
+        if (part == TideIslandSalvagePart.None || GetDestination(part) != stagingDestination)
+        {
+            return false;
+        }
+
+        TideIslandSalvageDestination integratedDestination =
+            stagingDestination == TideIslandSalvageDestination.ShelterStaging
+                ? TideIslandSalvageDestination.IntegratedIntoShelter
+                : stagingDestination == TideIslandSalvageDestination.EscapeBoatStaging
+                    ? TideIslandSalvageDestination.IntegratedIntoEscapeBoat
+                    : TideIslandSalvageDestination.None;
+        if (integratedDestination == TideIslandSalvageDestination.None)
+        {
+            return false;
+        }
+
+        SetDestination(part, integratedDestination);
+        if (stagingDestination == TideIslandSalvageDestination.ShelterStaging)
+        {
+            shelterStagedParts = Mathf.Max(0, shelterStagedParts - 1);
+        }
+        else
+        {
+            boatStagedParts = Mathf.Max(0, boatStagedParts - 1);
+        }
+        UpdateVisibility(true);
+        return true;
     }
 
     private void OnEnable()

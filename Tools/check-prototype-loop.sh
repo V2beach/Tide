@@ -18,11 +18,15 @@ required=(
   Assets/Scenes/Tide_StiltHouse_FirstSlice.unity
   Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs
   Assets/Scripts/StiltHouse/TideBarrenIslandController.cs
+  Assets/Scripts/StiltHouse/TideIslandInteractionModel.cs
   Assets/Scripts/StiltHouse/TideRainCisternModel.cs
+  Assets/Scripts/StiltHouse/TideRepairWorkPhaseModel.cs
+  Assets/Scripts/StiltHouse/TideSalvageMaterialModel.cs
   Assets/Scripts/StiltHouse/TideMooringRopeModel.cs
   Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs
   Assets/Scripts/StiltHouse/TideStormRescueModel.cs
   Assets/Editor/TideCoreLoopConvergenceProbe.cs
+  Assets/Editor/TideRepairSceneConvergenceProbe.cs
   Docs/ai-work-prompts.md
   Docs/tide-task-tracking.md
 )

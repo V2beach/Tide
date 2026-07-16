@@ -16,16 +16,18 @@ if [[ ! -x "$unity_path" ]]; then
   exit 1
 fi
 
-log_path="$root/Logs/readiness-core-loop-probe.log"
+log_path="$root/Logs/readiness-convergence-probes.log"
 "$unity_path" -batchmode -nographics -quit \
   -projectPath "$root" \
   -executeMethod TideCoreLoopConvergenceProbe.RunFromCommandLine \
   -logFile "$log_path"
 
-if grep -Eq 'error CS[0-9]+|TIDE_CORE_LOOP_PROBE FAIL|executeMethod method .* threw exception' "$log_path" ||
-   ! grep -q 'TIDE_CORE_LOOP_PROBE PASS' "$log_path"; then
-  grep -E 'error CS|TIDE_CORE_LOOP_PROBE|executeMethod method' "$log_path" | tail -n 12 >&2 || true
+if grep -Eq 'error CS[0-9]+|TIDE_CORE_LOOP_PROBE FAIL|TIDE_REPAIR_SCENE_PROBE FAIL|executeMethod method .* threw exception' "$log_path" ||
+   ! grep -q 'TIDE_CORE_LOOP_PROBE PASS' "$log_path" ||
+   ! grep -q 'TIDE_REPAIR_SCENE_PROBE PASS' "$log_path"; then
+  grep -E 'error CS|TIDE_CORE_LOOP_PROBE|TIDE_REPAIR_SCENE_PROBE|executeMethod method' "$log_path" | tail -n 12 >&2 || true
   exit 1
 fi
 grep 'TIDE_CORE_LOOP_PROBE PASS' "$log_path" | tail -n 1
+grep 'TIDE_REPAIR_SCENE_PROBE PASS' "$log_path" | tail -n 1
 printf "Tide play readiness passed. Visual acceptance still requires the user's original Game View/video.\n"
