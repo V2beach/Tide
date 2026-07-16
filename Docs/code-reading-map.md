@@ -42,6 +42,7 @@
 
 - 船体动力：`TideSailboatDynamicsModel`
 - 浅礁净空：`TideSailingReefModel`；固定礁顶、瞬时物理水位、舱水、拖载和高速浅水下沉共同决定吃水、搁浅与撞击
+- 浅礁运行时：`TideSailingReefController`；独立拥有真实越过状态、撞击冷却、连续位移约束和岩脊/碎浪表现。主控制器注入唯一 `TideOceanSample` 与吃水样本，并只结算返回的船体后果。
 - 输入：`HandleSailingInput`
 - 积分：`AdvanceSailingSteering`
 - 表现：`UpdateSailingSceneVisuals`、`UpdateSailingReefVisuals`

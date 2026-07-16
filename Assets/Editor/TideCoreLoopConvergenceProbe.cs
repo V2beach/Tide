@@ -32,8 +32,9 @@ public static class TideCoreLoopConvergenceProbe
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
         string sailingReef = ProbeSailingReefClearance();
+        string sailingReefRuntime = ProbeSailingReefRuntime();
         string storm = ProbeStormRescue();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {storm}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {storm}";
     }
 
     private static string ProbeCistern()
@@ -542,6 +543,113 @@ public static class TideCoreLoopConvergenceProbe
         return $"浅礁净空低/高/边缘慢拖快拖={lowTide.UnderKeelClearanceMeters:F2}/" +
             $"{firstHighTide.UnderKeelClearanceMeters:F2}/" +
             $"{marginalSlowTow.UnderKeelClearanceMeters:F2}/{marginalFastTow.UnderKeelClearanceMeters:F2}m";
+    }
+
+    private static string ProbeSailingReefRuntime()
+    {
+        GameObject root = new GameObject("TideSailingReefRuntimeProbe");
+        Texture2D probeTexture = null;
+        Sprite probeSprite = null;
+        try
+        {
+            TideSailingReefController reef = root.AddComponent<TideSailingReefController>();
+            const float lowestWaterY = -2.82f;
+            const float reefCenterX = 2f;
+            TideSailingReefSample grounded = TideSailingReefModel.Evaluate(
+                lowestWaterY,
+                lowestWaterY,
+                0f,
+                0f,
+                0.2f,
+                1.2f);
+            reef.ResetRuntime();
+            TideSailingReefMovementResult lightContact = reef.ResolveMovement(
+                1f,
+                3f,
+                0.2f,
+                reefCenterX,
+                grounded);
+            Require(lightContact.ContactedReef && !lightContact.DamagesHull &&
+                lightContact.ResolvedBoatX <= reefCenterX - TideSailingReefModel.ReefHalfWidthMeters + 0.001f,
+                "浅礁运行组件没有在轻触时约束连续位移");
+
+            reef.ResetRuntime();
+            TideSailingReefMovementResult hardContact = reef.ResolveMovement(
+                1f,
+                3f,
+                0.9f,
+                reefCenterX,
+                grounded);
+            TideSailingReefMovementResult repeatedContact = reef.ResolveMovement(
+                1f,
+                3f,
+                0.9f,
+                reefCenterX,
+                grounded);
+            float strikeCooldown = reef.StrikeCooldownRemainingSeconds;
+            Require(hardContact.DamagesHull && !repeatedContact.DamagesHull &&
+                strikeCooldown > 3f,
+                "浅礁运行组件没有把高速撞击限制为一次性船体后果");
+
+            TideSailingReefSample highWater = TideSailingReefModel.Evaluate(
+                lowestWaterY,
+                lowestWaterY + 1.11f,
+                0f,
+                0f,
+                0.18f,
+                1.2f);
+            reef.ResetRuntime();
+            TideSailingReefMovementResult clearPass = reef.ResolveMovement(
+                1f,
+                3f,
+                0.18f,
+                reefCenterX,
+                highWater);
+            Require(!clearPass.ContactedReef && clearPass.NewlyPassedOutbound && reef.PassedOutbound,
+                "高潮净空成立后仍不能按真实位移越过浅礁");
+
+            probeTexture = new Texture2D(1, 1);
+            probeTexture.SetPixel(0, 0, Color.white);
+            probeTexture.Apply();
+            probeSprite = Sprite.Create(
+                probeTexture,
+                new Rect(0f, 0f, 1f, 1f),
+                new Vector2(0.5f, 0.5f),
+                100f);
+            SpriteRenderer rock = new GameObject("ProbeReefRock").AddComponent<SpriteRenderer>();
+            SpriteRenderer foam = new GameObject("ProbeReefFoam").AddComponent<SpriteRenderer>();
+            rock.transform.SetParent(root.transform, false);
+            foam.transform.SetParent(root.transform, false);
+            TideOceanSample ocean = new TideOceanSample(-1.08f, 0.08f, 0.2f, 0.5f);
+            reef.UpdatePresentation(
+                rock,
+                foam,
+                true,
+                new Vector2(0f, -0.73f),
+                grounded,
+                ocean,
+                2f,
+                probeSprite,
+                probeSprite);
+            float presentedRockWidth = rock.sprite.bounds.size.x * rock.transform.localScale.x;
+            Require(rock.enabled && foam.enabled &&
+                Mathf.Abs(presentedRockWidth - TideSailingReefModel.ReefHalfWidthMeters * 2f) <= 0.001f,
+                "浅礁运行组件没有把同一净空样本绑定到岩脊和碎浪表现");
+
+            return $"礁组件=轻触停/重撞一次/高潮越过/物理表现同源，冷却{strikeCooldown:F1}s";
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(root);
+            if (probeSprite != null)
+            {
+                UnityEngine.Object.DestroyImmediate(probeSprite);
+            }
+            if (probeTexture != null)
+            {
+                UnityEngine.Object.DestroyImmediate(probeTexture);
+            }
+        }
     }
 
     private static string ProbeStormRescue()

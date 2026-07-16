@@ -37,6 +37,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideMooringRopeController.cs",
     "Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs",
     "Assets/Scripts/StiltHouse/TideSailingReefModel.cs",
+    "Assets/Scripts/StiltHouse/TideSailingReefController.cs",
     "Assets/Scripts/StiltHouse/TideStormRescueModel.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
     "Assets/Editor/TideRepairSceneConvergenceProbe.cs",
@@ -58,8 +59,8 @@ Test-Gate ($controller.Contains("GetRepairStagedPartMask")) "heavy pieces only e
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
 Test-Gate ($controller.Contains("mooringRope.AdvanceEnvironment")) "mooring runtime orchestration is extracted"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
-Test-Gate ($controller.Contains("TideSailingReefModel.SegmentEntersGroundedReef")) "sailing reef collision uses physical clearance"
-Test-Gate ($controller.Contains("UpdateSailingReefVisuals")) "reef exposure and breaker share the sailing tide"
+Test-Gate ($controller.Contains("sailingReef.ResolveMovement")) "sailing reef runtime owns physical collision"
+Test-Gate ($controller.Contains("sailingReef.UpdatePresentation")) "sailing reef runtime binds exposure and breaker to the same tide"
 Test-Gate ($controller.Contains("TickStormRescue")) "storm rescue advances in the world tick"
 Test-Gate ($controller.Contains("RunEditorStormManifestOwnershipProbe")) "storm cargo keeps a grounded physical manifest"
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"

@@ -677,8 +677,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private float sailingSalvageOverstrainSeconds;
     private Vector2 sailingHookWorldPosition;
     private float sailingSalvageInitialRopeLength;
-    private bool sailingReefChecked;
-    private float reefStrikeCooldown;
     private bool nearshoreWorkDone;
     private TideRoutingMode tideRoutingMode = TideRoutingMode.Open;
     private float routingBoom01;
@@ -724,6 +722,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TideBarrenIslandController barrenIsland;
     private TideHeavyWreckSalvageController heavyWreckSalvage;
     private TideMooringRopeController mooringRope;
+    private TideSailingReefController sailingReef;
 
     // 旧场景与几何探针仍以这个名字读取船位。实际权威状态已经移入泊位绳
     // 组件；fallback 只覆盖组件尚未由 EnsureScene 建立的反序列化瞬间。
@@ -11310,8 +11309,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingSalvageOverstrainSeconds = 0f;
         sailingHookWorldPosition = sailingSalvagePoint;
         sailingSalvageInitialRopeLength = 0f;
-        sailingReefChecked = false;
-        reefStrikeCooldown = 0f;
+        sailingReef?.ResetRuntime();
         nearshoreWorkDone = false;
         tideRoutingMode = TideRoutingMode.Open;
         routingBoom01 = 0f;
@@ -14578,22 +14576,17 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             float rightLimit = GetSailingRightLimit();
             float nextX = Mathf.Clamp(sailingBoatX + effectiveVelocity * deltaTime, sailingMinX, rightLimit);
             TideSailingReefSample reefSample = GetSailingReefSample(sailingBoatVelocity);
-            bool entersGroundedReef = TideSailingReefModel.SegmentEntersGroundedReef(
+            TideSailingReefMovementResult reefMovement = sailingReef.ResolveMovement(
                 sailingBoatX,
                 nextX,
+                sailingBoatVelocity,
                 sailingReefPoint.x,
                 reefSample);
-            if (entersGroundedReef)
+            nextX = reefMovement.ResolvedBoatX;
+            if (reefMovement.ContactedReef)
             {
-                nextX = TideSailingReefModel.ConstrainOutsideGroundedReef(
-                    sailingBoatX,
-                    nextX,
-                    sailingReefPoint.x);
-                bool damagesHull = reefStrikeCooldown <= 0f &&
-                    TideSailingReefModel.ShouldDamageHull(reefSample, sailingBoatVelocity);
-                if (damagesHull)
+                if (reefMovement.DamagesHull)
                 {
-                    reefStrikeCooldown = 3.2f;
                     boatHullIntegrity = Mathf.Max(0, boatHullIntegrity - 1);
                     RecalculateBoatReadiness();
                     sailingWaterIngress01 = Mathf.Clamp01(sailingWaterIngress01 + 0.28f);
@@ -14605,16 +14598,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                     sailingBoatVelocity = 0f;
                     lastActionHint = "船底轻轻坐上礁脊，船没有穿过岩石，也没有凭空受损；等水再涨一些才能越过去。";
                 }
-            }
-
-            // 浅礁不是按键任务点。船真正从右缘驶出才算读懂并通过这段水路；
-            // 低潮搁浅时 nextX 会被约束在左缘，因此不会凭文字或距离提前完成。
-            float reefRightEdge = sailingReefPoint.x + TideSailingReefModel.ReefHalfWidthMeters;
-            if (!sailingReefChecked &&
-                boatXBeforeMove <= reefRightEdge &&
-                nextX > reefRightEdge + 0.04f)
-            {
-                sailingReefChecked = true;
             }
 
             if (effectiveVelocity > 0f && nextX >= rightLimit - 0.02f)
@@ -14994,8 +14977,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingSalvageOverstrainSeconds = 0f;
         sailingHookWorldPosition = GetSailingBoatSternWorldPosition();
         sailingSalvageInitialRopeLength = 0f;
-        sailingReefChecked = false;
-        reefStrikeCooldown = 0f;
+        sailingReef?.ResetRuntime();
         playerFacing = 1;
         lastActionHint = CanSeeLighthouse()
             ? $"A/D 控方向，W/S 张帆或收帆；{GetBoatHandlingDescription()} 向右确认灯塔，舱里进水时离开调查点按住 F 舀水。"
@@ -17430,7 +17412,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             sailingFlowCrestTravelWorld + GetSailingSurfaceFlowSpeed() * Mathf.Max(0f, deltaTime),
             13.8f);
         TickContinuousSailingSalvage(deltaTime, interactionHeld);
-        TickSailingReefStrikeCooldown(deltaTime);
+        TickSailingReefRuntime(deltaTime);
         if (!sailingIngressMidWarned && sailingWaterIngress01 >= 0.35f)
         {
             sailingIngressMidWarned = true;
@@ -17467,12 +17449,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         return hullLeakRate * roughness;
     }
 
-    private void TickSailingReefStrikeCooldown(float deltaTime)
+    private void TickSailingReefRuntime(float deltaTime)
     {
-        reefStrikeCooldown = Mathf.Max(0f, reefStrikeCooldown - deltaTime);
-        // 实际搁浅与受损只在 AdvanceSailingSteering 的连续位移段上结算。
-        // 这里保留受击冷却推进，避免旧的“进入一个圆形热区就扣耐久”与
-        // 船底净空模型重复伤害，也避免浪峰/浪谷间原地静止仍凭空撞礁。
+        sailingReef.AdvanceEnvironment(deltaTime);
     }
 
     private bool BeginContinuousSailingHookThrow()
@@ -19140,8 +19119,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingSalvageOverstrainSeconds = 0f;
         sailingHookWorldPosition = sailingSalvagePoint;
         sailingSalvageInitialRopeLength = 0f;
-        sailingReefChecked = false;
-        reefStrikeCooldown = 0f;
+        sailingReef?.ResetRuntime();
         nearshoreWorkDone = false;
         tideRoutingMode = TideRoutingMode.Open;
         routingBoom01 = 0f;
@@ -19624,6 +19602,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         if (mooringRope == null)
         {
             mooringRope = gameObject.AddComponent<TideMooringRopeController>();
+        }
+        sailingReef = GetComponent<TideSailingReefController>();
+        if (sailingReef == null)
+        {
+            sailingReef = gameObject.AddComponent<TideSailingReefController>();
         }
         backdropRenderer = EnsureRenderer("GeneratedStiltFirstBackdrop", GetBackdropSprite(), -100);
         daySeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalDaySeaSky", GetFormalDaySeaSkySprite(), -99);
@@ -21762,56 +21745,20 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void UpdateSailingReefVisuals(float time)
     {
-        if (sailingReefPointRenderer == null || sailingReefFoamRenderer == null)
-        {
-            return;
-        }
-
         Vector2 reefScreenPosition = GetSailingScreenPosition(sailingReefPoint);
         bool onScreen = reefScreenPosition.x >= -7.4f && reefScreenPosition.x <= 7.4f;
         TideSailingReefSample reef = GetSailingReefSample(sailingBoatWorldVelocity);
         TideOceanSample ocean = GetSailingOceanSample(sailingReefPoint.x);
-
-        // 岩脊宽度与碰撞模型完全一致，顶部固定在 reefPoint.y。潮水只改变
-        // 覆盖程度，不让岩石像漂浮道具一样随浪上下或旋转。
-        bool rockVisible = onScreen && reef.ExposedRock01 > 0.025f;
-        SetEnabled(sailingReefPointRenderer, rockVisible);
-        if (rockVisible)
-        {
-            const float rockHeight = TideSailingReefModel.ReefCrownAboveLowestWaterMeters;
-            sailingReefPointRenderer.sprite = TideBarrenIslandController.GetSharedReefRockSprite();
-            sailingReefPointRenderer.sortingOrder = 8;
-            Color submergedRock = new Color(0.12f, 0.19f, 0.2f, 0.22f);
-            Color drySaltRock = new Color(0.36f, 0.39f, 0.37f, 0.96f);
-            Color rockColor = Color.Lerp(submergedRock, drySaltRock, reef.ExposedRock01);
-            rockColor.a = Mathf.Lerp(0.18f, 0.96f, reef.ExposedRock01);
-            SetWorldSize(
-                sailingReefPointRenderer,
-                reefScreenPosition + new Vector2(0f, -rockHeight * 0.5f),
-                new Vector2(TideSailingReefModel.ReefHalfWidthMeters * 2f, rockHeight),
-                rockColor,
-                0f);
-        }
-
-        // 碎浪只在水面接近礁顶、船底净空确实变小时出现。它采样同一条
-        // OceanField 的水面高度和坡度，因此不是悬在海上的危险图标。
-        bool foamVisible = onScreen && reef.ShallowRisk01 > 0.04f;
-        SetEnabled(sailingReefFoamRenderer, foamVisible);
-        if (foamVisible)
-        {
-            float foamBreath = 0.86f + Mathf.Sin(time * 1.7f + ocean.SurfaceY * 2.3f) * 0.08f;
-            float foamAlpha = Mathf.Lerp(0.16f, 0.68f, reef.ShallowRisk01) * foamBreath;
-            sailingReefFoamRenderer.sprite = GetFormalSeaCurrentCrestSprite();
-            sailingReefFoamRenderer.sortingOrder = 9;
-            SetWorldSize(
-                sailingReefFoamRenderer,
-                new Vector2(reefScreenPosition.x, ocean.SurfaceY + 0.018f),
-                new Vector2(
-                    TideSailingReefModel.ReefHalfWidthMeters * 2f + ocean.Agitation01 * 0.38f,
-                    0.12f + ocean.Agitation01 * 0.08f),
-                new Color(0.76f, 0.89f, 0.86f, foamAlpha),
-                Mathf.Atan(ocean.Slope) * Mathf.Rad2Deg * 0.55f);
-        }
+        sailingReef.UpdatePresentation(
+            sailingReefPointRenderer,
+            sailingReefFoamRenderer,
+            onScreen,
+            reefScreenPosition,
+            reef,
+            ocean,
+            time,
+            TideBarrenIslandController.GetSharedReefRockSprite(),
+            GetFormalSeaCurrentCrestSprite());
     }
 
     private void UpdateSailingFlowCrestVisuals(float time, float daylight01)
