@@ -4,10 +4,11 @@
 
 1. `Assets/Scenes/Tide_StiltHouse_FirstSlice.unity`
 2. `Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs`
-3. `Assets/Scripts/StiltHouse/TideOceanFieldModel.cs`
-4. 本页下面列出的独立纯模型
+3. `Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs`（只在追预览姿态或自动 Scene 探针时读）
+4. `Assets/Scripts/StiltHouse/TideOceanFieldModel.cs`
+5. 本页下面列出的独立纯模型
 
-`TideStiltHouseFirstSliceController` 仍然过大。阅读时不要从第一行顺序看到底；先按“输入 -> 状态 -> 表现”追一条完整链。
+`TideStiltHouseFirstSliceController` 仍然过大，但约一万行编辑器预览/探针已隔离到 `UNITY_EDITOR` partial，不进入玩家构建。阅读运行逻辑时不要打开诊断 partial，也不要从第一行顺序看到底；先按“输入 -> 状态 -> 表现”追一条完整链。
 
 ## 2026-07-16 新链路
 

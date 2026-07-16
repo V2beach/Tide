@@ -99,6 +99,11 @@
 ## P1 架构
 
 - [ ] 将 `TideStiltHouseFirstSliceController` 中新增状态编排继续拆成岛屿、泊位、航行、暴潮 presenter；纯公式已独立
+  - [ ] 主控制器编辑器诊断拆分（2026-07-17）
+    - [x] 确认 `RebuildGeneratedHierarchyForEditor` 到 `SetEditorNetRigHoldPreviewPose` 为连续编辑器预览/探针区，正式帧循环从其后的 `Update` 开始
+    - [x] 原样迁入独立 `UNITY_EDITOR` partial；主文件约 `34,144 -> 23,975` 行，编辑器诊断约 `10,183` 行，不移动字段、不改变运行状态与数值
+    - [x] 迁移前后方法区 SHA-256 一致；Windows/macOS 静态门、三组正式 Scene 探针和 Unity 编译均通过
+    - [ ] 后续把仍散落在运行区的少量 `RunEditor*` 方法并入诊断 partial；先按模块完成状态 owner 拆分，再继续缩小运行主文件
   - [x] 网深与漂物相遇公式独立为 `TideNetEncounterModel`；主控制器只注入前后水路位置、网面、水面、网况和可见导流下压
   - [x] 泊位绳：`TideMooringRopeController` 独立拥有输入占用、状态推进、一次性环境结果和绳形表现；主控制器只提供人物/船锚点与统一风流
     - [x] 模块门覆盖甩绳起手、松手命中、张力收绳、风流推进、靠稳结果、连续绳段和船艉端点；正式 Scene 登船路径/可走面回归通过
@@ -120,4 +125,4 @@
 
 - 连续天文潮、相邻高潮不等高、实际米制潮流、潮源批次守恒、网深/张力/收网、短航打捞与船体维修已有纯模型和回归。
 - V34 外景、V35 室内、V41 接触动作、V42 生存动作、V39 船体、V43 海况、V44 瞭望、V59 潮带实物为当前运行基线；详见运行资源清册。
-- 当前聚焦门：Windows 静态 `77` 项、macOS shell 静态 `78` 项、跨平台同步 `1945` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确项数以脚本当次输出为准。
+- 当前聚焦门：Windows 静态 `81` 项、macOS shell 静态 `83` 项、跨平台同步 `1947` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确项数以脚本当次输出为准。

@@ -24,6 +24,7 @@ function Read-ProjectText([string]$relativePath) {
 $required = @(
     "Assets/Scenes/Tide_StiltHouse_FirstSlice.unity",
     "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs",
+    "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs",
     "Assets/Scripts/StiltHouse/TideBarrenIslandController.cs",
     "Assets/Scripts/StiltHouse/TideIslandInteractionModel.cs",
     "Assets/Scripts/StiltHouse/TideRainCisternModel.cs",
@@ -60,8 +61,13 @@ foreach ($file in $required) {
 }
 
 $controller = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
+$editorDiagnostics = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
-Test-Gate ($controller.Contains("RunEditorHeavyWreckTidalLiftIntegrationProbe")) "tidal heavy-wreck lift is integrated"
+Test-Gate ($editorDiagnostics.Contains("RunEditorHeavyWreckTidalLiftIntegrationProbe")) "tidal heavy-wreck lift is covered by editor diagnostics"
+Test-Gate ($controller.Contains("public partial class TideStiltHouseFirstSliceController")) "runtime controller supports focused partial files"
+Test-Gate ($editorDiagnostics.Contains("#if UNITY_EDITOR") -and
+    $editorDiagnostics.Contains("public partial class TideStiltHouseFirstSliceController")) "preview and probe code is editor-only"
+Test-Gate (-not $controller.Contains("SetEditorNetRigHoldPreviewPose")) "the contiguous editor preview block stays out of the runtime controller"
 Test-Gate ($controller.Contains("heavyWreckSalvage.IsCarryingPiece")) "heavy pieces impose a physical drag cost"
 Test-Gate ($controller.Contains("GetRepairStagedPartMask")) "heavy pieces only enter compatible final repairs"
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
