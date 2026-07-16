@@ -244,16 +244,43 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         return true;
     }
 
-    public bool TryDrink(Vector2 playerPosition, float liters)
+    public bool TryDrink(Vector2 playerPosition, float liters, out float consumedLiters)
     {
-        if (Mathf.Abs(playerPosition.x - CisternX) > 0.48f ||
-            TideRainCisternModel.GetDrinkableLiters(cistern) < liters)
+        consumedLiters = 0f;
+        if (Mathf.Abs(playerPosition.x - CisternX) > 0.48f)
         {
             return false;
         }
 
-        cistern.StoredLiters = Mathf.Max(0f, cistern.StoredLiters - Mathf.Max(0f, liters));
-        return true;
+        cistern = TideRainCisternModel.WithdrawPotableWater(
+            cistern,
+            liters,
+            true,
+            out TidePortableWaterState withdrawn);
+        consumedLiters = withdrawn.Liters;
+        return consumedLiters > 0f;
+    }
+
+    public bool TryFillPortableWaterContainer(
+        float requestedLiters,
+        out TidePortableWaterState container)
+    {
+        cistern = TideRainCisternModel.WithdrawPotableWater(
+            cistern,
+            requestedLiters,
+            true,
+            out container);
+        return container.Liters + 0.0001f >= Mathf.Max(0f, requestedLiters);
+    }
+
+    public float WithdrawPotableWater(float requestedLiters)
+    {
+        cistern = TideRainCisternModel.WithdrawPotableWater(
+            cistern,
+            requestedLiters,
+            false,
+            out TidePortableWaterState withdrawn);
+        return withdrawn.Liters;
     }
 
     public bool IsNearWreck(Vector2 playerPosition)
@@ -322,7 +349,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         cisternSaltLineRenderer.color = Color.Lerp(
             new Color(0.78f, 0.82f, 0.78f, 0.55f),
             new Color(0.94f, 0.95f, 0.9f, 0.92f),
-            cistern.SaltFraction01);
+            TideRainCisternModel.GetSaltContamination01(cistern));
 
         UpdateGutters();
         UpdatePlants(signedWind, time);

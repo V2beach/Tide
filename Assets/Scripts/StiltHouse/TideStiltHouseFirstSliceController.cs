@@ -42,6 +42,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private const float MeanTidalTransportSpeed = 0.3f;
     private const bool EnableSailingBuoyGameplay = false;
     private const float EbbCurrentBoost = 1.12f;
+    private const float StormRescueWaterContainerLiters = 4f;
+    private const float DailyRestWaterNeedLiters = 2.4f;
     // 盐湿线记住的是一段潮汐的平均最高水位，不是某一朵随机浪尖。睡眠跳时
     // 用 0.5 秒小步补采样，足以捕捉 248.4 秒潮周期的平滑峰值，同时不把
     // 八分钟游戏日的宏观压缩误用到呼吸、动作或局部海浪上。
@@ -703,6 +705,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private float shelterImpactTimer;
     private TideStormRescueItemState[] stormRescueItems = Array.Empty<TideStormRescueItemState>();
     private int stormRescueHeldIndex = -1;
+    private TidePortableWaterState stormRescueWater;
+    private bool stormRescueWaterPreparationAttempted;
+    private float waterConsumedSinceLastRest;
+    private float lastRestWaterShortfallLiters;
     private int repairStartStiltIntegrity;
     private int repairStartBoatReadiness;
     private int repairStartHouseWarmth;
@@ -11091,6 +11097,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         shelterImpactTimer = 0f;
         InitializeStormRescueItems();
         stormRescueHeldIndex = -1;
+        stormRescueWater = default;
+        stormRescueWaterPreparationAttempted = false;
+        waterConsumedSinceLastRest = 0f;
+        lastRestWaterShortfallLiters = 0f;
         repairChoiceApplied = false;
         pendingRepairChoice = RepairChoice.None;
         repairWorkStep = 0;
@@ -12353,9 +12363,20 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         if (action == TideIslandContextAction.DrinkFromCistern)
         {
-            bool drank = barrenIsland.TryDrink(playerPosition, 0.45f);
+            float remainingNeed = Mathf.Max(0f, DailyRestWaterNeedLiters - waterConsumedSinceLastRest);
+            if (remainingNeed <= 0.001f)
+            {
+                lastActionHint = "今天已经喝够了。裂池里的水要留给下一次无雨和下一场暴潮。";
+                return true;
+            }
+
+            bool drank = barrenIsland.TryDrink(
+                playerPosition,
+                Mathf.Min(0.45f, remainingNeed),
+                out float consumedLiters);
+            waterConsumedSinceLastRest += consumedLiters;
             lastActionHint = drank
-                ? "你只喝了一小口。裂池会漏，下一场雨之前每一升都算数。"
+                ? "你喝了一小口。它会算进今天的饮水，不会在夜里再扣一遍。"
                 : "池里的水太少或已经被盐水污染，不能直接喝。";
             return true;
         }
@@ -12414,6 +12435,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         if (stormRescueItems == null || stormRescueItems.Length != 4)
         {
             InitializeStormRescueItems();
+        }
+
+        if (!stormRescueWaterPreparationAttempted &&
+            (GetStormPressure01() >= 0.34f || IsStormRescueActive()))
+        {
+            PrepareStormRescueWaterContainer();
         }
 
         float rawDepth = Mathf.Max(
@@ -12516,6 +12543,78 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         };
     }
 
+    public string RunEditorStormWaterOwnershipProbe()
+    {
+        EnsureScene();
+        ResetSlice();
+        float initialCisternLiters = barrenIsland.Cistern.StoredLiters;
+        PrepareStormRescueWaterContainer();
+        float filledCisternLiters = barrenIsland.Cistern.StoredLiters;
+        float filledReserveLiters = stormRescueWater.Liters;
+        bool fillConservesWater = Mathf.Abs(
+            initialCisternLiters - filledCisternLiters - filledReserveLiters) <= 0.001f;
+        bool exactContainerFilled = Mathf.Abs(filledReserveLiters - StormRescueWaterContainerLiters) <= 0.001f;
+
+        ApplyStormRescueLoss(TideStormRescueItemKind.DrinkingWater);
+        bool lossRemovesOnlyContainer = stormRescueWater.Liters <= 0.001f &&
+            Mathf.Abs(barrenIsland.Cistern.StoredLiters - filledCisternLiters) <= 0.001f;
+
+        ResetSlice();
+        PrepareStormRescueWaterContainer();
+        float cisternBeforeRest = barrenIsland.Cistern.StoredLiters;
+        float consumed = ConsumeRestWater(DailyRestWaterNeedLiters);
+        bool restUsesSecuredContainerFirst = Mathf.Abs(consumed - DailyRestWaterNeedLiters) <= 0.001f &&
+            Mathf.Abs(barrenIsland.Cistern.StoredLiters - cisternBeforeRest) <= 0.001f &&
+            Mathf.Abs(
+                stormRescueWater.Liters -
+                (StormRescueWaterContainerLiters - DailyRestWaterNeedLiters)) <= 0.001f;
+        ResetSlice();
+
+        bool passed = fillConservesWater && exactContainerFilled &&
+            lossRemovesOnlyContainer && restUsesSecuredContainerFirst;
+        return passed
+            ? $"PASS 应急水罐{filledReserveLiters:F1}L；冲失后总量-{filledReserveLiters:F1}L；保住后夜间先用{consumed:F1}L"
+            : $"FAIL 守恒={fillConservesWater} 装罐={exactContainerFilled} 冲失={lossRemovesOnlyContainer} 夜用={restUsesSecuredContainerFirst}";
+    }
+
+    private void PrepareStormRescueWaterContainer()
+    {
+        if (stormRescueWaterPreparationAttempted)
+        {
+            return;
+        }
+
+        stormRescueWaterPreparationAttempted = true;
+        bool filled = barrenIsland != null && barrenIsland.TryFillPortableWaterContainer(
+            StormRescueWaterContainerLiters,
+            out stormRescueWater);
+        if (filled || stormRescueItems == null || stormRescueItems.Length == 0)
+        {
+            return;
+        }
+
+        // No potable water means there is no filled water can in the flooded room.
+        // Marking it absent here avoids displaying or washing away an empty prop and
+        // then charging the player for water that never existed.
+        TideStormRescueItemState unavailableWater = stormRescueItems[0];
+        unavailableWater.Lost = true;
+        stormRescueItems[0] = unavailableWater;
+    }
+
+    private float ConsumeRestWater(float requestedLiters)
+    {
+        float request = Mathf.Max(0f, requestedLiters);
+        stormRescueWater = TideRainCisternModel.ConsumePortableWater(
+            stormRescueWater,
+            request,
+            out float fromContainer);
+        float remaining = Mathf.Max(0f, request - fromContainer);
+        float fromCistern = remaining > 0f && barrenIsland != null
+            ? barrenIsland.WithdrawPotableWater(remaining)
+            : 0f;
+        return fromContainer + fromCistern;
+    }
+
     private Vector2 GetStormRescueDryRackPosition(int index)
     {
         Vector2 basePosition = GetStormRescueBasePosition(index);
@@ -12536,7 +12635,14 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void ApplyStormRescueLoss(TideStormRescueItemKind kind)
     {
-        if (kind == TideStormRescueItemKind.BoatMaterial)
+        if (kind == TideStormRescueItemKind.DrinkingWater)
+        {
+            // The can was already filled by transferring real litres out of the
+            // cistern. Losing it destroys that single owner; it must not also deduct
+            // the same litres from the tank a second time.
+            stormRescueWater = default;
+        }
+        else if (kind == TideStormRescueItemKind.BoatMaterial)
         {
             timberStock = Mathf.Max(0, timberStock - 2);
         }
@@ -18245,6 +18351,23 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 : $"你睡着时高潮压过屋底：支撑 {stiltBeforeSleep}->{stiltIntegrity}。";
         }
 
+        float remainingWaterNeed = Mathf.Max(
+            0f,
+            DailyRestWaterNeedLiters - waterConsumedSinceLastRest);
+        float overnightWaterConsumed = ConsumeRestWater(remainingWaterNeed);
+        lastRestWaterShortfallLiters = Mathf.Max(0f, remainingWaterNeed - overnightWaterConsumed);
+        float restWaterFulfillment01 = Mathf.Clamp01(
+            (DailyRestWaterNeedLiters - lastRestWaterShortfallLiters) /
+            DailyRestWaterNeedLiters);
+        waterConsumedSinceLastRest = 0f;
+        if (lastRestWaterShortfallLiters > 0.01f)
+        {
+            string waterText = $"干净水少了 {lastRestWaterShortfallLiters:F1}L；这一夜只能浅睡，身体没有完全缓过来。";
+            overnightShelterText = string.IsNullOrEmpty(overnightShelterText)
+                ? waterText
+                : $"{overnightShelterText} {waterText}";
+        }
+
         // Sleep compresses hours of player time but not the world's causal history.
         // Sample the skipped tide before mutating either clock so a crossed高潮 can
         // leave the same persistent post mark as a tide watched in real time.
@@ -18261,8 +18384,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         dayProgress01 = 0.23f;
         dayNightPhase = DayNightPhase.Dawn;
         // The unrepaired shelter still offers a little rest. A raised, dry bed turns
-        // the same skipped night into a meaningful recovery instead of a free refill.
-        bodyWarmth01 = Mathf.Max(bodyWarmth01, bedCondition > 0 ? 0.82f : 0.48f);
+        // the same skipped night into a meaningful recovery. Missing drinking water
+        // limits that recovery but does not become an unrelated instant damage tick.
+        float restedWarmthFloor = bedCondition > 0 ? 0.82f : 0.48f;
+        float waterLimitedWarmthFloor = Mathf.Lerp(0.38f, restedWarmthFloor, restWaterFulfillment01);
+        bodyWarmth01 = Mathf.Max(bodyWarmth01, waterLimitedWarmthFloor);
         if (chartRadioCondition > 0)
         {
             lampForecastCharges = Mathf.Max(lampForecastCharges, 1);
@@ -27577,12 +27703,17 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         string heavyWreckText = heavyWreckSalvage != null
             ? heavyWreckSalvage.GetDebugSummary()
             : "重物 未接入";
+        string waterText = barrenIsland != null
+            ? $"饮水 池{barrenIsland.Cistern.StoredLiters:F1}L/盐{barrenIsland.Cistern.SaltFraction01:P2} · " +
+              $"应急罐{stormRescueWater.Liters:F1}L · 今日已饮{waterConsumedSinceLastRest:F1}L · 昨夜缺{lastRestWaterShortfallLiters:F1}L"
+            : "饮水 未接入";
         return $"{BuildPlayerHudSummary(phase, storm01)}\n" +
             $"距天黑 {FormatDebugDuration(secondsToDark)} · 距天亮 {FormatDebugDuration(secondsToDawn)} · " +
             $"离家 {distanceFromHome:0.0}m · 画面 {outdoorScreen} · F3 隐藏\n" +
             $"潮痕 上一潮 {previousPeakText} · 本潮已到 {highWaterMemory.CurrentCyclePeakY:0.00}m · 完整潮 {highWaterMemory.CompletedCycleCount}\n" +
             $"潮源 #{tideSourceBatchId} {GetTideDriftProvenanceName(currentTideDriftField.NearshoreBatch.Provenance)}/{GetHarvestName(tideSourceHarvest)} " +
             $"路程{incomingHarvestTravel01:0.00} · 盐木 #{extraSaltWoodBatchId} {extraSaltWoodOwner} 路程{outerWreckTravel01:0.00}\n" +
+            $"{waterText}\n" +
             $"{heavyWreckText}\n" +
             $"开发循环：看潮 -> 布网 -> 回收实物 -> 修屋/修船 -> 短航 · 当前：{lastActionHint}";
     }

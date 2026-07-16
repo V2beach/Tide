@@ -41,10 +41,22 @@ public static class TideCoreLoopConvergenceProbe
         TideRainCisternState rainy = TideRainCisternModel.Advance(initial, 1800f, 22f, 1f, 0f);
         TideRainCisternState dry = TideRainCisternModel.Advance(rainy, 1800f, 0f, 1f, 0f);
         TideRainCisternState salted = TideRainCisternModel.Advance(dry, 80f, 0f, 1f, 1f);
+        TideRainCisternState afterFill = TideRainCisternModel.WithdrawPotableWater(
+            initial,
+            4f,
+            true,
+            out TidePortableWaterState portable);
         Require(rainy.StoredLiters > initial.StoredLiters, "雨槽没有增加蓄水");
         Require(dry.StoredLiters < rainy.StoredLiters, "裂池在无雨时没有漏水");
         Require(salted.SaltFraction01 > dry.SaltFraction01, "暴潮越池没有提高盐分");
-        return $"蓄水 {initial.StoredLiters:F1}->{rainy.StoredLiters:F1}->{dry.StoredLiters:F1}L/盐{salted.SaltFraction01:P1}";
+        Require(TideRainCisternModel.GetDrinkableLiters(initial) >= initial.StoredLiters - 0.001f,
+            "初始雨水被错误标成不可饮用盐水");
+        Require(TideRainCisternModel.GetDrinkableLiters(salted) <= 0.001f,
+            "暴潮盐水倒灌后仍被当作可饮水");
+        Require(Mathf.Abs(portable.Liters - 4f) <= 0.001f &&
+            Mathf.Abs(initial.StoredLiters - afterFill.StoredLiters - portable.Liters) <= 0.001f,
+            "蓄水池装入便携容器时没有守恒");
+        return $"蓄水 {initial.StoredLiters:F1}->{rainy.StoredLiters:F1}->{dry.StoredLiters:F1}L/暴潮盐{salted.SaltFraction01:P2}/装罐{portable.Liters:F1}L";
     }
 
     private static string ProbeIslandOwnership()
