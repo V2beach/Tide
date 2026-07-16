@@ -3413,6 +3413,62 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             : $"FAIL：{evidence}；纯知识={inspectionWasPureKnowledge}。";
     }
 
+    public string RunEditorFirstDayAutonomyProbe()
+    {
+        EnsureScene();
+        ResetSlice();
+
+        float openingX = playerPosition.x;
+        float firstTidePlanningSeconds = 0f;
+        while (state == SliceState.LowTidePlanning && firstTidePlanningSeconds < 90f)
+        {
+            TickState(0.1f);
+            firstTidePlanningSeconds += 0.1f;
+        }
+
+        float storedNetX = GetNetStoredX();
+        float firstStakeX = GetNetFirstStakeX();
+        float secondStakeX = GetNetSecondStakeX();
+        float walkingSeconds =
+            (Mathf.Abs(openingX - storedNetX) +
+             Mathf.Abs(storedNetX - firstStakeX) +
+             Mathf.Abs(firstStakeX - secondStakeX)) /
+            Mathf.Max(0.1f, playerMoveSpeed);
+        float physicalRigSeconds = netRigHoldSeconds * 2f + netLoweringSeconds * 0.68f;
+        float practicalNetSetupSeconds = walkingSeconds + physicalRigSeconds;
+        bool tideHasRealBreathingRoom = firstTidePlanningSeconds >= practicalNetSetupSeconds + 5f;
+
+        float secondsUntilDusk = Mathf.Repeat(0.72f - 0.4f, 1f) * dayLengthSeconds;
+        float secondsUntilNight = Mathf.Repeat(0.82f - 0.4f, 1f) * dayLengthSeconds;
+        bool daylightSupportsExploration = secondsUntilDusk >= 140f && secondsUntilNight >= 190f;
+
+        ResetSlice();
+        arrivalInspected = false;
+        bool actionsDoNotWaitForInspection = CanStartNewNetRigAtCurrentTime();
+        playerPosition = new Vector2(arrivalWreckX, GetPlayerLaneY(WalkLane.TideFlat));
+        bool invisibleLegacyWreckRetired = !IsPlayerNearArrivalWreck();
+
+        UpdateVisuals(0f);
+        TideIslandSalvagePart firstPart = TideIslandSalvagePart.None;
+        bool leftWreckIsPhysical = barrenIsland != null &&
+            barrenIsland.TryTakeNearestPart(
+                new Vector2(
+                    TideBarrenIslandController.OpeningPlayerX,
+                    GetPlayerLaneY(WalkLane.TideFlat)),
+                out firstPart) &&
+            firstPart != TideIslandSalvagePart.None;
+
+        string evidence =
+            $"首潮布置窗={firstTidePlanningSeconds:F1}s；走路+双结+放纲={practicalNetSetupSeconds:F1}s；" +
+            $"黄昏/夜晚余量={secondsUntilDusk:F0}/{secondsUntilNight:F0}s；" +
+            $"无检查可行动={actionsDoNotWaitForInspection}；旧隐形残骸退役={invisibleLegacyWreckRetired}；" +
+            $"左船骸首件={leftWreckIsPhysical}/{firstPart}";
+        return tideHasRealBreathingRoom && daylightSupportsExploration &&
+            actionsDoNotWaitForInspection && invisibleLegacyWreckRetired && leftWreckIsPhysical
+            ? $"PASS：首日时钟不等待叙事，玩家可先拆船、先布网或直接回屋，潮水按自己的时间到来。{evidence}"
+            : $"FAIL：首日存在隐藏交互、强制叙事门或不足以完成一次真实布网的时间窗。{evidence}";
+    }
+
     public string RunEditorTidePrepTradeoffProbe()
     {
         EnsureScene();
@@ -9563,11 +9619,14 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             : 180f;
         bool gangplankSlopeWalkable = gangplankSlope <= 35f;
 
-        // 残骸是一次性的叙事观察点，船艉是反复使用的交通点。两个中心都必须
-        // 只命中自己的交互，否则同一位置按 F 的结果会依赖隐藏的代码顺序。
+        // 左岛存在时，海难来路已经由可见大船骸和可拆实物负责，旧 arrivalWreckX
+        // 只能作为相机参考，不能继续留下隐形 F 热区。兼容旧场景时才验证旧残骸
+        // 自己拥有交互；船艉在两种布局下都必须只归船所有。
         Vector2 savedPlayerPosition = playerPosition;
         playerPosition = new Vector2(arrivalWreckX, GetPlayerLaneY(WalkLane.TideFlat));
-        bool wreckCenterOwnedByWreck = IsPlayerNearArrivalWreck() && !IsPlayerNearBoat();
+        bool originInteractionIsVisibleOnly = barrenIsland != null
+            ? !IsPlayerNearArrivalWreck() && !IsPlayerNearBoat()
+            : IsPlayerNearArrivalWreck() && !IsPlayerNearBoat();
         playerPosition = new Vector2(boardingX, GetPlayerLaneY(WalkLane.TideFlat));
         bool boatCenterOwnedByBoat = IsPlayerNearBoat() && !IsPlayerNearArrivalWreck();
         playerPosition = savedPlayerPosition;
@@ -9614,13 +9673,13 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             $"首步={firstStepDistance:F3}m；木路/交互/边界={pierTipX:F2}/{boardingX:F2}/{laneMaxX:F2}；" +
             $"船向右={boatFacesDeparture}；船艉误差={Vector2.Distance(renderedSternFoot, logicalSternFoot):F3}m；" +
             $"固定木路={fixedPierStartsAtVisiblePath}/{fixedPierIsContinuous}/{fixedPierStopsAtEndpoint}；短跳板={gangplankBridgesGap}/{gangplankSlope:F1}°；" +
-            $"残骸/船艉独占={wreckCenterOwnedByWreck}/{boatCenterOwnedByBoat}；" +
+            $"来路仅可见交互/船艉独占={originInteractionIsVisibleOnly}/{boatCenterOwnedByBoat}；" +
             $"镜头(归处/中段/泊位/返回)={homeCameraX:F2}/{seamCameraX:F2}/{mooringCameraX:F2}/{returnedCameraX:F2}；" +
             $"无传送={seamDoesNotTeleport}/{cameraFollowsContinuously}/{returnedToHomeScreen}；正常前景染色关闭={normalExteriorWashDisabled}";
         bool passed = climbPathsAgree && declaredSurfacesMatch && noFirstStepWarp && onePierEndpoint &&
             fixedPierStartsAtVisiblePath && fixedPierIsContinuous && fixedPierStopsAtEndpoint &&
             boatFacesDeparture && boatPoseOwnsStern && gangplankBridgesGap && gangplankSlopeWalkable &&
-            wreckCenterOwnedByWreck && boatCenterOwnedByBoat && seamDoesNotTeleport &&
+            originInteractionIsVisibleOnly && boatCenterOwnedByBoat && seamDoesNotTeleport &&
             cameraFollowsContinuously && normalExteriorWashDisabled && returnedToHomeScreen;
         return passed
             ? $"PASS：人物脚点、正式梯、两段固定木路、连续镜头、短跳板和动态船艉共用一条可见世界路径。{evidence}"
@@ -11060,13 +11119,13 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             heavyWreckSalvage.ResetFeature();
         }
-        // 正式开场直接把人物放在潮间木路与同源残骸共同提供的可见承重面上。
+        // 正式开场直接把人物放在左岛裸岩与同源船骸共同提供的可见承重面上。
         // 旧短镜头会从木路右端外侧自动游入，即使脚点最后正确，第一眼仍像
         // 从虚空补位。故事镜头保留为编辑器预览，但不再强制阻塞玩家开局。
         arrivalVignetteActive = false;
         arrivalVignetteTimer = 0f;
         InitializeCurrentTideDriftField(true);
-        lastActionHint = "退潮把你和残骸留在旧屋旁。你已经踩稳木面，可以自己决定先检查什么。";
+        lastActionHint = "退潮把你和残骸留在外海岩礁。你已经踩稳裸岩，可以自己决定先拆船、看屋，还是赶在潮前布网。";
     }
 
     private void HandleInput()
@@ -12439,7 +12498,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private bool IsPlayerNearArrivalWreck()
     {
-        return playerLane == WalkLane.TideFlat &&
+        // 新左岛已经拥有可见的大船骸和三件唯一实物。旧 arrivalWreckX 仅保留
+        // 为相机中段参考；对应三张小残骸在运行时已隐藏，不能留下看不见的 F 热区。
+        return barrenIsland == null &&
+            playerLane == WalkLane.TideFlat &&
             Mathf.Abs(playerPosition.x - arrivalWreckX) <= arrivalWreckInteractionDistance;
     }
 

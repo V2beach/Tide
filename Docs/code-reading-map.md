@@ -18,6 +18,7 @@
 - `F` 交互优先级：`TideIslandInteractionModel`；携带原物时只允许在明确施工位暂存，不能同时饮水或触发泊船绳
 - 编排入口：`TickBarrenIslandNaturalState`、`TryHandleBarrenIslandInteraction`
 - 核心单位：雨 `mm/h`、屋顶 `m²`、水量 `L`、现实秒
+- 首日契约：`RunEditorFirstDayAutonomyProbe` 推进真实世界时钟，验证玩家无需先检查残骸即可拆船、布网或回屋；左岛存在时旧 `arrivalWreckX` 只作镜头参考，不再拥有交互
 
 ### 泊位绳
 
@@ -94,7 +95,7 @@
 
 - 聚焦探针：`Assets/Editor/TideCoreLoopConvergenceProbe.cs`
 - 正式 Scene 维修门：`Assets/Editor/TideRepairSceneConvergenceProbe.cs`
-- 正式 Scene 视觉几何门：`Assets/Editor/TideVisualSceneConvergenceProbe.cs`；每项重开权威 Scene，防止预览状态串扰，不执行自动截图
+- 正式 Scene 视觉与流程门：`Assets/Editor/TideVisualSceneConvergenceProbe.cs`；每项重开权威 Scene，验证首日自主性与几何契约，防止预览状态串扰，不执行自动截图
 - 静态门：`Tools/check-prototype-loop.ps1` / `.sh`
 - 同步门：`Tools/check-unity-sync.ps1` / `.sh`
 - 完整入口：`Tools/check-tide-play-readiness.ps1` / `.sh`
