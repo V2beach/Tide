@@ -54,9 +54,11 @@
 - 推进：`TickStormRescue`
 - 表现：`UpdateStormRescueVisuals`
 - 物件由浮力、局部水深、潮流和系固决定冲失，剧情不写死次序；第一次抓住漂物后，交互点固定在原开间吊点，`SecuringProgress01` 同时驱动物件和吊绳连续上升
+- 搁架失效：`TideStormRescueModel.ShouldReleaseCargo` 读取积水深度和破口流速；浅水警戒期物件仍在原搁架，达到实际冲击条件才同时进入水路。室内流速由 `EvaluateStormRescueLocalCurrentSpeed` 合成天文潮流与 `TideOceanFieldModel` 的连续涌浪轨道速度，高潮平流不再等于室内静水
+- 吊升差异：`TideStormRescueModel.Advance` 按水罐、船材、柴束和湿海图的重量/系固难度计算工时；顺序改变结果，但不写死固定损失名单
 - `Present` 区分“没有这件实物”和“实物被冲失”；`PrepareStormRescueManifest` 只把真实 `4L` 水、`2` 木料、独立干柴和已有海图转成暴潮预留。抢救成功由 `RestoreSecuredStormRescueCargo` 归回可用储物，失败不再对普通库存二次扣账
-- 睡眠边界：`WouldSleepIntervalFloodLooseStormCargo` 用权威潮位、风暴压力和可能的结构破口采样到黎明前的水深；未处理物资仍在水路或即将进入水路时，`BeginSleepPresentation` 拒绝换日。`stormRescueFloodStarted` 区分“刚收到警戒”和“实物确实经历过进水”，`RecoverSurvivingStormCargoAtRest` 只整理退水后的幸存物
-- 场景取舍门：`TideStormRescueTradeoffConvergenceProbe` 遍历四件物资的 24 种完整优先级，验证至少可救一件、不能全救、不同顺序产生不同实物损失，并检查吊升完成帧不跳位；运行控制器只通过 `TideStormRescueLayout` 提供房内实物布局
+- 睡眠边界：`WouldSleepIntervalFloodLooseStormCargo` 用权威潮位、风暴压力和可能的结构破口采样到黎明前的水深；未处理物资仍在水路或即将进入水路时，`BeginSleepPresentation` 拒绝换日。`stormRescueFloodStarted` 记录实际进水，`stormRescueCargoReleased` 记录搁架已失效且实物进入水路；`RecoverSurvivingStormCargoAtRest` 只整理后者在退水后的幸存物
+- 场景取舍门：`TideStormRescueTradeoffConvergenceProbe` 同时遍历峰值水况和权威自然潮全过程的 24 种完整优先级；验证不操作更差、至少可救一件、最优也不能全救、顺序产生不同实物损失，并检查吊升完成帧不跳位。运行控制器只提供房内布局与由正式潮/浪模型生成的环境采样
 
 ### 实物维修
 

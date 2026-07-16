@@ -415,6 +415,11 @@ public static class TideCoreLoopConvergenceProbe
 
     private static string ProbeStormRescue()
     {
+        Require(!TideStormRescueModel.ShouldReleaseCargo(false, 0.08f, 0.12f),
+            "刚漫脚的浅水就把仍在搁架上的暴潮物资凭空释放了");
+        Require(TideStormRescueModel.ShouldReleaseCargo(false, 0.34f, 0.65f),
+            "有明显冲击的膝下积水仍没有打坏低层搁架");
+
         TideStormRescueItemState water = TideStormRescueModel.Create(TideStormRescueItemKind.DrinkingWater);
         TideStormRescueItemState chart = TideStormRescueModel.Create(TideStormRescueItemKind.LighthouseChart);
         for (int i = 0; i < 120; i++)
@@ -433,7 +438,7 @@ public static class TideCoreLoopConvergenceProbe
             "不存在的暴潮物资仍被水流推进或记成损失");
 
         TideStormRescueItemState secured = TideStormRescueModel.Create(TideStormRescueItemKind.BoatMaterial);
-        for (int i = 0; i < 320 && !secured.Secured; i++)
+        for (int i = 0; i < 720 && !secured.Secured; i++)
         {
             secured = TideStormRescueModel.Advance(secured, 0.02f, 0.35f, 0.3f, true);
         }

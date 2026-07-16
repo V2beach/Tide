@@ -24,9 +24,14 @@ public static class TideStormRescueTradeoffConvergenceProbe
         }
 
         HashSet<int> savedMasks = new HashSet<int>();
+        HashSet<int> naturalSavedMasks = new HashSet<int>();
         int bestSavedCount = 0;
         int worstSavedCount = itemCount;
+        int naturalBestSavedCount = 0;
+        int naturalWorstSavedCount = itemCount;
         float longestResolutionSeconds = 0f;
+        TideStormRescueFloodProfile naturalProfile =
+            controller.GetEditorNaturalStormRescueFloodProfile();
 
         // 四件物资只有 24 种完整优先级。全部跑过能证明“选什么”确实改变损失，
         // 而不是只为某条推荐路线写测试。当前模型没有并行动作；中途暂停不会减少
@@ -68,6 +73,19 @@ public static class TideStormRescueTradeoffConvergenceProbe
                         {
                             savedMasks.Add(savedMask);
                         }
+
+                        int naturalSavedMask = SimulateNaturalRoute(
+                            layout,
+                            naturalProfile,
+                            priority,
+                            out int naturalLostMask);
+                        int naturalSavedCount = CountSetBits(naturalSavedMask);
+                        naturalBestSavedCount = Mathf.Max(naturalBestSavedCount, naturalSavedCount);
+                        naturalWorstSavedCount = Mathf.Min(naturalWorstSavedCount, naturalSavedCount);
+                        if (naturalLostMask != 0)
+                        {
+                            naturalSavedMasks.Add(naturalSavedMask);
+                        }
                     }
                 }
             }
@@ -106,16 +124,196 @@ public static class TideStormRescueTradeoffConvergenceProbe
         bool atLeastOneCanBeSaved = bestSavedCount >= 1;
         bool cannotSaveEverything = bestSavedCount < itemCount;
         bool prioritiesChangeOutcome = savedMasks.Count >= 2;
+        bool naturalFloodExists = NaturalProfileContainsFlood(naturalProfile);
+        bool naturalCannotSaveEverything = naturalBestSavedCount < itemCount;
+        bool naturalPrioritiesChangeOutcome = naturalSavedMasks.Count >= 2;
+        int naturalNoActionSavedCount = CountSetBits(
+            SimulateNaturalNoAction(naturalProfile));
+        bool actingImprovesOutcome = naturalBestSavedCount > naturalNoActionSavedCount;
         bool hoistRopesRegistered = layout.HoistRopeOwnerCount == itemCount;
+        GetNaturalProfileEvidence(
+            naturalProfile,
+            out float naturalFloodSeconds,
+            out float naturalMaximumDepth,
+            out float naturalMaximumCurrent);
         string evidence =
             $"积水={TestDepthMeters:F2}m/流速={TestCurrentMetersPerSecond:F2}m/s；" +
             $"24条顺序最多/最少={bestSavedCount}/{worstSavedCount}件；" +
             $"不同保留组合={savedMasks.Count}；最慢结算={longestResolutionSeconds:F1}s；" +
+            $"自然潮最多/最少={naturalBestSavedCount}/{naturalWorstSavedCount}件，组合={naturalSavedMasks.Count}；" +
+            $"完全不抢救={naturalNoActionSavedCount}件；" +
+            $"自然积水={naturalFloodSeconds:F1}s/最深{naturalMaximumDepth:F2}m/最大流{naturalMaximumCurrent:F2}m/s；" +
             $"吊升连续/同开间/离水/绳owner={hoistFinishesContinuously}/{rackStaysInSameBay}/{rackClearsTestFlood}/{hoistRopesRegistered}";
         return atLeastOneCanBeSaved && cannotSaveEverything && prioritiesChangeOutcome &&
+            naturalFloodExists && naturalCannotSaveEverything && naturalPrioritiesChangeOutcome &&
+            actingImprovesOutcome &&
             hoistFinishesContinuously && rackStaysInSameBay && rackClearsTestFlood && hoistRopesRegistered
             ? $"PASS：第一次暴潮形成可执行但不可全收的物资取舍，优先级会改变实际损失。{evidence}"
             : $"FAIL：暴潮取舍或从积水层吊升到干燥搁架的实物路径仍不成立。{evidence}";
+    }
+
+    private static int SimulateNaturalRoute(
+        TideStormRescueLayout layout,
+        TideStormRescueFloodProfile profile,
+        int[] priority,
+        out int lostMask)
+    {
+        TideStormRescueItemState[] items =
+        {
+            TideStormRescueModel.Create(TideStormRescueItemKind.DrinkingWater),
+            TideStormRescueModel.Create(TideStormRescueItemKind.BoatMaterial),
+            TideStormRescueModel.Create(TideStormRescueItemKind.StoveFuel),
+            TideStormRescueModel.Create(TideStormRescueItemKind.LighthouseChart)
+        };
+        Vector2 simulatedPlayer = layout.BasePositions[priority[0]];
+        int priorityIndex = 0;
+        bool floodStarted = false;
+        bool cargoReleased = false;
+
+        for (int sampleIndex = 0; sampleIndex < profile.Samples.Length; sampleIndex++)
+        {
+            TideStormRescueEnvironmentSample environment = profile.Samples[sampleIndex];
+            bool floodActive = environment.LocalWaterDepthMeters > 0.02f;
+            floodStarted |= floodActive;
+            if (floodStarted && !floodActive)
+            {
+                break;
+            }
+
+            cargoReleased = TideStormRescueModel.ShouldReleaseCargo(
+                cargoReleased,
+                environment.LocalWaterDepthMeters,
+                environment.CurrentSpeedMetersPerSecond);
+
+            while (priorityIndex < priority.Length &&
+                   (items[priority[priorityIndex]].Lost || items[priority[priorityIndex]].Secured))
+            {
+                priorityIndex++;
+            }
+
+            int targetIndex = priorityIndex < priority.Length ? priority[priorityIndex] : -1;
+            bool securingTarget = false;
+            if (floodActive && cargoReleased && targetIndex >= 0)
+            {
+                Vector2 target = TideStormRescueModel.EvaluateInteractionPosition(
+                    layout.BasePositions[targetIndex],
+                    layout.DryRackPositions[targetIndex],
+                    items[targetIndex],
+                    environment.CurrentSpeedMetersPerSecond);
+                if (Vector2.Distance(simulatedPlayer, target) <= InteractionDistance)
+                {
+                    securingTarget = true;
+                }
+                else
+                {
+                    float move = Mathf.Min(
+                        layout.PlayerMoveSpeed * profile.StepSeconds,
+                        Mathf.Abs(target.x - simulatedPlayer.x));
+                    simulatedPlayer.x += Mathf.Sign(target.x - simulatedPlayer.x) * move;
+                }
+            }
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                items[i] = TideStormRescueModel.Advance(
+                    items[i],
+                    profile.StepSeconds,
+                    cargoReleased ? environment.LocalWaterDepthMeters : 0f,
+                    environment.CurrentSpeedMetersPerSecond,
+                    cargoReleased && securingTarget && i == targetIndex);
+            }
+        }
+
+        int savedMask = 0;
+        lostMask = 0;
+        for (int i = 0; i < items.Length; i++)
+        {
+            savedMask |= !items[i].Lost ? 1 << i : 0;
+            lostMask |= items[i].Lost ? 1 << i : 0;
+        }
+        return savedMask;
+    }
+
+    private static bool NaturalProfileContainsFlood(TideStormRescueFloodProfile profile)
+    {
+        if (profile.Samples == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < profile.Samples.Length; i++)
+        {
+            if (profile.Samples[i].LocalWaterDepthMeters > 0.02f)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static int SimulateNaturalNoAction(TideStormRescueFloodProfile profile)
+    {
+        TideStormRescueItemState[] items =
+        {
+            TideStormRescueModel.Create(TideStormRescueItemKind.DrinkingWater),
+            TideStormRescueModel.Create(TideStormRescueItemKind.BoatMaterial),
+            TideStormRescueModel.Create(TideStormRescueItemKind.StoveFuel),
+            TideStormRescueModel.Create(TideStormRescueItemKind.LighthouseChart)
+        };
+        bool cargoReleased = false;
+        for (int sampleIndex = 0; sampleIndex < profile.Samples.Length; sampleIndex++)
+        {
+            TideStormRescueEnvironmentSample environment = profile.Samples[sampleIndex];
+            cargoReleased = TideStormRescueModel.ShouldReleaseCargo(
+                cargoReleased,
+                environment.LocalWaterDepthMeters,
+                environment.CurrentSpeedMetersPerSecond);
+            for (int i = 0; i < items.Length; i++)
+            {
+                items[i] = TideStormRescueModel.Advance(
+                    items[i],
+                    profile.StepSeconds,
+                    cargoReleased ? environment.LocalWaterDepthMeters : 0f,
+                    environment.CurrentSpeedMetersPerSecond,
+                    false);
+            }
+        }
+
+        int savedMask = 0;
+        for (int i = 0; i < items.Length; i++)
+        {
+            savedMask |= !items[i].Lost ? 1 << i : 0;
+        }
+        return savedMask;
+    }
+
+    private static void GetNaturalProfileEvidence(
+        TideStormRescueFloodProfile profile,
+        out float floodSeconds,
+        out float maximumDepth,
+        out float maximumCurrent)
+    {
+        floodSeconds = 0f;
+        maximumDepth = 0f;
+        maximumCurrent = 0f;
+        if (profile.Samples == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < profile.Samples.Length; i++)
+        {
+            TideStormRescueEnvironmentSample sample = profile.Samples[i];
+            if (sample.LocalWaterDepthMeters > 0.02f)
+            {
+                floodSeconds += profile.StepSeconds;
+            }
+            maximumDepth = Mathf.Max(maximumDepth, sample.LocalWaterDepthMeters);
+            maximumCurrent = Mathf.Max(
+                maximumCurrent,
+                Mathf.Abs(sample.CurrentSpeedMetersPerSecond));
+        }
     }
 
     private static int SimulateRoute(

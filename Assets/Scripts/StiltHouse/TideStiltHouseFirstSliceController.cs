@@ -36,6 +36,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     // 首潮已经完成布网、岔流、短航和修船的自然时序验收。它作为潮流兼容
     // 校准点：月相更接近弦月时流速更小，接近朔望时更大，但首潮本身不跳变。
     private const float OpeningMoonAgeDays = 3.5f;
+    private const float OpeningTidePhase01 = 0.04f;
     // 月相和月球赤纬是两个独立周期。这个开场相位让本月满月附近出现明显
     // 日不等潮，同时保持连续天数推进，不能用会回绕的 moonAgeDays 代替。
     private const float OpeningLunarDeclinationAgeDays = 22.887125f;
@@ -710,6 +711,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TidePortableWaterState stormRescueWater;
     private bool stormRescueManifestPrepared;
     private bool stormRescueFloodStarted;
+    private bool stormRescueCargoReleased;
     private int stormRescueReservedTimber;
     private int stormRescueReservedFuelBundles;
     private int stormRescueReservedChartClues;
@@ -10945,7 +10947,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         washedAwayHarvestKind = HarvestKind.None;
         stateTimer = 0f;
         finalDepartureStartWaterY = lowWaterY;
-        tideClockSeconds = tideCycleSeconds * 0.04f;
+        tideClockSeconds = tideCycleSeconds * OpeningTidePhase01;
         weatherClockSeconds = 0f;
         worldElapsedRealSeconds = 0f;
         currentWaterY = EvaluateNaturalWaterY(tideClockSeconds);
@@ -11107,6 +11109,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         stormRescueWater = default;
         stormRescueManifestPrepared = false;
         stormRescueFloodStarted = false;
+        stormRescueCargoReleased = false;
         stormRescueReservedTimber = 0;
         stormRescueReservedFuelBundles = 0;
         stormRescueReservedChartClues = 0;
@@ -12413,7 +12416,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private bool HandleStormRescueInteraction()
     {
-        if (!IsStormRescueActive() || playerLane != WalkLane.InteriorLower ||
+        if (!IsStormRescueActive() || !stormRescueCargoReleased ||
+            playerLane != WalkLane.InteriorLower ||
             !Input.GetKey(KeyCode.F) || stormRescueItems == null)
         {
             return false;
@@ -12421,6 +12425,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         int nearestIndex = -1;
         float nearestDistance = 0.46f;
+        float localCurrentSpeed = GetStormRescueLocalCurrentSpeed();
         for (int i = 0; i < stormRescueItems.Length; i++)
         {
             TideStormRescueItemState item = stormRescueItems[i];
@@ -12431,7 +12436,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
             float distance = Vector2.Distance(
                 playerPosition,
-                GetStormRescueInteractionPosition(i, item, GetNaturalCurrentSpeed()));
+                GetStormRescueInteractionPosition(i, item, localCurrentSpeed));
             if (distance < nearestDistance)
             {
                 nearestDistance = distance;
@@ -12466,16 +12471,26 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             stormRescueFloodStarted = true;
         }
-        float currentSpeed = GetNaturalCurrentSpeed();
+        float currentSpeed = GetStormRescueLocalCurrentSpeed();
+        bool cargoWasReleased = stormRescueCargoReleased;
+        stormRescueCargoReleased = TideStormRescueModel.ShouldReleaseCargo(
+            stormRescueCargoReleased,
+            localWaterDepth,
+            currentSpeed);
+        if (!cargoWasReleased && stormRescueCargoReleased)
+        {
+            lastActionHint = "第一股横浪撞塌了低层搁架，松动的实物开始沿破口水路移动。";
+        }
+
         for (int i = 0; i < stormRescueItems.Length; i++)
         {
             TideStormRescueItemState before = stormRescueItems[i];
             stormRescueItems[i] = TideStormRescueModel.Advance(
                 before,
                 deltaTime,
-                localWaterDepth,
+                stormRescueCargoReleased ? localWaterDepth : 0f,
                 currentSpeed,
-                stormRescueHeldIndex == i);
+                stormRescueCargoReleased && stormRescueHeldIndex == i);
             TideStormRescueItemState after = stormRescueItems[i];
             if (!before.Secured && after.Secured)
             {
@@ -12518,6 +12533,48 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             ? 1f
             : Mathf.SmoothStep(0.58f, 0.86f, Mathf.Clamp01(stormPressure01));
         return rawDepth * floodGate01;
+    }
+
+    private float GetStormRescueLocalCurrentSpeed()
+    {
+        return EvaluateStormRescueLocalCurrentSpeed(
+            tideClockSeconds,
+            weatherClockSeconds,
+            GetStormRescueLocalWaterDepth());
+    }
+
+    private float EvaluateStormRescueLocalCurrentSpeed(
+        float sampleTideClock,
+        float sampleWeatherClock,
+        float localWaterDepthMeters)
+    {
+        float pressure01 = TideContinuousWeatherModel.EvaluatePressure01(
+            sampleWeatherClock,
+            dayLengthSeconds,
+            stormFrontArrivalDays);
+        float sampleMoonAgeDays = Mathf.Repeat(
+            OpeningMoonAgeDays + sampleWeatherClock / Mathf.Max(30f, dayLengthSeconds),
+            29.53f);
+        float sampleTideStrength = CalculateTideStrength(sampleMoonAgeDays);
+        float wind01 = TideContinuousWeatherModel.EvaluateStormOnshoreWind01(pressure01);
+        TideOceanSample outsideSea = TideOceanFieldModel.Sample(
+            0f,
+            houseAnchor.x,
+            sampleWeatherClock,
+            sampleTideStrength,
+            pressure01,
+            wind01);
+
+        // The astronomical current slows near high water, but a breached wall still
+        // admits the orbital push and pull of each storm wave. The opening accelerates
+        // that shared sea motion only while there is enough depth to carry an object.
+        float depthCoupling01 = Mathf.SmoothStep(
+            0f,
+            1f,
+            Mathf.InverseLerp(StormRescueFloodDepthThreshold, 0.42f, localWaterDepthMeters));
+        float breachContraction = Mathf.Lerp(0.55f, 1.55f, depthCoupling01);
+        float waveDrivenCurrent = outsideSea.HorizontalVelocity * breachContraction;
+        return EvaluateNaturalCurrentSpeed(sampleTideClock) + waveDrivenCurrent;
     }
 
     private bool HasUnresolvedStormRescueCargo()
@@ -12603,7 +12660,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private bool CanRestThroughCurrentStormState()
     {
         return !HasUnresolvedStormRescueCargo() ||
-            (stormRescueFloodStarted &&
+            (stormRescueCargoReleased &&
              GetStormRescueLocalWaterDepth() <= StormRescueFloodDepthThreshold) ||
             !WouldSleepIntervalFloodLooseStormCargo();
     }
@@ -12616,11 +12673,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         return new Vector2(
             Mathf.Lerp(left, right, t),
             GetPlayerStandingFeetY(WalkLane.InteriorLower) + 0.13f);
-    }
-
-    private Vector2 GetStormRescueWorldPosition(int index, TideStormRescueItemState item)
-    {
-        return EvaluateStormRescueWorldPosition(index, item, GetNaturalCurrentSpeed());
     }
 
     private Vector2 GetStormRescueInteractionPosition(
@@ -12668,6 +12720,53 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             DryRackPositions = dryRackPositions,
             PlayerMoveSpeed = playerMoveSpeed,
             HoistRopeOwnerCount = stormRescueRopeRenderers.Count
+        };
+    }
+
+    public TideStormRescueFloodProfile GetEditorNaturalStormRescueFloodProfile()
+    {
+        EnsureScene();
+        const float stepSeconds = 0.02f;
+        float cycle = Mathf.Max(8f, tideCycleSeconds);
+        float fullyArrivedWorldClock = dayLengthSeconds * stormFrontArrivalDays + cycle;
+        float openingTideOffset = cycle * OpeningTidePhase01;
+        float phaseAtArrival = Mathf.Repeat(
+            openingTideOffset + fullyArrivedWorldClock,
+            cycle);
+        float secondsUntilLowWater = Mathf.Repeat(-phaseAtArrival, cycle);
+        float profileWorldStart = fullyArrivedWorldClock + secondsUntilLowWater;
+        int sampleCount = Mathf.CeilToInt(cycle / stepSeconds) + 1;
+        TideStormRescueEnvironmentSample[] samples =
+            new TideStormRescueEnvironmentSample[sampleCount];
+
+        for (int i = 0; i < sampleCount; i++)
+        {
+            float elapsed = i * stepSeconds;
+            float sampleTideClock = elapsed;
+            float sampleWeatherClock = profileWorldStart + elapsed;
+            float pressure01 = TideContinuousWeatherModel.EvaluatePressure01(
+                sampleWeatherClock,
+                dayLengthSeconds,
+                stormFrontArrivalDays);
+            float waterY = EvaluateNaturalWaterY(sampleTideClock, sampleWeatherClock);
+            float localDepth = EvaluateStormRescueLocalWaterDepth(
+                waterY,
+                pressure01,
+                false);
+            samples[i] = new TideStormRescueEnvironmentSample
+            {
+                LocalWaterDepthMeters = localDepth,
+                CurrentSpeedMetersPerSecond = EvaluateStormRescueLocalCurrentSpeed(
+                    sampleTideClock,
+                    sampleWeatherClock,
+                    localDepth)
+            };
+        }
+
+        return new TideStormRescueFloodProfile
+        {
+            StepSeconds = stepSeconds,
+            Samples = samples
         };
     }
 
@@ -12767,6 +12866,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         shelterBreachThisTide = true;
         currentWaterY = GetPlayerStandingFeetY(WalkLane.InteriorLower) + 0.7f;
         stormRescueFloodStarted = true;
+        stormRescueCargoReleased = true;
 
         int unresolvedBefore = CountUnresolvedStormRescueCargo();
         int timberBeforeRecovery = timberStock;
@@ -12808,6 +12908,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         lighthouseClues = 1;
         PrepareStormRescueManifest();
         stormRescueFloodStarted = true;
+        stormRescueCargoReleased = true;
         currentWaterY = GetPlayerStandingFeetY(WalkLane.InteriorLower) - 0.1f;
         int expectedRecoveredTimber = timberStock + stormRescueReservedTimber;
         int expectedRecoveredFuel = dryFuelBundles + stormRescueReservedFuelBundles;
@@ -12942,7 +13043,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void RecoverSurvivingStormCargoAtRest()
     {
-        if (!stormRescueFloodStarted ||
+        if (!stormRescueFloodStarted || !stormRescueCargoReleased ||
             GetStormRescueLocalWaterDepth() > StormRescueFloodDepthThreshold ||
             !stormRescueManifestPrepared || stormRescueItems == null)
         {
@@ -22876,6 +22977,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         bool pressureVisible = storm01 >= 0.34f || IsStormRescueActive();
+        float localCurrentSpeed = GetStormRescueLocalCurrentSpeed();
         for (int i = 0; i < stormRescueItems.Length; i++)
         {
             TideStormRescueItemState item = stormRescueItems[i];
@@ -22914,7 +23016,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 size = new Vector2(0.34f, 0.24f);
             }
 
-            Vector2 position = GetStormRescueWorldPosition(i, item);
+            Vector2 position = EvaluateStormRescueWorldPosition(
+                i,
+                item,
+                localCurrentSpeed);
             float waterRock = item.Secured
                 ? 0f
                 : Mathf.Sin(time * 1.3f + i * 1.71f) * item.WashoutProgress01 * 7f;

@@ -29,12 +29,42 @@ public struct TideStormRescueLayout
     public int HoistRopeOwnerCount;
 }
 
+public struct TideStormRescueEnvironmentSample
+{
+    public float LocalWaterDepthMeters;
+    public float CurrentSpeedMetersPerSecond;
+}
+
+public struct TideStormRescueFloodProfile
+{
+    public float StepSeconds;
+    public TideStormRescueEnvironmentSample[] Samples;
+}
+
 /// <summary>
 /// 暴潮抢救模型。物件是否冲失由水深、流速、浮力和系固决定，不按剧情顺序写死。
 /// 玩家可以中断施工，但时间不足时无法保住所有东西。
 /// </summary>
 public static class TideStormRescueModel
 {
+    public static bool ShouldReleaseCargo(
+        bool alreadyReleased,
+        float localWaterDepthMeters,
+        float currentSpeedMetersPerSecond)
+    {
+        if (alreadyReleased)
+        {
+            return true;
+        }
+
+        float flow01 = Mathf.InverseLerp(
+            0.18f,
+            0.78f,
+            Mathf.Abs(currentSpeedMetersPerSecond));
+        float shelfFailureDepth = Mathf.Lerp(0.38f, 0.28f, flow01);
+        return localWaterDepthMeters >= shelfFailureDepth;
+    }
+
     public static TideStormRescueItemState Create(TideStormRescueItemKind kind)
     {
         return new TideStormRescueItemState
@@ -62,7 +92,14 @@ public static class TideStormRescueModel
         float dt = Mathf.Max(0f, deltaSeconds);
         if (playerSecuring)
         {
-            float workRate = Mathf.Lerp(0.34f, 0.2f, Mathf.Clamp01(localWaterDepthMeters / 0.8f));
+            float baseWorkRate = Mathf.Lerp(
+                0.22f,
+                0.13f,
+                Mathf.Clamp01(localWaterDepthMeters / 0.8f));
+            float handlingEffort = state.Kind == TideStormRescueItemKind.BoatMaterial ? 1.45f :
+                state.Kind == TideStormRescueItemKind.DrinkingWater ? 1f :
+                state.Kind == TideStormRescueItemKind.StoveFuel ? 0.9f : 0.72f;
+            float workRate = baseWorkRate / handlingEffort;
             state.SecuringProgress01 = Mathf.Clamp01(state.SecuringProgress01 + workRate * dt);
             if (state.SecuringProgress01 >= 1f)
             {
