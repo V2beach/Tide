@@ -782,7 +782,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
     }
     private int lampForecastCharges;
-    private int loftForecastRound = -1;
+    private TideForecastSnapshot loftForecastSnapshot;
+    private TideForecastSnapshot chartForecastSnapshot;
     private int shortSailCount;
     private int moonPhaseShadowBucket = -1;
     private Sprite moonPhaseShadowSprite;
@@ -2879,7 +2880,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         playerLane = WalkLane.InteriorLoft;
         playerPosition = new Vector2(GetInteriorLoftLookoutX() + 0.28f, GetPlayerLaneY(playerLane));
         playerFacing = -1;
-        loftForecastRound = tideRound;
+        CaptureLoftForecast();
         lastActionHint = "读数记在海图边。下一步去工作层选择一件工具。";
         UpdateVisuals(3.6f);
     }
@@ -4809,6 +4810,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         chartRadioCondition = 1;
         lampForecastCharges = 1;
         tideStrength = 1f;
+        CaptureChartForecast();
 
         const float playerChosenDepth = 0.37f;
         netSetDepth01 = playerChosenDepth;
@@ -4818,13 +4820,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         bool forecastDoesNotPrescribeAnswer = !forecastText.Contains("推荐") &&
             !forecastText.Contains("建议") && !forecastText.Contains("%深");
 
-        TideNetForecastModel.HighWaterBand lookoutBand = TideNetForecastModel.EvaluateHighWaterBand(
-            GetPredictedHighWaterY(),
-            false);
-        TideNetForecastModel.HighWaterBand repairedBand = TideNetForecastModel.EvaluateHighWaterBand(
-            GetPredictedHighWaterY(),
-            true);
-        bool repairNarrowsKnowledge = repairedBand.WidthMeters < lookoutBand.WidthMeters * 0.5f;
+        TideNetForecastModel.HighWaterBand repairedBand =
+            chartForecastSnapshot.ToHighWaterBand();
         float expectedPostX = GetFormalHouseSprite() != null
             ? PreviousSaltMarkPostX[0]
             : houseAnchor.x - 1.38f;
@@ -4838,16 +4835,28 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         chartRadioCondition = 0;
         lampForecastCharges = 0;
-        loftForecastRound = tideRound;
+        CaptureLoftForecast();
+        TideNetForecastModel.HighWaterBand lookoutBand =
+            loftForecastSnapshot.ToHighWaterBand();
+        bool repairNarrowsKnowledge = repairedBand.WidthMeters < lookoutBand.WidthMeters * 0.5f;
         UpdateVisuals(5.2f);
         float lookoutNotchWidth = forecastTideNotches.VisibleBandWidthMeters;
         bool roughObservationIsWider = forecastTideNotches.IsVisible &&
             Mathf.Abs(lookoutNotchWidth - lookoutBand.WidthMeters) <= 0.01f &&
             lookoutNotchWidth > repairedNotchWidth * 2f;
 
-        loftForecastRound = -1;
+        float frozenLowerY = forecastTideNotches.LowerWorldY;
+        float frozenUpperY = forecastTideNotches.UpperWorldY;
+        weatherClockSeconds += Mathf.Min(12f, tideCycleSeconds * 0.1f);
         UpdateVisuals(5.3f);
-        bool noForecastHidesNotches = !forecastTideNotches.IsVisible;
+        bool snapshotDoesNotDrift = forecastTideNotches.IsVisible &&
+            Mathf.Abs(forecastTideNotches.LowerWorldY - frozenLowerY) <= 0.001f &&
+            Mathf.Abs(forecastTideNotches.UpperWorldY - frozenUpperY) <= 0.001f;
+
+        tideClockSeconds = tideCycleSeconds * 0.5001f;
+        currentWaterY = EvaluateNaturalWaterY(tideClockSeconds);
+        UpdateVisuals(5.4f);
+        bool passedHighWaterHidesNotches = !forecastTideNotches.IsVisible;
 
         TideNetForecastModel.NetChoice shallowChoice = EvaluateNetChoiceForecast(0.2f);
         TideNetForecastModel.NetChoice deepChoice = EvaluateNetChoiceForecast(0.9f);
@@ -4865,14 +4874,16 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             $"桩结宽={lookoutNotchWidth:F2}/{repairedNotchWidth:F2}m；" +
             $"浅/深触水={shallowChoice.PredictedExposureSeconds:F1}/{deepChoice.PredictedExposureSeconds:F1}s；" +
             $"网压={shallowChoice.StressTier}/{deepChoice.StressTier}；" +
-            $"网深保留={netSetDepth01:F2}；物理桩结={physicalNotchesRegistered}/{repairedNotchesGrounded}/{noForecastHidesNotches}；旧标记缺席={retiredMarkerAbsent}";
+            $"网深保留={netSetDepth01:F2}；快照固定/过潮隐藏={snapshotDoesNotDrift}/{passedHighWaterHidesNotches}；" +
+            $"物理桩结={physicalNotchesRegistered}/{repairedNotchesGrounded}；旧标记缺席={retiredMarkerAbsent}";
         bool passed = forecastDoesNotMutateChoice && forecastDoesNotPrescribeAnswer &&
             repairNarrowsKnowledge && repairedNotchesGrounded && roughObservationIsWider &&
-            noForecastHidesNotches && physicalNotchesRegistered && depthKeepsTradeoff &&
+            snapshotDoesNotDrift && passedHighWaterHidesNotches &&
+            physicalNotchesRegistered && depthKeepsTradeoff &&
             physicalTimingRemains && retiredMarkerAbsent;
         return passed
-            ? $"PASS：下一高潮以同一主桩两道麻绳结显示；海图只缩窄区间，浅深网仍由玩家承担收益和风险。{evidence}"
-            : $"FAIL：潮汐预报没有落到真实桩柱、仍可能替玩家选网深，或旧发光答案标记仍在场景中。{evidence}";
+            ? $"PASS：下一高潮以固定潮次快照落在同一主桩；过高潮自动失效，浅深网仍由玩家承担收益和风险。{evidence}"
+            : $"FAIL：潮汐预报会随时钟漂移、跨高潮不失效、没有落到真实桩柱，或仍替玩家选择网深。{evidence}";
     }
 
     public string RunEditorPreviousHighWaterMemoryProbe()
@@ -11417,7 +11428,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         repairStartBoatReadiness = boatReadiness;
         repairStartHouseWarmth = houseWarmth;
         lampForecastCharges = 0;
-        loftForecastRound = -1;
+        loftForecastSnapshot = default;
+        chartForecastSnapshot = default;
         shortSailCount = 0;
         if (barrenIsland != null)
         {
@@ -13428,29 +13440,87 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void InspectTideFromLoft()
     {
-        loftForecastRound = tideRound;
+        CaptureLoftForecast();
         lastActionHint = $"你从阁楼风口看了云脚、浪列和桩上的湿线：{GetLoftForecastText()} 这是粗略观察；修好海图潮尺后能缩小高潮范围和转流时差，但不会替你决定网深。";
     }
 
     private bool HasCurrentLoftForecast()
     {
-        return loftForecastRound == tideRound;
+        return IsForecastSnapshotCurrent(loftForecastSnapshot);
     }
 
     private string GetLoftForecastText()
     {
+        if (!HasCurrentLoftForecast())
+        {
+            return string.Empty;
+        }
+
         int tidePercent = Mathf.RoundToInt(tideStrength * 100f);
-        return $"{GetPreviousHighWaterComparisonText(false)} · {GetWeatherFrontName()} · {GetForecastHighWaterRangeText(false)} · 潮强{tidePercent}% · {GetSailingWindText()} · {GetTidePrepRiskForecastText()}";
+        return $"{GetPreviousHighWaterComparisonText(loftForecastSnapshot)} · {GetWeatherFrontName()} · {GetForecastHighWaterRangeText(loftForecastSnapshot)} · 潮强{tidePercent}% · {GetSailingWindText()} · {GetTidePrepRiskForecastText()}";
+    }
+
+    private void CaptureLoftForecast()
+    {
+        loftForecastSnapshot = CaptureCurrentForecast(chartRadioCondition > 0);
+    }
+
+    private void CaptureChartForecast()
+    {
+        chartForecastSnapshot = lampForecastCharges > 0
+            ? CaptureCurrentForecast(true)
+            : default;
+    }
+
+    private TideForecastSnapshot CaptureCurrentForecast(bool repairedChart)
+    {
+        float cycle = Mathf.Max(8f, tideCycleSeconds);
+        float phase01 = Mathf.Repeat(tideClockSeconds / cycle, 1f);
+        int currentCycleOrdinal = GetAstronomicalCycleOrdinal(weatherClockSeconds);
+        int targetCycleOrdinal = TideMixedSemidiurnalModel.GetNextHighWaterCycleOrdinal(
+            phase01,
+            currentCycleOrdinal);
+        return TideForecastSnapshotModel.Capture(
+            targetCycleOrdinal,
+            GetPredictedHighWaterY(),
+            repairedChart);
+    }
+
+    private bool IsForecastSnapshotCurrent(TideForecastSnapshot snapshot)
+    {
+        float cycle = Mathf.Max(8f, tideCycleSeconds);
+        float phase01 = Mathf.Repeat(tideClockSeconds / cycle, 1f);
+        int currentCycleOrdinal = GetAstronomicalCycleOrdinal(weatherClockSeconds);
+        return TideForecastSnapshotModel.IsCurrent(
+            snapshot,
+            phase01,
+            currentCycleOrdinal);
     }
 
     private string GetPreviousHighWaterComparisonText(bool repairedChart)
+    {
+        return GetPreviousHighWaterComparisonText(
+            GetPredictedHighWaterY(),
+            repairedChart);
+    }
+
+    private string GetPreviousHighWaterComparisonText(TideForecastSnapshot snapshot)
+    {
+        return GetPreviousHighWaterComparisonText(
+            (snapshot.LowerY + snapshot.UpperY) * 0.5f,
+            snapshot.RepairedChart);
+    }
+
+    private string GetPreviousHighWaterComparisonText(
+        float predictedHighWaterY,
+        bool repairedChart)
     {
         if (!highWaterMemory.HasPreviousCycle)
         {
             return "桩上还没有完整上一潮的湿线";
         }
 
-        float difference = GetPredictedHighWaterY() - highWaterMemory.PreviousCyclePeakY;
+        float difference = predictedHighWaterY - highWaterMemory.PreviousCyclePeakY;
         float comparisonThreshold = repairedChart ? 0.08f : 0.16f;
         if (difference > comparisonThreshold)
         {
@@ -15787,6 +15857,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         if (lampForecastCharges > 0)
         {
             lampForecastCharges--;
+            chartForecastSnapshot = default;
         }
         currentHarvest = HarvestKind.None;
         currentHarvestBatchId = 0;
@@ -16664,6 +16735,16 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         TideNetForecastModel.HighWaterBand band = TideNetForecastModel.EvaluateHighWaterBand(
             GetPredictedHighWaterY(),
             repairedChart);
+        return GetForecastHighWaterRangeText(band);
+    }
+
+    private string GetForecastHighWaterRangeText(TideForecastSnapshot snapshot)
+    {
+        return GetForecastHighWaterRangeText(snapshot.ToHighWaterBand());
+    }
+
+    private string GetForecastHighWaterRangeText(TideNetForecastModel.HighWaterBand band)
+    {
         string lowerBand = GetHighWaterLandmarkName(band.LowerY);
         string upperBand = GetHighWaterLandmarkName(band.UpperY);
         int uncertaintyCentimeters = Mathf.RoundToInt(band.UncertaintyMeters * 100f);
@@ -18670,6 +18751,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             chartRadioCondition = 1;
             lampForecastCharges = Mathf.Max(1, lampForecastCharges);
+            CaptureChartForecast();
             return "潮尺重新校准，海图与无线电接点也被清理接回；每天黎明能留下下一潮的可靠窗口。";
         }
 
@@ -18885,6 +18967,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         stateTimer = 0f;
         currentWaterY = EvaluateNaturalWaterY(tideClockSeconds);
         tideCurrentlyRising = tideClockSeconds / Mathf.Max(8f, tideCycleSeconds) < 0.5f;
+        loftForecastSnapshot = default;
+        CaptureChartForecast();
         currentHarvest = HarvestKind.None;
         currentHarvestBatchId = 0;
         harvestPhysicalState = HarvestPhysicalState.None;
@@ -26858,20 +26942,21 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void UpdateForecastTideNotches()
     {
-        bool hasWorldForecast = HasCurrentLoftForecast() || HasLampForecast();
-        bool repairedChart = chartRadioCondition > 0;
-        TideNetForecastModel.HighWaterBand band = TideNetForecastModel.EvaluateHighWaterBand(
-            GetPredictedHighWaterY(),
-            repairedChart);
+        TideForecastSnapshot visibleSnapshot = HasLampForecast()
+            ? chartForecastSnapshot
+            : HasCurrentLoftForecast()
+                ? loftForecastSnapshot
+                : default;
+        bool hasWorldForecast = visibleSnapshot.IsValid;
         float postX = GetFormalHouseSprite() != null
             ? PreviousSaltMarkPostX[0]
             : houseAnchor.x - 1.38f;
         forecastTideNotches.UpdatePresentation(
             state != SliceState.FinalDeparture && hasWorldForecast,
             postX,
-            band,
+            visibleSnapshot.ToHighWaterBand(),
             GetNetLineSprite(),
-            repairedChart);
+            visibleSnapshot.RepairedChart);
     }
 
     private void UpdateTidePrepVisuals(float time)
@@ -27133,7 +27218,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     {
         return viewMode == SliceViewMode.Shelter &&
             state == SliceState.LowTidePlanning &&
-            lampForecastCharges > 0;
+            lampForecastCharges > 0 &&
+            IsForecastSnapshotCurrent(chartForecastSnapshot);
     }
 
     private float GetPredictedNetExposureSeconds(float depth01)
@@ -27225,7 +27311,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         int tidePercent = Mathf.RoundToInt(tideStrength * 100f);
         int secondsToSlack = Mathf.CeilToInt(GetSecondsUntilNextHighWaterSlack());
-        return $"下一潮预报：{GetPreviousHighWaterComparisonText(true)}，{GetForecastHighWaterRangeText(true)}，潮强约{tidePercent}%，约{secondsToSlack}秒到高潮平流。浅挂省网，深挂更早吃水也更吃流。";
+        return $"下一潮预报：{GetPreviousHighWaterComparisonText(chartForecastSnapshot)}，{GetForecastHighWaterRangeText(chartForecastSnapshot)}，潮强约{tidePercent}%，约{secondsToSlack}秒到高潮平流。浅挂省网，深挂更早吃水也更吃流。";
     }
 
     private int GetLoopStepIndex()
@@ -28194,7 +28280,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             ? $"  选{(repairChoiceApplied ? GetRepairChoiceName(pendingRepairChoice) : GetRepairChoiceName(GetRecommendedRepairChoice()))}"
             : "";
         string forecastText = HasLampForecast()
-            ? $"  预警{lampForecastCharges} {GetForecastHighWaterRangeText(true)}"
+            ? $"  预警{lampForecastCharges} {GetForecastHighWaterRangeText(chartForecastSnapshot)}"
             : "";
         return $"{phase}  {dayText}{dayPercent}%  月{moonAgeDays:0.0}天  潮{tidePercent}%\n" +
             $"网 {GetShortLineName()}  备 {GetPrepChoiceName(selectedPrepChoice)}  {GetNetIntegrityText()}  收 {GetHarvestName()}  负载{netCatchBundleTier}/3\n" +

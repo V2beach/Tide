@@ -36,7 +36,42 @@ public static class TideCoreLoopConvergenceProbe
         string sailingSalvageRuntime = ProbeSailingSalvageRuntime();
         string storm = ProbeStormRescue();
         string stormRuntime = ProbeStormRescueRuntime();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime}";
+        string forecast = ProbeForecastSnapshot();
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast}";
+    }
+
+    private static string ProbeForecastSnapshot()
+    {
+        const int targetCycle = 4;
+        const float observedHighWaterY = 1.8f;
+        TideForecastSnapshot lookout = TideForecastSnapshotModel.Capture(
+            targetCycle,
+            observedHighWaterY,
+            false);
+        TideForecastSnapshot repaired = TideForecastSnapshotModel.Capture(
+            targetCycle,
+            observedHighWaterY,
+            true);
+
+        Require(Mathf.Abs(lookout.WidthMeters - 0.44f) <= 0.0001f,
+            "阁楼粗观测没有保留 44cm 的物理不确定区间");
+        Require(Mathf.Abs(repaired.WidthMeters - 0.16f) <= 0.0001f,
+            "修复潮尺没有把物理不确定区间缩到 16cm");
+        Require(TideForecastSnapshotModel.IsCurrent(lookout, 0.2f, targetCycle) &&
+            TideForecastSnapshotModel.IsCurrent(lookout, 0.5f, targetCycle),
+            "目标高潮到达前观测快照提前失效");
+        Require(!TideForecastSnapshotModel.IsCurrent(lookout, 0.5001f, targetCycle),
+            "高潮过后旧观测仍冒充下一潮预报");
+
+        TideForecastSnapshot laterWeather = TideForecastSnapshotModel.Capture(
+            targetCycle,
+            observedHighWaterY + 0.7f,
+            false);
+        Require(Mathf.Abs(lookout.LowerY - (observedHighWaterY - 0.22f)) <= 0.0001f &&
+            Mathf.Abs(lookout.UpperY - (observedHighWaterY + 0.22f)) <= 0.0001f &&
+            Mathf.Abs(laterWeather.LowerY - lookout.LowerY) > 0.6f,
+            "后续天气预测反向改写了已经留下的旧绳结");
+        return $"潮预报=潮次{lookout.TargetCycleOrdinal}/粗修{lookout.WidthMeters:F2}/{repaired.WidthMeters:F2}m/过高潮失效";
     }
 
     private static string ProbeCistern()

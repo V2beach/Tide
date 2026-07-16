@@ -43,6 +43,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideStormRescueModel.cs",
     "Assets/Scripts/StiltHouse/TideStormRescueController.cs",
     "Assets/Scripts/StiltHouse/TideForecastTideNotchController.cs",
+    "Assets/Scripts/StiltHouse/TideForecastSnapshotModel.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
     "Assets/Editor/TideRepairSceneConvergenceProbe.cs",
     "Assets/Editor/TideVisualSceneConvergenceProbe.cs",
@@ -73,6 +74,9 @@ Test-Gate (-not $controller.Contains("stormRescueItems")) "storm rescue runtime 
 Test-Gate ($controller.Contains("RunEditorStormManifestOwnershipProbe")) "storm cargo keeps a grounded physical manifest"
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"
 Test-Gate ($controller.Contains("forecastTideNotches.UpdatePresentation")) "forecast is projected onto physical stilt notches"
+Test-Gate ($controller.Contains("TideForecastSnapshotModel.Capture")) "forecast observations are immutable astronomical-cycle snapshots"
+$coreProbe = Read-ProjectText "Assets/Editor/TideCoreLoopConvergenceProbe.cs"
+Test-Gate ($coreProbe.Contains("ProbeForecastSnapshot")) "core gate covers forecast snapshot lifetime"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 Test-Gate ($visualProbe.Contains("RunEditorBoatPassengerScaleProbe")) "visual gate covers complete boat passenger"
 Test-Gate ($visualProbe.Contains("RunEditorWalkSurfacePathContinuityProbe")) "visual gate covers authored walk surfaces"

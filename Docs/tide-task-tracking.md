@@ -73,6 +73,7 @@
 - 潮汐观察与正反馈
   - [x] `TideForecastTideNotchController` 把下一高潮预报落到已有主桩的两道麻绳刻痕；粗观潮 `0.44m`、修复潮尺 `0.16m`，实际水线、上一潮盐痕和预测区间共用世界 Y
   - [x] 原本未执行的 `RunEditorTideForecastAutonomyProbe` 纳入正式视觉门；验证桩柱锚点、区间高度、无 Collider、前景水遮挡层与无预报隐藏，且不修改玩家连续网深选择
+  - [x] 预报改用观测时快照：`TideForecastSnapshotModel` 固定目标天文潮次和上下界；后续天气不改写旧绳结，目标高潮过后自动失效
   - [ ] 用户原始 Game View 验证刻痕像真实系绳而非横线 UI，且涨水后自然被前景水遮挡
 
 - 视觉与所见即所得
@@ -107,4 +108,4 @@
 
 - 连续天文潮、相邻高潮不等高、实际米制潮流、潮源批次守恒、网深/张力/收网、短航打捞与船体维修已有纯模型和回归。
 - V34 外景、V35 室内、V41 接触动作、V42 生存动作、V39 船体、V43 海况、V44 瞭望、V59 潮带实物为当前运行基线；详见运行资源清册。
-- 当前聚焦门：Windows 静态、macOS shell 静态、跨平台同步 `2593` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确静态项数以脚本当次输出为准。
+- 当前聚焦门：Windows 静态、macOS shell 静态、跨平台同步 `2595` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确静态项数以脚本当次输出为准。
