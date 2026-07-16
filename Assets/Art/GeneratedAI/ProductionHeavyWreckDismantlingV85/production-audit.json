@@ -1,0 +1,278 @@
+{
+  "package": "ProductionHeavyWreckDismantlingV85",
+  "status": "passed",
+  "gates": {
+    "runtime_png_count_20": true,
+    "five_heavy_families": true,
+    "exact_reconstruction": true,
+    "owner_disjoint": true,
+    "owner_complete": true,
+    "score_inside_source": true,
+    "meaningful_piece_area": true,
+    "transparent_edges": true,
+    "score_layers_add_no_key_color": true,
+    "partition_key_colors_are_source_inherited": true,
+    "source_lock": true,
+    "runtime_manifest_unchanged": true,
+    "guid_unique": true,
+    "runtime_references_zero": true
+  },
+  "reconstruction": {
+    "ExposedKeelRib": {
+      "changed_rgba_pixels_after_reconstruction": 0,
+      "owner_overlap_pixels": 0,
+      "missing_source_support_pixels": 0,
+      "extra_owner_support_pixels": 0,
+      "score_pixels_outside_source_alpha": 0,
+      "owner_area_ratios": {
+        "Remainder": 0.320773,
+        "PieceA": 0.389216,
+        "PieceB": 0.290012
+      }
+    },
+    "BrokenMast": {
+      "changed_rgba_pixels_after_reconstruction": 0,
+      "owner_overlap_pixels": 0,
+      "missing_source_support_pixels": 0,
+      "extra_owner_support_pixels": 0,
+      "score_pixels_outside_source_alpha": 0,
+      "owner_area_ratios": {
+        "Remainder": 0.351732,
+        "PieceA": 0.320503,
+        "PieceB": 0.327765
+      }
+    },
+    "CollapsedSailRig": {
+      "changed_rgba_pixels_after_reconstruction": 0,
+      "owner_overlap_pixels": 0,
+      "missing_source_support_pixels": 0,
+      "extra_owner_support_pixels": 0,
+      "score_pixels_outside_source_alpha": 0,
+      "owner_area_ratios": {
+        "Remainder": 0.108237,
+        "PieceA": 0.464202,
+        "PieceB": 0.427562
+      }
+    },
+    "BowSection": {
+      "changed_rgba_pixels_after_reconstruction": 0,
+      "owner_overlap_pixels": 0,
+      "missing_source_support_pixels": 0,
+      "extra_owner_support_pixels": 0,
+      "score_pixels_outside_source_alpha": 0,
+      "owner_area_ratios": {
+        "Remainder": 0.471276,
+        "PieceA": 0.330997,
+        "PieceB": 0.197727
+      }
+    },
+    "SternHull": {
+      "changed_rgba_pixels_after_reconstruction": 0,
+      "owner_overlap_pixels": 0,
+      "missing_source_support_pixels": 0,
+      "extra_owner_support_pixels": 0,
+      "score_pixels_outside_source_alpha": 0,
+      "owner_area_ratios": {
+        "Remainder": 0.579101,
+        "PieceA": 0.264398,
+        "PieceB": 0.156501
+      }
+    }
+  },
+  "pixel_audit": [
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BowSection/TideWreckV85_BowSection_PieceA.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 2,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BowSection/TideWreckV85_BowSection_PieceB.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 2,
+      "visible_green_pixels": 6,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BowSection/TideWreckV85_BowSection_Remainder.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 2,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BowSection/TideWreckV85_BowSection_ScoreMarks.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BrokenMast/TideWreckV85_BrokenMast_PieceA.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BrokenMast/TideWreckV85_BrokenMast_PieceB.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 3,
+      "visible_green_pixels": 3,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BrokenMast/TideWreckV85_BrokenMast_Remainder.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 1,
+      "visible_green_pixels": 1,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BrokenMast/TideWreckV85_BrokenMast_ScoreMarks.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/CollapsedSailRig/TideWreckV85_CollapsedSailRig_PieceA.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 5,
+      "visible_green_pixels": 13,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/CollapsedSailRig/TideWreckV85_CollapsedSailRig_PieceB.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 7,
+      "visible_green_pixels": 6,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/CollapsedSailRig/TideWreckV85_CollapsedSailRig_Remainder.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 1,
+      "visible_green_pixels": 3,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/CollapsedSailRig/TideWreckV85_CollapsedSailRig_ScoreMarks.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/ExposedKeelRib/TideWreckV85_ExposedKeelRib_PieceA.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/ExposedKeelRib/TideWreckV85_ExposedKeelRib_PieceB.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/ExposedKeelRib/TideWreckV85_ExposedKeelRib_Remainder.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/ExposedKeelRib/TideWreckV85_ExposedKeelRib_ScoreMarks.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/SternHull/TideWreckV85_SternHull_PieceA.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 2,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/SternHull/TideWreckV85_SternHull_PieceB.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 3,
+      "visible_green_pixels": 1,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/SternHull/TideWreckV85_SternHull_Remainder.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 2,
+      "visible_green_pixels": 6,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/SternHull/TideWreckV85_SternHull_ScoreMarks.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    }
+  ],
+  "memory": {
+    "runtime_png_count": 20,
+    "full_package_rgba32_mib": 3.4895,
+    "full_package_complete_mip_mib": 4.6426,
+    "maximum_single_family_v85_active_mip_mib": 1.0494,
+    "families": {
+      "ExposedKeelRib": {
+        "score_stage_incremental_mip_mib": 0.1562,
+        "separated_stage_v85_mip_mib": 0.6791,
+        "maximum_v85_active_mip_mib": 0.6791
+      },
+      "BrokenMast": {
+        "score_stage_incremental_mip_mib": 0.1046,
+        "separated_stage_v85_mip_mib": 0.2979,
+        "maximum_v85_active_mip_mib": 0.2979
+      },
+      "CollapsedSailRig": {
+        "score_stage_incremental_mip_mib": 0.2839,
+        "separated_stage_v85_mip_mib": 0.8079,
+        "maximum_v85_active_mip_mib": 0.8079
+      },
+      "BowSection": {
+        "score_stage_incremental_mip_mib": 0.2383,
+        "separated_stage_v85_mip_mib": 0.6153,
+        "maximum_v85_active_mip_mib": 0.6153
+      },
+      "SternHull": {
+        "score_stage_incremental_mip_mib": 0.41,
+        "separated_stage_v85_mip_mib": 1.0494,
+        "maximum_v85_active_mip_mib": 1.0494
+      }
+    },
+    "rule": "Only one heavy wreck family and one stage may remain active. S00/S01 use the external V72 intact instance; S02 adds one score overlay; S03 unloads the intact owner and activates three V85 owners."
+  },
+  "source_lock_count": 32,
+  "guid_audit": {
+    "package_guid_count": 40,
+    "collision_count": 0,
+    "collisions": []
+  },
+  "runtime_reference_audit": {
+    "count": 0,
+    "paths": []
+  },
+  "runtime_manifest_sha256": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489",
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/TideWreckV85_FiveFamilyStages_4K.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/TideWreckV85_OwnershipConservation_4K.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/TideWreckV85_MaterialTransfer_4K.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/TideWreckV85_RuntimeProjection_4K.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/Raw/TideWreckV85_SecuredCut_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/Raw/TideWreckV85_Separated_960x720.png"
+  ],
+  "package_payload_sha256": "b00b7f29fd16f53193ae1330a3dd63c2d63d52fc0302f03fc74c4f766479ac84"
+}

@@ -1,0 +1,92 @@
+{
+  "measurement_scope": "source-side uncompressed RGBA32 plus complete mip chain; not Unity allocation or target-device evidence",
+  "weather_block": {
+    "source_v43_one_wave_family_mib": 85.3333,
+    "v84_one_wave_family_mib": 21.3333,
+    "source_v43_three_clouds_mib": 64.0,
+    "v84_three_clouds_mib": 16.0,
+    "source_v43_normal_weather_mib": 149.3334,
+    "v84_normal_weather_mib": 37.3334,
+    "normal_weather_reduction_percent": 75.0,
+    "source_v43_two_wave_transition_mib": 234.6667,
+    "v84_two_wave_transition_mib": 58.6667,
+    "v70_balanced_vortex_all_layers_mib": 33.106
+  },
+  "scenarios": [
+    {
+      "scenario": "HomeExterior",
+      "source_upper_bound_mib": 214.1421,
+      "v84_upper_bound_mib": 102.1421,
+      "reduction_mib": 112.0,
+      "note": "以单一活动浪族和三层共享云为口径"
+    },
+    {
+      "scenario": "HomeInterior",
+      "source_upper_bound_mib": 61.6448,
+      "v84_upper_bound_mib": 61.6448,
+      "reduction_mib": 0.0,
+      "note": "室内不驻留外景海浪/云层"
+    },
+    {
+      "scenario": "Sailing",
+      "source_upper_bound_mib": 233.1429,
+      "v84_upper_bound_mib": 121.1429,
+      "reduction_mib": 112.0,
+      "note": "以单一活动浪族和三层共享云为口径"
+    },
+    {
+      "scenario": "VortexSailing",
+      "source_upper_bound_mib": 238.7671,
+      "v84_upper_bound_mib": 126.7671,
+      "reduction_mib": 112.0,
+      "note": "以单一活动浪族和三层共享云为口径"
+    },
+    {
+      "scenario": "Finale",
+      "source_upper_bound_mib": 215.7052,
+      "v84_upper_bound_mib": 103.7052,
+      "reduction_mib": 112.0,
+      "note": "以单一活动浪族和三层共享云为口径"
+    },
+    {
+      "scenario": "Opening",
+      "source_upper_bound_mib": 171.1954,
+      "v84_upper_bound_mib": 59.1954,
+      "reduction_mib": 112.0,
+      "note": "以单一活动浪族和三层共享云为口径"
+    }
+  ],
+  "residency_rules": [
+    "常态只驻留一个海浪动作族；天气切换最多短暂并存旧族与新族。",
+    "远、中、近三层云纹理由所有重复 Renderer 共享，不复制纹理实例。",
+    "漩涡只引用 V70 Balanced，进入漩涡航段时加载，离开后释放。",
+    "V43 海浪/云层与 V84 对应项必须原子替换，禁止同时显示或同时常驻。",
+    "HomeInterior 不驻留外景海浪、云层与漩涡。"
+  ],
+  "atlas_rules": {
+    "never_atlas": [
+      "V84 三层 Repeat 云纹理",
+      "V56 连续海体",
+      "跨天气的全部海浪族",
+      "跨房屋视图或维修阶段的大画布底图",
+      "V78 全部 136 帧人物动作"
+    ],
+    "allowed_atomic_groups": [
+      "同一个 V84 海浪族的八帧，可独立建 Atlas 或保留独立纹理后由 Profiler 比较",
+      "单个 V78 动作族",
+      "单个 V69/V52 owner 的当前阶段；不得把所有阶段塞进同一常驻 Atlas"
+    ],
+    "padding_and_compression": "由运行侧在 Windows/macOS Metal Game View 与 Profiler 后确定；资源包不冒领平台压缩结果。"
+  },
+  "wave_families": [
+    "LongSwell",
+    "StormBreaker",
+    "WindWave"
+  ],
+  "cloud_layers": [
+    "FarCloudWall",
+    "MidWeatherBank",
+    "NearScud"
+  ],
+  "external_vortex_profile": "Assets/Art/GeneratedAI/ProductionSideViewVortexV70/Runtime/Balanced"
+}

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fb4115ee561ce744941877009af82c1, type: 3}
+  m_Name: V42CharacterSurvivalCatalog
+  m_EditorClassIdentifier: 
+  version: 42
+  coldShiverFrames:
+  - {fileID: 21300000, guid: 75a1e96afcdf52fb919e59a37593a877, type: 3}
+  - {fileID: 21300000, guid: e4bd3ad2db1154f48929ed7a6060ec70, type: 3}
+  - {fileID: 21300000, guid: 4d951408f21f57f2b4c5111b1543866a, type: 3}
+  - {fileID: 21300000, guid: ab1e090853cc5c9e89ba8544d9f50301, type: 3}
+  - {fileID: 21300000, guid: 14b1b6a5d1485fdca053f3779dfd156d, type: 3}
+  - {fileID: 21300000, guid: 0b0c97cb139250798fb1941087b6fb57, type: 3}
+  sleepFrames:
+  - {fileID: 21300000, guid: 04a5984914fe5b38b6ee74d2dbc5960f, type: 3}
+  - {fileID: 21300000, guid: 648f323f8387544aba2a658a0eda0f54, type: 3}
+  - {fileID: 21300000, guid: 56903fa035e05b428e2bcdc8677dbd32, type: 3}
+  - {fileID: 21300000, guid: 355abc820ac058219b3292e99dcada3f, type: 3}
+  - {fileID: 21300000, guid: 6b1e4c35501b59fa9e176537316faafd, type: 3}
+  - {fileID: 21300000, guid: 3020b19c2ba6502fab8d186bf1756a3e, type: 3}
+  - {fileID: 21300000, guid: d08e9d9247785d49a16b493f4b34c6d9, type: 3}
+  - {fileID: 21300000, guid: 15c455ed37af52dc969101aee15d4035, type: 3}
+  drownFrames:
+  - {fileID: 21300000, guid: 433124a6c634511990e0e72c547384c5, type: 3}
+  - {fileID: 21300000, guid: e2faeb4142515501806906d1563b24de, type: 3}
+  - {fileID: 21300000, guid: a1430dc1c68c5d49aad1139d86a0e52f, type: 3}
+  - {fileID: 21300000, guid: b149f1106be25b70b74c392ff8ac7adb, type: 3}
+  - {fileID: 21300000, guid: b1664dc854f75ee3998a2e43c9ccef10, type: 3}
+  - {fileID: 21300000, guid: c0cf6d90d3ca50efadf0fe6a78164546, type: 3}
+  - {fileID: 21300000, guid: d3f428fdbba95b479238fc0d04210009, type: 3}
+  - {fileID: 21300000, guid: d170cdc85cc05859a1df1126f9547f3e, type: 3}
+  coldCollapseFrames:
+  - {fileID: 21300000, guid: a7200cf8af245a58a55fd86629aac4f7, type: 3}
+  - {fileID: 21300000, guid: eb5f75b928d557ffbb0a67581f4e6afc, type: 3}
+  - {fileID: 21300000, guid: bd4f66da9b1c53b49597216fa1d24277, type: 3}
+  - {fileID: 21300000, guid: 55df4c77eaa752e2a9cb6fe760f590e0, type: 3}
+  - {fileID: 21300000, guid: 85f0a0d3315951d08b56ae3d76d27bb6, type: 3}
+  - {fileID: 21300000, guid: 6d572be430c25eb6920c26e6f2f3a062, type: 3}
+  - {fileID: 21300000, guid: 47c0511ffea95d77a7b1bd3ecbeda9f0, type: 3}
+  - {fileID: 21300000, guid: 6178e38ca9855aca88150d23891843a1, type: 3}

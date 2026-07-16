@@ -1,0 +1,5 @@
+{
+  "package": "ProductionShipwreckArrivalV72",
+  "built_in_image_generation": true,
+  "prompt": "Use case: precise-object-edit\nAsset type: production source for a layered 2D side-view Unity shipwreck arrival\nPrimary request: Transform this exact small single-mast clinker-built sailboat into the same boat immediately after an offshore wreck. Preserve the strict side view, salt-gray plank bands, dark corroded straps, off-white torn sail, right stern rudder, scale and material identity. Break the hull around the mast step: keep a coherent half-submerged stern section, a separated bow section with a narrow jagged gap and exposed inner ribs, a snapped leaning mast, slack rigging and a collapsed torn sail still attached to the spar.\nScene/backdrop: perfectly flat uniform #ff00ff chroma-key background.\nConstraints: no ocean, foam, splash, person, text, UI, glow, shadow, rectangular base, generic debris pile, modern material, colorful repair patch, second boat or changed camera."
+}

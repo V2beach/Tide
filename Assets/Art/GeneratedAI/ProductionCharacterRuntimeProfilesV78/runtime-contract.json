@@ -1,0 +1,103 @@
+{
+  "version": "V78",
+  "request_id": "ART-P1-CHARACTER-RUNTIME-PROFILES",
+  "status": "resource_ready_not_runtime_integrated",
+  "source_authority": "Assets/Art/GeneratedAI/ProductionCharacterMaterialBaselineV61",
+  "recommended_runtime_profile": "Balanced",
+  "profiles": {
+    "High": {
+      "max_dimension": 1024,
+      "recommended_for": "close framing and editorial capture",
+      "summary": {
+        "frame_count": 136,
+        "family_count": 21,
+        "maximum_dimension": 1024,
+        "minimum_visible_alpha_height_px": 222,
+        "disk_bytes": 48393474,
+        "rgba32_bytes": 541676928,
+        "rgba32_mip_upper_bound_bytes": 722235904,
+        "rgba32_mip_upper_bound_mib": 688.778,
+        "largest_family": "V41/Board",
+        "largest_family_mip_upper_bound_mib": 42.667,
+        "two_family_transition_mip_upper_bound_mib": 85.333,
+        "maximum_world_canvas_error": 0.0,
+        "maximum_normalized_bbox_error": 0.00420122,
+        "maximum_projection_mae": 9.2e-05,
+        "minimum_projection_alpha_iou": 0.999261,
+        "minimum_projection_edge_retention": 0.993118,
+        "minimum_projection_luma_structure_retention": 0.996043,
+        "hidden_rgb_pixels": 0,
+        "visible_magenta_pixels": 0,
+        "visible_green_pixels": 0,
+        "all_corners_transparent": true,
+        "source_rgba32_bytes": 1384120320,
+        "full_package_reduction_ratio": 0.608649
+      }
+    },
+    "Balanced": {
+      "max_dimension": 512,
+      "recommended_for": "normal first-slice gameplay",
+      "summary": {
+        "frame_count": 136,
+        "family_count": 21,
+        "maximum_dimension": 512,
+        "minimum_visible_alpha_height_px": 116,
+        "disk_bytes": 15034499,
+        "rgba32_bytes": 135353856,
+        "rgba32_mip_upper_bound_bytes": 180471808,
+        "rgba32_mip_upper_bound_mib": 172.111,
+        "largest_family": "V41/Board",
+        "largest_family_mip_upper_bound_mib": 10.667,
+        "two_family_transition_mip_upper_bound_mib": 21.333,
+        "maximum_world_canvas_error": 0.0,
+        "maximum_normalized_bbox_error": 0.00808824,
+        "maximum_projection_mae": 0.000294,
+        "minimum_projection_alpha_iou": 0.985402,
+        "minimum_projection_edge_retention": 0.988062,
+        "minimum_projection_luma_structure_retention": 0.96727,
+        "hidden_rgb_pixels": 0,
+        "visible_magenta_pixels": 0,
+        "visible_green_pixels": 0,
+        "all_corners_transparent": true,
+        "source_rgba32_bytes": 1384120320,
+        "full_package_reduction_ratio": 0.902209
+      }
+    }
+  },
+  "invariants": [
+    "All 136 frames preserve V61 pose identity, frame order, normalized pivot and world canvas size.",
+    "V78 never trims the source canvas and never edits contact anchors or root motion.",
+    "Premultiplied-alpha Lanczos resampling is followed by alpha<=2 cleanup and hidden-RGB zeroing.",
+    "One AnimationClip uses exactly one profile; High and Balanced cannot mix inside a clip."
+  ],
+  "residency_contract": {
+    "unit": "one action family",
+    "normal": "only the active family remains resident",
+    "transition": "at most the outgoing and incoming families coexist briefly",
+    "forbidden": "do not keep all 136 frames resident through one monolithic Resources catalog"
+  },
+  "runtime_owns": [
+    "Catalog/AnimationClip atomic replacement and profile selection",
+    "V62 wet/salt material response, V63 backpack sorting and story state",
+    "contact anchors, root motion, boat/water/ladder/bed sorting and state timing",
+    "per-family loading, SpriteAtlas, platform compression, mip streaming and Profiler validation"
+  ],
+  "forbidden": [
+    "Do not replace V61 or any source GUID.",
+    "Do not mix V61, High and Balanced frames inside one animation clip.",
+    "Do not import QA images into Catalog, Scene or Prefab.",
+    "Do not update the authoritative runtime manifest before original Game View and Profiler evidence."
+  ],
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/TideCharacterV78_ProfileComparison_4K.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/TideCharacterV78_ActionFamilies_4K.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/TideCharacterV78_ContactPivot_4K.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/TideCharacterV78_MemoryBudget_4K.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/Raw/TideCharacterV78_16x9_High_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/Raw/TideCharacterV78_16x9_Balanced_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/Raw/TideCharacterV78_4x3_High_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/Raw/TideCharacterV78_4x3_Balanced_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/TideCharacterV78_16x9_WorldProjection_4K.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterRuntimeProfilesV78/QA/TideCharacterV78_4x3_WorldProjection_4K.png"
+  ]
+}

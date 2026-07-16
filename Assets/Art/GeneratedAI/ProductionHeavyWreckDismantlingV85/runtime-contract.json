@@ -1,0 +1,887 @@
+{
+  "package": "ProductionHeavyWreckDismantlingV85",
+  "status": "resource_candidate_not_runtime_integrated",
+  "request_id": "ART-P1-HEAVY-WRECK-VISIBLE-DISMANTLING",
+  "purpose": "Close the visual gap between V82 heavy-wreck rejection and V59 small-material ownership without instant conversion.",
+  "profile": "Balanced",
+  "pixels_per_unit": 192.0,
+  "intact_authority": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/runtime-contract.json",
+  "capacity_gate_authority": "Assets/Art/GeneratedAI/ProductionSalvageTransferGateV82/runtime-contract.json",
+  "small_material_authority": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/tide-finds-contract.json",
+  "rope_texture": "Assets/Art/GeneratedAI/ProductionBoatSailHandlingV65/Runtime/Props/TideBoatV65_HandlingLineTile.png",
+  "stages": {
+    "S00_AfloatIntact": {
+      "name_zh": "原物漂来",
+      "owner": "one external V72 Balanced intact instance",
+      "v85_active": []
+    },
+    "S01_DoubleSecured": {
+      "name_zh": "两点系稳并拖到潮间工作位",
+      "owner": "same V72 instance plus two runtime V65-textured rope splines",
+      "v85_active": []
+    },
+    "S02_JointsExposed": {
+      "name_zh": "清理并显露接缝",
+      "owner": "same V72 instance plus one V85 ScoreMarks overlay",
+      "v85_active": [
+        "ScoreMarks"
+      ]
+    },
+    "S03_Separated": {
+      "name_zh": "分离为余件和两块拆件",
+      "owner": "V72 intact owner is atomically disabled; V85 Remainder/PieceA/PieceB become active",
+      "v85_active": [
+        "Remainder",
+        "PieceA",
+        "PieceB"
+      ]
+    },
+    "S04_SortedTransfer": {
+      "name_zh": "搬到分类位后移交实物",
+      "owner": "runtime decides reuse or atomically replaces accepted pieces with V59 instances",
+      "v85_active": []
+    }
+  },
+  "families": {
+    "ExposedKeelRib": {
+      "label": "外露龙骨肋",
+      "source_intact": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png",
+      "source_size": [
+        510,
+        363
+      ],
+      "source_pivot_bottom_left": [
+        0.5,
+        0.5
+      ],
+      "source_pixels_per_unit": 192,
+      "secure_points": [
+        {
+          "normalized_top_left": [
+            0.14,
+            0.3
+          ],
+          "pixel_top_left": [
+            71.4,
+            108.9
+          ],
+          "from_source_pivot_m": [
+            -0.95625,
+            0.378125
+          ]
+        },
+        {
+          "normalized_top_left": [
+            0.86,
+            0.3
+          ],
+          "pixel_top_left": [
+            438.6,
+            108.9
+          ],
+          "from_source_pivot_m": [
+            0.95625,
+            0.378125
+          ]
+        }
+      ],
+      "drag_point": {
+        "pixel_top_left": [
+          115.275,
+          153.308
+        ],
+        "normalized_top_left": [
+          0.22602941,
+          0.42233713
+        ],
+        "from_sprite_center_m": [
+          -0.727734,
+          0.146831
+        ],
+        "from_sprite_pivot_m": [
+          -0.727734,
+          0.146831
+        ]
+      },
+      "owners": {
+        "ScoreMarks": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/ExposedKeelRib/TideWreckV85_ExposedKeelRib_ScoreMarks.png",
+          "source_crop_origin_top_left": [
+            148,
+            225
+          ],
+          "size": [
+            256,
+            120
+          ],
+          "pivot_bottom_left": [
+            0.42742902,
+            0.47150505
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.012614,
+            -0.556872
+          ],
+          "visible_alpha_pixels": 1269
+        },
+        "Remainder": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/ExposedKeelRib/TideWreckV85_ExposedKeelRib_Remainder.png",
+          "source_crop_origin_top_left": [
+            152,
+            224
+          ],
+          "size": [
+            249,
+            139
+          ],
+          "pivot_bottom_left": [
+            0.46365687,
+            0.39981971
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.064847,
+            -0.65586
+          ],
+          "visible_alpha_pixels": 17008
+        },
+        "PieceA": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/ExposedKeelRib/TideWreckV85_ExposedKeelRib_PieceA.png",
+          "source_crop_origin_top_left": [
+            0,
+            0
+          ],
+          "size": [
+            187,
+            325
+          ],
+          "pivot_bottom_left": [
+            0.48812171,
+            0.50672168
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            -0.852715,
+            0.110336
+          ],
+          "visible_alpha_pixels": 20637
+        },
+        "PieceB": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/ExposedKeelRib/TideWreckV85_ExposedKeelRib_PieceB.png",
+          "source_crop_origin_top_left": [
+            377,
+            55
+          ],
+          "size": [
+            133,
+            290
+          ],
+          "pivot_bottom_left": [
+            0.57071125,
+            0.49397274
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            1.030753,
+            -0.105458
+          ],
+          "visible_alpha_pixels": 15377
+        }
+      },
+      "piece_labels": {
+        "PieceA": "左弯肋",
+        "PieceB": "右弯肋"
+      },
+      "material_candidates": [
+        "W02_RopeSpar",
+        "W03_TwinStrakes",
+        "T01_NetRopeShackle"
+      ],
+      "special_reuse_candidate": "弯肋可作为房屋斜撑候选；运行侧决定是否保留而非转化"
+    },
+    "BrokenMast": {
+      "label": "折断桅杆",
+      "source_intact": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BrokenMast/TideShipwreckV72_BrokenMast.png",
+      "source_size": [
+        257,
+        532
+      ],
+      "source_pivot_bottom_left": [
+        0.21595331,
+        0.11184211
+      ],
+      "source_pixels_per_unit": 192.0,
+      "secure_points": [
+        {
+          "normalized_top_left": [
+            0.2,
+            0.75
+          ],
+          "pixel_top_left": [
+            51.4,
+            399.0
+          ],
+          "from_source_pivot_m": [
+            -0.021354,
+            0.382812
+          ]
+        },
+        {
+          "normalized_top_left": [
+            0.74,
+            0.24
+          ],
+          "pixel_top_left": [
+            190.18,
+            127.68
+          ],
+          "from_source_pivot_m": [
+            0.701458,
+            1.795937
+          ]
+        }
+      ],
+      "drag_point": {
+        "pixel_top_left": [
+          145.5,
+          225.0
+        ],
+        "normalized_top_left": [
+          0.56614786,
+          0.42293233
+        ],
+        "from_sprite_pivot_m": [
+          0.46875,
+          1.289062
+        ]
+      },
+      "owners": {
+        "ScoreMarks": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BrokenMast/TideWreckV85_BrokenMast_ScoreMarks.png",
+          "source_crop_origin_top_left": [
+            77,
+            161
+          ],
+          "size": [
+            100,
+            206
+          ],
+          "pivot_bottom_left": [
+            0.4617984,
+            0.46092926
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.352499,
+            1.044018
+          ],
+          "visible_alpha_pixels": 430
+        },
+        "Remainder": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BrokenMast/TideWreckV85_BrokenMast_Remainder.png",
+          "source_crop_origin_top_left": [
+            77,
+            162
+          ],
+          "size": [
+            99,
+            205
+          ],
+          "pivot_bottom_left": [
+            0.50377845,
+            0.50657283
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.37174,
+            1.090351
+          ],
+          "visible_alpha_pixels": 4843
+        },
+        "PieceA": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BrokenMast/TideWreckV85_BrokenMast_PieceA.png",
+          "source_crop_origin_top_left": [
+            7,
+            329
+          ],
+          "size": [
+            96,
+            196
+          ],
+          "pivot_bottom_left": [
+            0.57239658,
+            0.53215763
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.033594,
+            0.269807
+          ],
+          "visible_alpha_pixels": 4413
+        },
+        "PieceB": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BrokenMast/TideWreckV85_BrokenMast_PieceB.png",
+          "source_crop_origin_top_left": [
+            151,
+            8
+          ],
+          "size": [
+            99,
+            199
+          ],
+          "pivot_bottom_left": [
+            0.48140912,
+            0.51904894
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.745622,
+            1.920785
+          ],
+          "visible_alpha_pixels": 4513
+        }
+      },
+      "piece_labels": {
+        "PieceA": "下段桅材",
+        "PieceB": "上段桅材"
+      },
+      "material_candidates": [
+        "W02_RopeSpar",
+        "W03_TwinStrakes"
+      ],
+      "special_reuse_candidate": "完整直段可作为短梁候选；禁止整根自动入库"
+    },
+    "CollapsedSailRig": {
+      "label": "塌落帆桅",
+      "source_intact": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png",
+      "source_size": [
+        550,
+        304
+      ],
+      "source_pivot_bottom_left": [
+        0.19363636,
+        0.92598684
+      ],
+      "source_pixels_per_unit": 192.0,
+      "secure_points": [
+        {
+          "normalized_top_left": [
+            0.22,
+            0.18
+          ],
+          "pixel_top_left": [
+            121.0,
+            54.72
+          ],
+          "from_source_pivot_m": [
+            0.075521,
+            -0.167813
+          ]
+        },
+        {
+          "normalized_top_left": [
+            0.86,
+            0.4
+          ],
+          "pixel_top_left": [
+            473.0,
+            121.6
+          ],
+          "from_source_pivot_m": [
+            1.908854,
+            -0.516146
+          ]
+        }
+      ],
+      "drag_point": {
+        "pixel_top_left": [
+          280.5,
+          106.5
+        ],
+        "normalized_top_left": [
+          0.51,
+          0.35032895
+        ],
+        "from_sprite_pivot_m": [
+          0.90625,
+          -0.4375
+        ]
+      },
+      "owners": {
+        "ScoreMarks": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/CollapsedSailRig/TideWreckV85_CollapsedSailRig_ScoreMarks.png",
+          "source_crop_origin_top_left": [
+            112,
+            45
+          ],
+          "size": [
+            316,
+            177
+          ],
+          "pivot_bottom_left": [
+            0.49937003,
+            0.64416303
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.850526,
+            -0.445225
+          ],
+          "visible_alpha_pixels": 3067
+        },
+        "Remainder": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/CollapsedSailRig/TideWreckV85_CollapsedSailRig_Remainder.png",
+          "source_crop_origin_top_left": [
+            108,
+            7
+          ],
+          "size": [
+            320,
+            107
+          ],
+          "pivot_bottom_left": [
+            0.32192502,
+            0.52695436
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.544354,
+            -0.182895
+          ],
+          "visible_alpha_pixels": 5468
+        },
+        "PieceA": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/CollapsedSailRig/TideWreckV85_CollapsedSailRig_PieceA.png",
+          "source_crop_origin_top_left": [
+            7,
+            48
+          ],
+          "size": [
+            288,
+            248
+          ],
+          "pivot_bottom_left": [
+            0.67974057,
+            0.59572486
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.501382,
+            -0.655001
+          ],
+          "visible_alpha_pixels": 23451
+        },
+        "PieceB": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/CollapsedSailRig/TideWreckV85_CollapsedSailRig_PieceB.png",
+          "source_crop_origin_top_left": [
+            263,
+            77
+          ],
+          "size": [
+            280,
+            191
+          ],
+          "pivot_bottom_left": [
+            0.41717986,
+            0.56176078
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            1.423491,
+            -0.719811
+          ],
+          "visible_alpha_pixels": 21600
+        }
+      },
+      "piece_labels": {
+        "PieceA": "左侧湿帆束",
+        "PieceB": "右侧湿帆束"
+      },
+      "material_candidates": [
+        "T02_SailclothCorkChain",
+        "W02_RopeSpar",
+        "T01_NetRopeShackle"
+      ],
+      "special_reuse_candidate": "帆布与横桁必须先分开晾排，不能作为一件刚体入库"
+    },
+    "BowSection": {
+      "label": "分离船艏段",
+      "source_intact": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BowSection/TideShipwreckV72_BowSection.png",
+      "source_size": [
+        440,
+        286
+      ],
+      "source_pivot_bottom_left": [
+        0.47386364,
+        0.39160839
+      ],
+      "source_pixels_per_unit": 192.0,
+      "secure_points": [
+        {
+          "normalized_top_left": [
+            0.18,
+            0.5
+          ],
+          "pixel_top_left": [
+            79.2,
+            143.0
+          ],
+          "from_source_pivot_m": [
+            -0.673438,
+            0.161458
+          ]
+        },
+        {
+          "normalized_top_left": [
+            0.78,
+            0.58
+          ],
+          "pixel_top_left": [
+            343.2,
+            165.88
+          ],
+          "from_source_pivot_m": [
+            0.701562,
+            0.042292
+          ]
+        }
+      ],
+      "drag_point": {
+        "pixel_top_left": [
+          157.5,
+          124.5
+        ],
+        "normalized_top_left": [
+          0.35795455,
+          0.43531469
+        ],
+        "from_sprite_pivot_m": [
+          -0.265625,
+          0.257812
+        ]
+      },
+      "owners": {
+        "ScoreMarks": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BowSection/TideWreckV85_BowSection_ScoreMarks.png",
+          "source_crop_origin_top_left": [
+            39,
+            103
+          ],
+          "size": [
+            275,
+            171
+          ],
+          "pivot_bottom_left": [
+            0.65986305,
+            0.57801795
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.062304,
+            -0.006036
+          ],
+          "visible_alpha_pixels": 3321
+        },
+        "Remainder": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BowSection/TideWreckV85_BowSection_Remainder.png",
+          "source_crop_origin_top_left": [
+            7,
+            8
+          ],
+          "size": [
+            302,
+            175
+          ],
+          "pivot_bottom_left": [
+            0.49185141,
+            0.40760064
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            -0.275838,
+            0.324636
+          ],
+          "visible_alpha_pixels": 27703
+        },
+        "PieceA": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BowSection/TideWreckV85_BowSection_PieceA.png",
+          "source_crop_origin_top_left": [
+            38,
+            148
+          ],
+          "size": [
+            272,
+            126
+          ],
+          "pivot_bottom_left": [
+            0.532656,
+            0.54261824
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            -0.133425,
+            -0.16474
+          ],
+          "visible_alpha_pixels": 19457
+        },
+        "PieceB": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/BowSection/TideWreckV85_BowSection_PieceB.png",
+          "source_crop_origin_top_left": [
+            285,
+            48
+          ],
+          "size": [
+            148,
+            231
+          ],
+          "pivot_bottom_left": [
+            0.40177869,
+            0.31083621
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.708142,
+            -0.1729
+          ],
+          "visible_alpha_pixels": 11623
+        }
+      },
+      "piece_labels": {
+        "PieceA": "下侧船壳板",
+        "PieceB": "艏端碎梁"
+      },
+      "material_candidates": [
+        "W01_SaltHullPlank",
+        "W03_TwinStrakes",
+        "T01_NetRopeShackle"
+      ],
+      "special_reuse_candidate": "艏肋和铜钉件可进入后续修船判定；资源侧不声明产量"
+    },
+    "SternHull": {
+      "label": "船艉体与尾舵",
+      "source_intact": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/SternHull/TideShipwreckV72_SternHull.png",
+      "source_size": [
+        634,
+        284
+      ],
+      "source_pivot_bottom_left": [
+        0.5181388,
+        0.41373239
+      ],
+      "source_pixels_per_unit": 192.0,
+      "secure_points": [
+        {
+          "normalized_top_left": [
+            0.2,
+            0.45
+          ],
+          "pixel_top_left": [
+            126.8,
+            127.8
+          ],
+          "from_source_pivot_m": [
+            -1.050521,
+            0.201563
+          ]
+        },
+        {
+          "normalized_top_left": [
+            0.82,
+            0.5
+          ],
+          "pixel_top_left": [
+            519.88,
+            142.0
+          ],
+          "from_source_pivot_m": [
+            0.996771,
+            0.127604
+          ]
+        }
+      ],
+      "drag_point": {
+        "pixel_top_left": [
+          516.0,
+          106.5
+        ],
+        "normalized_top_left": [
+          0.81388013,
+          0.375
+        ],
+        "from_sprite_pivot_m": [
+          0.976562,
+          0.3125
+        ]
+      },
+      "owners": {
+        "ScoreMarks": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/SternHull/TideWreckV85_SternHull_ScoreMarks.png",
+          "source_crop_origin_top_left": [
+            69,
+            94
+          ],
+          "size": [
+            448,
+            180
+          ],
+          "pivot_bottom_left": [
+            0.51423978,
+            0.61732581
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            -0.15167,
+            0.018847
+          ],
+          "visible_alpha_pixels": 3938
+        },
+        "Remainder": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/SternHull/TideWreckV85_SternHull_Remainder.png",
+          "source_crop_origin_top_left": [
+            7,
+            9
+          ],
+          "size": [
+            506,
+            268
+          ],
+          "pivot_bottom_left": [
+            0.65575339,
+            0.36709242
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            0.053704,
+            -0.063121
+          ],
+          "visible_alpha_pixels": 57536
+        },
+        "PieceA": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/SternHull/TideWreckV85_SternHull_PieceA.png",
+          "source_crop_origin_top_left": [
+            7,
+            98
+          ],
+          "size": [
+            219,
+            174
+          ],
+          "pivot_bottom_left": [
+            0.51981233,
+            0.52233967
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            -1.081568,
+            -0.076109
+          ],
+          "visible_alpha_pixels": 26269
+        },
+        "PieceB": {
+          "path": "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/Runtime/Balanced/SternHull/TideWreckV85_SternHull_PieceB.png",
+          "source_crop_origin_top_left": [
+            487,
+            40
+          ],
+          "size": [
+            140,
+            235
+          ],
+          "pivot_bottom_left": [
+            0.45437196,
+            0.50670597
+          ],
+          "pixels_per_unit": 192.0,
+          "initial_world_offset_from_source_pivot_m": [
+            1.156834,
+            0.055083
+          ],
+          "visible_alpha_pixels": 15549
+        }
+      },
+      "piece_labels": {
+        "PieceA": "艉侧破板",
+        "PieceB": "尾舵与艉柱"
+      },
+      "material_candidates": [
+        "W01_SaltHullPlank",
+        "W03_TwinStrakes",
+        "T01_NetRopeShackle"
+      ],
+      "special_reuse_candidate": "尾舵是独立复用候选；运行侧确认修船需求后再决定是否拆料"
+    }
+  },
+  "material_transfer": {
+    "rule": "No V59 instance may appear before a separated V85 piece reaches the runtime-owned sorting position. Conversion is atomic and conserves one world owner.",
+    "resource_claims_no_yield_count": true,
+    "runtime_owns": [
+      "yield count",
+      "economy value",
+      "repair recipe",
+      "special reuse decision",
+      "inventory capacity"
+    ]
+  },
+  "residency": {
+    "runtime_png_count": 20,
+    "full_package_rgba32_mib": 3.4895,
+    "full_package_complete_mip_mib": 4.6426,
+    "maximum_single_family_v85_active_mip_mib": 1.0494,
+    "families": {
+      "ExposedKeelRib": {
+        "score_stage_incremental_mip_mib": 0.1562,
+        "separated_stage_v85_mip_mib": 0.6791,
+        "maximum_v85_active_mip_mib": 0.6791
+      },
+      "BrokenMast": {
+        "score_stage_incremental_mip_mib": 0.1046,
+        "separated_stage_v85_mip_mib": 0.2979,
+        "maximum_v85_active_mip_mib": 0.2979
+      },
+      "CollapsedSailRig": {
+        "score_stage_incremental_mip_mib": 0.2839,
+        "separated_stage_v85_mip_mib": 0.8079,
+        "maximum_v85_active_mip_mib": 0.8079
+      },
+      "BowSection": {
+        "score_stage_incremental_mip_mib": 0.2383,
+        "separated_stage_v85_mip_mib": 0.6153,
+        "maximum_v85_active_mip_mib": 0.6153
+      },
+      "SternHull": {
+        "score_stage_incremental_mip_mib": 0.41,
+        "separated_stage_v85_mip_mib": 1.0494,
+        "maximum_v85_active_mip_mib": 1.0494
+      }
+    },
+    "rule": "Only one heavy wreck family and one stage may remain active. S00/S01 use the external V72 intact instance; S02 adds one score overlay; S03 unloads the intact owner and activates three V85 owners."
+  },
+  "runtime_owns": [
+    "towing force, buoyancy, tide, collision and two-point rope simulation",
+    "work-position validity, character tool actions, progress, interruption and failure",
+    "detached piece motion, sorting positions, yield and inventory/economy mutation",
+    "Catalog/Prefab/Scene/SpriteAtlas/platform compression, Game View and Profiler approval"
+  ],
+  "forbidden": [
+    "Do not lift any of the five intact V72 heavy wrecks with the house davit.",
+    "Do not duplicate an intact V72 wreck when S03 V85 owners become active; the switch is atomic.",
+    "Do not spawn V59 materials before visible separation and sorting.",
+    "Do not bake ropes, character, tools, ocean, foam or material piles into V85 runtime sprites.",
+    "Do not move V72 waterline/COM/grab anchors or infer collision from V85 alpha.",
+    "Do not add QA images to runtime or update the authoritative manifest before Unity evidence."
+  ],
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/TideWreckV85_FiveFamilyStages_4K.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/TideWreckV85_OwnershipConservation_4K.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/TideWreckV85_MaterialTransfer_4K.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/TideWreckV85_RuntimeProjection_4K.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/Raw/TideWreckV85_SecuredCut_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionHeavyWreckDismantlingV85/QA/Raw/TideWreckV85_Separated_960x720.png"
+  ],
+  "known_limitations": [
+    "V85 has no Unity Catalog, scene, controller, towing physics, tool animation or economy integration.",
+    "Score marks are a restrained visual owner; runtime dust, chips, sound and tool contact remain separate.",
+    "Material candidate lists define identity compatibility, not fixed quantities or guaranteed recipes."
+  ]
+}

@@ -1,0 +1,1998 @@
+{
+  "package": "ProductionSeaWeatherRuntimeProfilesV84",
+  "status": "passed",
+  "gates": {
+    "runtime_png_count_27": true,
+    "quality_mae": true,
+    "quality_alpha_iou": true,
+    "quality_edge": true,
+    "quality_luma": true,
+    "registration": true,
+    "wave_baseline": true,
+    "wave_loop_closure": true,
+    "cloud_seams": true,
+    "transparent_pixels": true,
+    "source_lock": true,
+    "runtime_manifest_unchanged": true,
+    "guid_unique": true,
+    "runtime_references_zero": true
+  },
+  "quality_thresholds": {
+    "maximum_projection_mae": 0.002,
+    "minimum_alpha_iou": 0.99,
+    "minimum_edge_retention": 0.95,
+    "minimum_luma_structure_retention": 0.95,
+    "maximum_normalized_bbox_error": 0.006,
+    "maximum_wave_loop_closure_regression": 0.002
+  },
+  "quality_summary": {
+    "measurement_count": 54,
+    "maximum_projection_mae": 0.00038671,
+    "minimum_alpha_iou": 0.99019877,
+    "minimum_edge_retention": 0.96594121,
+    "minimum_luma_structure_retention": 0.97903347,
+    "maximum_normalized_bbox_error": 0.00488281,
+    "wave_loop_closure": {
+      "LongSwell": {
+        "source_first_last_mae": 0.02368875,
+        "output_first_last_mae": 0.02362996,
+        "absolute_regression": 0.0
+      },
+      "WindWave": {
+        "source_first_last_mae": 0.08021832,
+        "output_first_last_mae": 0.08007909,
+        "absolute_regression": 0.0
+      },
+      "StormBreaker": {
+        "source_first_last_mae": 0.10900892,
+        "output_first_last_mae": 0.10883602,
+        "absolute_regression": 0.0
+      }
+    },
+    "maximum_wave_loop_closure_regression": 0.0
+  },
+  "quality_measurements": [
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F00.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F00.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.75585938,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.75390625,
+          0.93945312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 9.919e-05,
+      "alpha_iou": 0.99880526,
+      "edge_energy_retention": 1.00427299,
+      "luma_structure_retention": 1.00286585
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F00.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F00.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.75585938,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.75390625,
+          0.93945312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 9.046e-05,
+      "alpha_iou": 1.0,
+      "edge_energy_retention": 0.99914967,
+      "luma_structure_retention": 0.98311178
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 1,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F01.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F01.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.70507812,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.06054688,
+          0.703125,
+          0.93945312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00017852,
+      "alpha_iou": 0.99019877,
+      "edge_energy_retention": 0.96594121,
+      "luma_structure_retention": 0.99741818
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 1,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F01.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F01.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.70507812,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.06054688,
+          0.703125,
+          0.93945312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00016454,
+      "alpha_iou": 0.99985753,
+      "edge_energy_retention": 1.00018758,
+      "luma_structure_retention": 0.98522968
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 2,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F02.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F02.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.64355469,
+          0.93603516,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.64257812,
+          0.93652344,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.0001889,
+      "alpha_iou": 0.992045,
+      "edge_energy_retention": 0.97618454,
+      "luma_structure_retention": 0.99591354
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 2,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F02.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F02.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.64355469,
+          0.93603516,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.64257812,
+          0.93652344,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00017251,
+      "alpha_iou": 0.99975093,
+      "edge_energy_retention": 0.99825528,
+      "luma_structure_retention": 0.98747036
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 3,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F03.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F03.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.66503906,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.6640625,
+          0.93945312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00014168,
+      "alpha_iou": 0.99694781,
+      "edge_energy_retention": 0.99191377,
+      "luma_structure_retention": 0.99266347
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 3,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F03.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F03.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.66503906,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.6640625,
+          0.93945312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00012961,
+      "alpha_iou": 0.99968379,
+      "edge_energy_retention": 0.99858778,
+      "luma_structure_retention": 0.9971546
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 4,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F04.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F04.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.69140625,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.69140625,
+          0.93945312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00011769,
+      "alpha_iou": 0.99926579,
+      "edge_energy_retention": 1.00493318,
+      "luma_structure_retention": 0.99620686
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 4,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F04.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F04.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.69140625,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.69140625,
+          0.93945312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.0001099,
+      "alpha_iou": 0.99885736,
+      "edge_energy_retention": 1.00120485,
+      "luma_structure_retention": 0.9942567
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 5,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F05.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F05.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.75195312,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.75195312,
+          0.9375,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00048828
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 9.815e-05,
+      "alpha_iou": 0.99806514,
+      "edge_energy_retention": 1.02284008,
+      "luma_structure_retention": 0.97903347
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 5,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F05.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F05.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.75195312,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.75195312,
+          0.9375,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00048828
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 9.051e-05,
+      "alpha_iou": 0.99926326,
+      "edge_energy_retention": 0.99973552,
+      "luma_structure_retention": 0.992428
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 6,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F06.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F06.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.78222656,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.77734375,
+          0.9375,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 9.845e-05,
+      "alpha_iou": 0.99235182,
+      "edge_energy_retention": 1.01519133,
+      "luma_structure_retention": 0.99083741
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 6,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F06.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F06.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.78222656,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.77734375,
+          0.9375,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 8.708e-05,
+      "alpha_iou": 0.99913345,
+      "edge_energy_retention": 0.99948778,
+      "luma_structure_retention": 0.99921393
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 7,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F07.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F07.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.79882812,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.796875,
+          0.9375,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 7.323e-05,
+      "alpha_iou": 0.99531674,
+      "edge_energy_retention": 1.01843738,
+      "luma_structure_retention": 1.00530194
+    },
+    {
+      "kind": "wave",
+      "family": "LongSwell",
+      "frame": 7,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F07.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F07.png",
+      "registration": {
+        "source_normalized": [
+          0.06298828,
+          0.79882812,
+          0.93701172,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.0625,
+          0.796875,
+          0.9375,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 6.755e-05,
+      "alpha_iou": 0.9992674,
+      "edge_energy_retention": 1.00035509,
+      "luma_structure_retention": 0.99173591
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F00.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F00.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.43554688,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.43359375,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00022429,
+      "alpha_iou": 0.99703124,
+      "edge_energy_retention": 0.99197653,
+      "luma_structure_retention": 0.9997855
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F00.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F00.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.43554688,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.43359375,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00021107,
+      "alpha_iou": 0.99979138,
+      "edge_energy_retention": 0.99799681,
+      "luma_structure_retention": 0.99291443
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 1,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F01.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F01.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.30761719,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.30273438,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00031907,
+      "alpha_iou": 0.99928151,
+      "edge_energy_retention": 1.00371593,
+      "luma_structure_retention": 0.99663418
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 1,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F01.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F01.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.30761719,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.30273438,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00029512,
+      "alpha_iou": 0.99985993,
+      "edge_energy_retention": 0.99931436,
+      "luma_structure_retention": 0.9952222
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 2,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F02.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F02.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.296875,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12402344,
+          0.29492188,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00030007,
+      "alpha_iou": 0.99942928,
+      "edge_energy_retention": 1.00149201,
+      "luma_structure_retention": 0.99464685
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 2,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F02.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F02.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.296875,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12402344,
+          0.29492188,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00027617,
+      "alpha_iou": 0.99977657,
+      "edge_energy_retention": 1.00054748,
+      "luma_structure_retention": 0.99588377
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 3,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F03.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F03.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.45800781,
+          0.87548828,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.453125,
+          0.875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00032694,
+      "alpha_iou": 0.99942531,
+      "edge_energy_retention": 0.99991429,
+      "luma_structure_retention": 0.99620129
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 3,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F03.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F03.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.45800781,
+          0.87548828,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.453125,
+          0.875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00031399,
+      "alpha_iou": 0.99972416,
+      "edge_energy_retention": 0.99612797,
+      "luma_structure_retention": 0.99532614
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 4,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F04.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F04.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.38574219,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.38476562,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00038671,
+      "alpha_iou": 0.99966015,
+      "edge_energy_retention": 1.00183352,
+      "luma_structure_retention": 0.99728782
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 4,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F04.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F04.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.38574219,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.38476562,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00036368,
+      "alpha_iou": 0.99988178,
+      "edge_energy_retention": 0.99989377,
+      "luma_structure_retention": 0.9967881
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 5,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F05.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F05.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.57519531,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.5703125,
+          0.87597656,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00024656,
+      "alpha_iou": 0.99905099,
+      "edge_energy_retention": 0.99875676,
+      "luma_structure_retention": 0.99771964
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 5,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F05.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F05.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.57519531,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.5703125,
+          0.87597656,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00022816,
+      "alpha_iou": 0.99911452,
+      "edge_energy_retention": 1.00022885,
+      "luma_structure_retention": 0.9943098
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 6,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F06.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F06.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.67675781,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.671875,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00016223,
+      "alpha_iou": 0.99892683,
+      "edge_energy_retention": 1.00453816,
+      "luma_structure_retention": 0.99339421
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 6,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F06.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F06.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.67675781,
+          0.87597656,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.671875,
+          0.87695312,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00015612,
+      "alpha_iou": 0.99923815,
+      "edge_energy_retention": 1.0011705,
+      "luma_structure_retention": 0.99529407
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 7,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F07.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F07.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.78222656,
+          0.87548828,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.77734375,
+          0.875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 8.17e-05,
+      "alpha_iou": 0.99475066,
+      "edge_energy_retention": 1.00791611,
+      "luma_structure_retention": 1.00014486
+    },
+    {
+      "kind": "wave",
+      "family": "WindWave",
+      "frame": 7,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F07.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F07.png",
+      "registration": {
+        "source_normalized": [
+          0.12402344,
+          0.78222656,
+          0.87548828,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.12304688,
+          0.77734375,
+          0.875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 7.242e-05,
+      "alpha_iou": 0.9978022,
+      "edge_energy_retention": 0.99988409,
+      "luma_structure_retention": 0.99321664
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F00.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F00.png",
+      "registration": {
+        "source_normalized": [
+          0.11425781,
+          0.24902344,
+          0.88574219,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.11328125,
+          0.24414062,
+          0.88671875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00029778,
+      "alpha_iou": 0.99885241,
+      "edge_energy_retention": 0.99950857,
+      "luma_structure_retention": 0.99350892
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F00.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F00.png",
+      "registration": {
+        "source_normalized": [
+          0.11425781,
+          0.24902344,
+          0.88574219,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.11328125,
+          0.24414062,
+          0.88671875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00027488,
+      "alpha_iou": 0.99922696,
+      "edge_energy_retention": 1.00205169,
+      "luma_structure_retention": 1.00128795
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 1,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F01.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F01.png",
+      "registration": {
+        "source_normalized": [
+          0.17480469,
+          0.140625,
+          0.82470703,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.17382812,
+          0.13867188,
+          0.82519531,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00026378,
+      "alpha_iou": 0.99865629,
+      "edge_energy_retention": 1.00003195,
+      "luma_structure_retention": 0.99487403
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 1,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F01.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F01.png",
+      "registration": {
+        "source_normalized": [
+          0.17480469,
+          0.140625,
+          0.82470703,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.17382812,
+          0.13867188,
+          0.82519531,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00023925,
+      "alpha_iou": 0.9997392,
+      "edge_energy_retention": 1.00063241,
+      "luma_structure_retention": 1.00191136
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 2,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F02.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F02.png",
+      "registration": {
+        "source_normalized": [
+          0.18603516,
+          0.140625,
+          0.81396484,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.18359375,
+          0.140625,
+          0.81640625,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00024633,
+      "alpha_iou": 0.9990635,
+      "edge_energy_retention": 1.00320056,
+      "luma_structure_retention": 0.99903516
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 2,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F02.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F02.png",
+      "registration": {
+        "source_normalized": [
+          0.18603516,
+          0.140625,
+          0.81396484,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.18359375,
+          0.140625,
+          0.81640625,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00244141
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.0002231,
+      "alpha_iou": 0.99942035,
+      "edge_energy_retention": 1.0001154,
+      "luma_structure_retention": 0.99556224
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 3,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F03.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F03.png",
+      "registration": {
+        "source_normalized": [
+          0.22851562,
+          0.140625,
+          0.77148438,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.22753906,
+          0.140625,
+          0.77246094,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00031532,
+      "alpha_iou": 0.999549,
+      "edge_energy_retention": 1.00383113,
+      "luma_structure_retention": 0.99668022
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 3,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F03.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F03.png",
+      "registration": {
+        "source_normalized": [
+          0.22851562,
+          0.140625,
+          0.77148438,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.22753906,
+          0.140625,
+          0.77246094,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00028838,
+      "alpha_iou": 0.99957945,
+      "edge_energy_retention": 1.00218585,
+      "luma_structure_retention": 0.99708059
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 4,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F04.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F04.png",
+      "registration": {
+        "source_normalized": [
+          0.20263672,
+          0.140625,
+          0.79736328,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.20214844,
+          0.13867188,
+          0.79785156,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00032695,
+      "alpha_iou": 0.99911579,
+      "edge_energy_retention": 1.00240469,
+      "luma_structure_retention": 0.99404442
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 4,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F04.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F04.png",
+      "registration": {
+        "source_normalized": [
+          0.20263672,
+          0.140625,
+          0.79736328,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.20214844,
+          0.13867188,
+          0.79785156,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00029648,
+      "alpha_iou": 0.99931267,
+      "edge_energy_retention": 1.00134359,
+      "luma_structure_retention": 1.00004237
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 5,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F05.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F05.png",
+      "registration": {
+        "source_normalized": [
+          0.11425781,
+          0.15136719,
+          0.88574219,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.11328125,
+          0.15039062,
+          0.88671875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00036565,
+      "alpha_iou": 0.99941818,
+      "edge_energy_retention": 1.00029261,
+      "luma_structure_retention": 0.99582482
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 5,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F05.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F05.png",
+      "registration": {
+        "source_normalized": [
+          0.11425781,
+          0.15136719,
+          0.88574219,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.11328125,
+          0.15039062,
+          0.88671875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00033935,
+      "alpha_iou": 0.99969827,
+      "edge_energy_retention": 1.00050877,
+      "luma_structure_retention": 0.99319157
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 6,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F06.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F06.png",
+      "registration": {
+        "source_normalized": [
+          0.11425781,
+          0.55175781,
+          0.88574219,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.11328125,
+          0.546875,
+          0.88671875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00017884,
+      "alpha_iou": 0.99760107,
+      "edge_energy_retention": 1.00175542,
+      "luma_structure_retention": 0.99339559
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 6,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F06.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F06.png",
+      "registration": {
+        "source_normalized": [
+          0.11425781,
+          0.55175781,
+          0.88574219,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.11328125,
+          0.546875,
+          0.88671875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00488281
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00016252,
+      "alpha_iou": 0.99944949,
+      "edge_energy_retention": 0.99879136,
+      "luma_structure_retention": 0.9992534
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 7,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F07.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F07.png",
+      "registration": {
+        "source_normalized": [
+          0.11425781,
+          0.66796875,
+          0.88574219,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.11328125,
+          0.66601562,
+          0.88671875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        468,
+        234
+      ],
+      "mae_premultiplied_rgba": 0.00012541,
+      "alpha_iou": 0.99683908,
+      "edge_energy_retention": 1.00035223,
+      "luma_structure_retention": 0.9838109
+    },
+    {
+      "kind": "wave",
+      "family": "StormBreaker",
+      "frame": 7,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F07.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F07.png",
+      "registration": {
+        "source_normalized": [
+          0.11425781,
+          0.66796875,
+          0.88574219,
+          0.86328125
+        ],
+        "output_normalized": [
+          0.11328125,
+          0.66601562,
+          0.88671875,
+          0.86328125
+        ],
+        "maximum_normalized_edge_error": 0.00195312
+      },
+      "projection": [
+        374,
+        187
+      ],
+      "mae_premultiplied_rgba": 0.00011409,
+      "alpha_iou": 0.99912511,
+      "edge_energy_retention": 0.99905167,
+      "luma_structure_retention": 0.98743806
+    },
+    {
+      "kind": "cloud",
+      "family": "FarCloudWall",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_FarCloudWall_Seamless.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_FarCloudWall_Seamless.png",
+      "registration": {
+        "source_normalized": [
+          0.0,
+          0.41894531,
+          1.0,
+          0.734375
+        ],
+        "output_normalized": [
+          0.0,
+          0.41796875,
+          1.0,
+          0.734375
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        1600,
+        400
+      ],
+      "mae_premultiplied_rgba": 0.00016885,
+      "alpha_iou": 0.99933883,
+      "edge_energy_retention": 1.01598576,
+      "luma_structure_retention": 1.00399446
+    },
+    {
+      "kind": "cloud",
+      "family": "FarCloudWall",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_FarCloudWall_Seamless.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_FarCloudWall_Seamless.png",
+      "registration": {
+        "source_normalized": [
+          0.0,
+          0.41894531,
+          1.0,
+          0.734375
+        ],
+        "output_normalized": [
+          0.0,
+          0.41796875,
+          1.0,
+          0.734375
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        960,
+        240
+      ],
+      "mae_premultiplied_rgba": 0.00016791,
+      "alpha_iou": 0.99983779,
+      "edge_energy_retention": 1.0145173,
+      "luma_structure_retention": 0.99909814
+    },
+    {
+      "kind": "cloud",
+      "family": "MidWeatherBank",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_MidWeatherBank_Seamless.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_MidWeatherBank_Seamless.png",
+      "registration": {
+        "source_normalized": [
+          0.0,
+          0.16601562,
+          1.0,
+          0.84960938
+        ],
+        "output_normalized": [
+          0.0,
+          0.16601562,
+          1.0,
+          0.84960938
+        ],
+        "maximum_normalized_edge_error": 0.0
+      },
+      "projection": [
+        1600,
+        400
+      ],
+      "mae_premultiplied_rgba": 0.00031769,
+      "alpha_iou": 0.99976062,
+      "edge_energy_retention": 0.99728936,
+      "luma_structure_retention": 1.00128989
+    },
+    {
+      "kind": "cloud",
+      "family": "MidWeatherBank",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_MidWeatherBank_Seamless.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_MidWeatherBank_Seamless.png",
+      "registration": {
+        "source_normalized": [
+          0.0,
+          0.16601562,
+          1.0,
+          0.84960938
+        ],
+        "output_normalized": [
+          0.0,
+          0.16601562,
+          1.0,
+          0.84960938
+        ],
+        "maximum_normalized_edge_error": 0.0
+      },
+      "projection": [
+        960,
+        240
+      ],
+      "mae_premultiplied_rgba": 0.00034909,
+      "alpha_iou": 0.99990742,
+      "edge_energy_retention": 1.00158959,
+      "luma_structure_retention": 1.00197544
+    },
+    {
+      "kind": "cloud",
+      "family": "NearScud",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_NearScud_Seamless.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_NearScud_Seamless.png",
+      "registration": {
+        "source_normalized": [
+          0.00927734,
+          0.22363281,
+          0.99072266,
+          0.72460938
+        ],
+        "output_normalized": [
+          0.00927734,
+          0.22265625,
+          0.99072266,
+          0.72460938
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        1600,
+        400
+      ],
+      "mae_premultiplied_rgba": 0.00023186,
+      "alpha_iou": 0.99699553,
+      "edge_energy_retention": 0.9969436,
+      "luma_structure_retention": 1.00597639
+    },
+    {
+      "kind": "cloud",
+      "family": "NearScud",
+      "frame": 0,
+      "source": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_NearScud_Seamless.png",
+      "output": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_NearScud_Seamless.png",
+      "registration": {
+        "source_normalized": [
+          0.00927734,
+          0.22363281,
+          0.99072266,
+          0.72460938
+        ],
+        "output_normalized": [
+          0.00927734,
+          0.22265625,
+          0.99072266,
+          0.72460938
+        ],
+        "maximum_normalized_edge_error": 0.00097656
+      },
+      "projection": [
+        960,
+        240
+      ],
+      "mae_premultiplied_rgba": 0.00018466,
+      "alpha_iou": 0.99838947,
+      "edge_energy_retention": 1.00114792,
+      "luma_structure_retention": 1.00491904
+    }
+  ],
+  "pixel_audit": [
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_FarCloudWall_Seamless.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_MidWeatherBank_Seamless.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_NearScud_Seamless.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F00.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F01.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F02.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F03.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F04.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F05.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F06.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F07.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F00.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F01.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F02.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F03.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F04.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F05.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F06.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F07.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F00.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F01.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F02.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F03.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F04.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F05.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F06.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F07.png",
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0,
+      "visible_green_pixels": 0,
+      "opaque_corner_count": 0
+    }
+  ],
+  "wave_alpha_bottoms": {
+    "LongSwell": [
+      442
+    ],
+    "WindWave": [
+      442
+    ],
+    "StormBreaker": [
+      442
+    ]
+  },
+  "cloud_edge_column_errors": {
+    "FarCloudWall": 0,
+    "MidWeatherBank": 0,
+    "NearScud": 0
+  },
+  "runtime_png_count": 27,
+  "runtime_rgba32_bytes": 62914560,
+  "runtime_full_mip_bytes": 83886132,
+  "source_lock_count": 132,
+  "guid_audit": {
+    "package_guid_count": 47,
+    "collision_count": 0,
+    "collisions": []
+  },
+  "runtime_reference_audit": {
+    "count": 0,
+    "paths": []
+  },
+  "runtime_manifest_sha256": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489",
+  "residency": {
+    "measurement_scope": "source-side uncompressed RGBA32 plus complete mip chain; not Unity allocation or target-device evidence",
+    "weather_block": {
+      "source_v43_one_wave_family_mib": 85.3333,
+      "v84_one_wave_family_mib": 21.3333,
+      "source_v43_three_clouds_mib": 64.0,
+      "v84_three_clouds_mib": 16.0,
+      "source_v43_normal_weather_mib": 149.3334,
+      "v84_normal_weather_mib": 37.3334,
+      "normal_weather_reduction_percent": 75.0,
+      "source_v43_two_wave_transition_mib": 234.6667,
+      "v84_two_wave_transition_mib": 58.6667,
+      "v70_balanced_vortex_all_layers_mib": 33.106
+    },
+    "scenarios": [
+      {
+        "scenario": "HomeExterior",
+        "source_upper_bound_mib": 214.1421,
+        "v84_upper_bound_mib": 102.1421,
+        "reduction_mib": 112.0,
+        "note": "以单一活动浪族和三层共享云为口径"
+      },
+      {
+        "scenario": "HomeInterior",
+        "source_upper_bound_mib": 61.6448,
+        "v84_upper_bound_mib": 61.6448,
+        "reduction_mib": 0.0,
+        "note": "室内不驻留外景海浪/云层"
+      },
+      {
+        "scenario": "Sailing",
+        "source_upper_bound_mib": 233.1429,
+        "v84_upper_bound_mib": 121.1429,
+        "reduction_mib": 112.0,
+        "note": "以单一活动浪族和三层共享云为口径"
+      },
+      {
+        "scenario": "VortexSailing",
+        "source_upper_bound_mib": 238.7671,
+        "v84_upper_bound_mib": 126.7671,
+        "reduction_mib": 112.0,
+        "note": "以单一活动浪族和三层共享云为口径"
+      },
+      {
+        "scenario": "Finale",
+        "source_upper_bound_mib": 215.7052,
+        "v84_upper_bound_mib": 103.7052,
+        "reduction_mib": 112.0,
+        "note": "以单一活动浪族和三层共享云为口径"
+      },
+      {
+        "scenario": "Opening",
+        "source_upper_bound_mib": 171.1954,
+        "v84_upper_bound_mib": 59.1954,
+        "reduction_mib": 112.0,
+        "note": "以单一活动浪族和三层共享云为口径"
+      }
+    ],
+    "residency_rules": [
+      "常态只驻留一个海浪动作族；天气切换最多短暂并存旧族与新族。",
+      "远、中、近三层云纹理由所有重复 Renderer 共享，不复制纹理实例。",
+      "漩涡只引用 V70 Balanced，进入漩涡航段时加载，离开后释放。",
+      "V43 海浪/云层与 V84 对应项必须原子替换，禁止同时显示或同时常驻。",
+      "HomeInterior 不驻留外景海浪、云层与漩涡。"
+    ],
+    "atlas_rules": {
+      "never_atlas": [
+        "V84 三层 Repeat 云纹理",
+        "V56 连续海体",
+        "跨天气的全部海浪族",
+        "跨房屋视图或维修阶段的大画布底图",
+        "V78 全部 136 帧人物动作"
+      ],
+      "allowed_atomic_groups": [
+        "同一个 V84 海浪族的八帧，可独立建 Atlas 或保留独立纹理后由 Profiler 比较",
+        "单个 V78 动作族",
+        "单个 V69/V52 owner 的当前阶段；不得把所有阶段塞进同一常驻 Atlas"
+      ],
+      "padding_and_compression": "由运行侧在 Windows/macOS Metal Game View 与 Profiler 后确定；资源包不冒领平台压缩结果。"
+    },
+    "wave_families": [
+      "LongSwell",
+      "StormBreaker",
+      "WindWave"
+    ],
+    "cloud_layers": [
+      "FarCloudWall",
+      "MidWeatherBank",
+      "NearScud"
+    ],
+    "external_vortex_profile": "Assets/Art/GeneratedAI/ProductionSideViewVortexV70/Runtime/Balanced"
+  },
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/TideSeaWeatherV84_QualityGate_4K.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/TideSeaWeatherV84_ResidencyBudget_4K.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/TideSeaWeatherV84_AtlasBoundary_4K.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/TideSeaWeatherV84_RuntimeProjection_4K.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/Raw/TideSeaWeatherV84_Balanced_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/Raw/TideSeaWeatherV84_Balanced_960x720.png"
+  ],
+  "package_payload_sha256": "691aa50222fc47f3b3dffe5d913f0d3b4b8ac0551d3bb96da4c57ec436e460db"
+}

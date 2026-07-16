@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92877013c3df1af47b2126ffd03b590d, type: 3}
+  m_Name: V34HouseExteriorCatalog
+  m_EditorClassIdentifier: 
+  version: 34
+  stableBase: {fileID: 21300000, guid: 06e2f8f3fa7058b43ad44f57692b1795, type: 3}
+  owners:
+  - key: AccessLadder
+    displayNameZh: "\u5916\u68AF"
+    gameplayOwner: Stilt
+    damageSprite: {fileID: 21300000, guid: bac51ca3234e80d488cf26b56ce11128, type: 3}
+    repairSprite: {fileID: 21300000, guid: 3beb83c465e49bf458cd1fe38c8ec58b, type: 3}
+    worldOffsetFromHousePivot: {x: 0.142578, y: 1.947266}
+    originTopLeft: {x: 863, y: 1148}
+    sourceSize: {x: 395, y: 675}
+  - key: Lookout
+    displayNameZh: "\u77AD\u671B\u95F4"
+    gameplayOwner: Roof
+    damageSprite: {fileID: 21300000, guid: 69101adda4ea0d44d8e7303dda121748, type: 3}
+    repairSprite: {fileID: 21300000, guid: 1b9f1ae71aa500b449ec65233e34d52e, type: 3}
+    worldOffsetFromHousePivot: {x: -0.064453, y: 5.232422}
+    originTopLeft: {x: 708, y: 431}
+    sourceSize: {x: 599, y: 427}
+  - key: RoofLeft
+    displayNameZh: "\u5DE6\u5C4B\u9762"
+    gameplayOwner: Roof
+    damageSprite: {fileID: 21300000, guid: f499e0dc2d02f2c488fcb1fe7d49696d, type: 3}
+    repairSprite: {fileID: 21300000, guid: 0d104819ab3b2ca4bb1ba43d99beaa02, type: 3}
+    worldOffsetFromHousePivot: {x: -1.755859, y: 4.166016}
+    originTopLeft: {x: 226, y: 662}
+    sourceSize: {x: 697, y: 511}
+  - key: RoofRight
+    displayNameZh: "\u53F3\u5C4B\u9762"
+    gameplayOwner: Roof
+    damageSprite: {fileID: 21300000, guid: 53050f3997fa98242b8fa147254af31a, type: 3}
+    repairSprite: {fileID: 21300000, guid: 7f7b604b7206e564aacb4ca1df94ecec, type: 3}
+    worldOffsetFromHousePivot: {x: 0.611328, y: 3.830078}
+    originTopLeft: {x: 873, y: 834}
+    sourceSize: {x: 615, y: 339}
+  - key: Foundation
+    displayNameZh: "\u6869\u57FA\u6F6E\u95F4\u5C42"
+    gameplayOwner: Stilt
+    damageSprite: {fileID: 21300000, guid: 1aa17178c1783444aabd943bda5ec043, type: 3}
+    repairSprite: {fileID: 21300000, guid: 9b376ce111602864a8e90dc248d75bed, type: 3}
+    worldOffsetFromHousePivot: {x: -0.626953, y: 1.099609}
+    originTopLeft: {x: 219, y: 1373}
+    sourceSize: {x: 1289, y: 659}
+  - key: WallDeck
+    displayNameZh: "\u5899\u4F53\u4E0E\u5916\u5ECA"
+    gameplayOwner: Interior
+    damageSprite: {fileID: 21300000, guid: 41725cf8ae7410347abd8c322eb02b3c, type: 3}
+    repairSprite: {fileID: 21300000, guid: d22fa85ec805de64eb7a3a37db6916a1, type: 3}
+    worldOffsetFromHousePivot: {x: -0.640625, y: 2.777344}
+    originTopLeft: {x: 208, y: 1149}
+    sourceSize: {x: 1304, y: 248}

@@ -1,0 +1,29 @@
+{
+  "version": "V80",
+  "status": "passed",
+  "runtime_png_count": 0,
+  "qa_png_count": 6,
+  "carry_frame_count": 8,
+  "fish_variant_count": 3,
+  "maximum_visible_fish_count": 3,
+  "maximum_hand_grip_alignment_error_px": 0.0,
+  "maximum_fish_slot_alignment_error_px": 0.0,
+  "all_referenced_bodies_complete": true,
+  "runtime_reference_count": 0,
+  "new_runtime_rgba32_bytes": 0,
+  "source_lock_count": 19,
+  "authoritative_runtime_manifest_sha256_before": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489",
+  "authoritative_runtime_manifest_sha256_after": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489",
+  "payload_sha256": "26029371ba237d24a1530a196ef4b487c5593a20a1d6269429bae1efb9b7b746",
+  "gates": {
+    "zero_new_runtime_bitmaps": true,
+    "fish_identity_remains_independent": true,
+    "wet_net_is_single_carrier_owner": true,
+    "complete_body_preserved": true,
+    "hand_grip_contact_exact": true,
+    "fish_slot_contact_exact": true,
+    "loose_two_hand_fish_pose_forbidden": true,
+    "runtime_not_integrated": true,
+    "runtime_manifest_unchanged": true
+  }
+}

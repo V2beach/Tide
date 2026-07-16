@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b90f40c3118ae045820f14328a807ec, type: 3}
+  m_Name: V31BoatRuntimeCatalog
+  m_EditorClassIdentifier: 
+  version: 31
+  canvasSize: {x: 6144, y: 4096}
+  pivotNormalized: {x: 0.5, y: 0.03}
+  pixelsPerUnit: 512
+  foundBaseSprite: {fileID: 21300000, guid: 69742aa1dd5b5d21be4266165f7876f0, type: 3}
+  sailableBaseSprite: {fileID: 21300000, guid: 69742aa1dd5b5d21be4266165f7876f0, type: 3}
+  repairedBaseSprite: {fileID: 21300000, guid: bff4ca8ca93f575fae87ae9f570ddc17, type: 3}
+  foundLayers:
+  - key: CockpitBack
+    sprite: {fileID: 21300000, guid: 7bfdf7b154ac578bacba3dfff1f1bb8f, type: 3}
+    worldOffsetFromBoatPivot: {x: -0.650391, y: 2.648672}
+    originTopLeft: {x: 1046, y: 2246}
+    sourceSize: {x: 3386, y: 742}
+  - key: FrontGunwale
+    sprite: {fileID: 21300000, guid: 8186be04d4185863876113c3c27998b8, type: 3}
+    worldOffsetFromBoatPivot: {x: -0.09082, y: 1.54418}
+    originTopLeft: {x: 1077, y: 2512}
+    sourceSize: {x: 3897, y: 1341}
+  repairedLayers:
+  - key: CockpitBack
+    sprite: {fileID: 21300000, guid: 764f6aea36585ea9bc450819e3eb538f, type: 3}
+    worldOffsetFromBoatPivot: {x: -0.650391, y: 2.648672}
+    originTopLeft: {x: 1046, y: 2246}
+    sourceSize: {x: 3386, y: 742}
+  - key: FrontGunwale
+    sprite: {fileID: 21300000, guid: 936c03d7f8915895ab6e4f4796b352b3, type: 3}
+    worldOffsetFromBoatPivot: {x: -0.09082, y: 1.54418}
+    originTopLeft: {x: 1077, y: 2512}
+    sourceSize: {x: 3897, y: 1341}
+  - key: BackRig
+    sprite: {fileID: 21300000, guid: c0631ac118455d86aadda33eeafb6d42, type: 3}
+    worldOffsetFromBoatPivot: {x: 1.405273, y: 4.645742}
+    originTopLeft: {x: 1587, y: 396}
+    sourceSize: {x: 4409, y: 2397}
+  - key: SailRest
+    sprite: {fileID: 21300000, guid: 794f4ef0b0e45e32a7901a293f9711e4, type: 3}
+    worldOffsetFromBoatPivot: {x: 1.469727, y: 4.261953}
+    originTopLeft: {x: 2754, y: 856}
+    sourceSize: {x: 2141, y: 1870}
+  - key: RudderRest
+    sprite: {fileID: 21300000, guid: 819b7278ada85a91a8d27829edf7b996, type: 3}
+    worldOffsetFromBoatPivot: {x: 3.394531, y: 1.393789}
+    originTopLeft: {x: 4538, y: 2712}
+    sourceSize: {x: 544, y: 1095}
+  passengerFrames:
+  - key: SeatedSteer_F00
+    sprite: {fileID: 21300000, guid: 9f2343c0f92559729bedb4acb913bfe3, type: 3}
+    worldOffsetFromBoatPivot: {x: 2.458008, y: 1.965078}
+    originTopLeft: {x: 3874, y: 2390}
+    sourceSize: {x: 913, y: 1154}
+  - key: SeatedSteer_F01
+    sprite: {fileID: 21300000, guid: 07ab4fe9b6eb5192b47fbbb74b3bc595, type: 3}
+    worldOffsetFromBoatPivot: {x: 2.456055, y: 2.07543}
+    originTopLeft: {x: 3951, y: 2278}
+    sourceSize: {x: 757, y: 1265}
+  - key: SeatedSteer_F02
+    sprite: {fileID: 21300000, guid: bb3fb68abcaa571c862fdeba2fe2ba7e, type: 3}
+    worldOffsetFromBoatPivot: {x: 2.395508, y: 2.089102}
+    originTopLeft: {x: 3971, y: 2264}
+    sourceSize: {x: 655, y: 1279}
+  - key: SeatedSteer_F03
+    sprite: {fileID: 21300000, guid: f78047e7fc3c57e6b971398be42eb872, type: 3}
+    worldOffsetFromBoatPivot: {x: 2.386719, y: 1.987539}
+    originTopLeft: {x: 3919, y: 2367}
+    sourceSize: {x: 750, y: 1177}
+  - key: SeatedSteer_F04
+    sprite: {fileID: 21300000, guid: 9589b6e3d60a526aba3a263ccfdfcc42, type: 3}
+    worldOffsetFromBoatPivot: {x: 2.386719, y: 2.143789}
+    originTopLeft: {x: 4001, y: 2208}
+    sourceSize: {x: 586, y: 1335}
+  - key: SeatedSteer_F05
+    sprite: {fileID: 21300000, guid: 61fbaaf409b1559a8077462bb1ca9a6d, type: 3}
+    worldOffsetFromBoatPivot: {x: 2.458984, y: 1.965078}
+    originTopLeft: {x: 3863, y: 2390}
+    sourceSize: {x: 936, y: 1154}
+  passengerFrameSeconds: 0.12
+  waterlineMasks:
+  - key: Calm
+    sprite: {fileID: 21300000, guid: 483eac138ef8520797091445912b0388, type: 3}
+    waterlineYTopLeft: 3440
+    worldOffsetFromBoatPivot: {x: -0.042969, y: 0.724844}
+    originTopLeft: {x: 850, y: 3392}
+    sourceSize: {x: 4400, y: 420}
+  - key: Loaded
+    sprite: {fileID: 21300000, guid: 01d36676827f5efeb270b76f450ff899, type: 3}
+    waterlineYTopLeft: 3360
+    worldOffsetFromBoatPivot: {x: -0.042969, y: 0.881094}
+    originTopLeft: {x: 850, y: 3312}
+    sourceSize: {x: 4400, y: 420}
+  - key: Storm
+    sprite: {fileID: 21300000, guid: f72ae7f1f62f5bd58107c4d7e1e08091, type: 3}
+    waterlineYTopLeft: 3280
+    worldOffsetFromBoatPivot: {x: -0.042969, y: 1.037344}
+    originTopLeft: {x: 850, y: 3232}
+    sourceSize: {x: 4400, y: 420}
+  anchors:
+    seatTopLeft: {x: 4280, y: 3000}
+    tillerHandTopLeft: {x: 4630, y: 2740}
+    boardingSternTopLeft: {x: 4740, y: 2830}
+    cargoHookTopLeft: {x: 1740, y: 2780}
+    calmWaterlineTopLeft: {x: 0, y: 3440}

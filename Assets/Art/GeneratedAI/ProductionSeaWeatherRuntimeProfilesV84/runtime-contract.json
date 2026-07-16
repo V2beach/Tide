@@ -1,0 +1,283 @@
+{
+  "package": "ProductionSeaWeatherRuntimeProfilesV84",
+  "status": "resource_replacement_ready_not_runtime_integrated",
+  "request_id": "ART-P2-SEA-WEATHER-RUNTIME-PROFILE",
+  "visual_authority": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/runtime-contract.json",
+  "recommended_profile": "Balanced",
+  "profile_selection": "Replace V43 waves and clouds atomically; never display or keep both profiles resident.",
+  "waves": {
+    "LongSwell": {
+      "label": "长涌",
+      "frames": [
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F00.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F01.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F02.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F03.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F04.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F05.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F06.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/LongSwell/TideSeaV84_Balanced_LongSwell_F07.png"
+      ],
+      "source_frames": [
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F00.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F01.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F02.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F03.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F04.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F05.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F06.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/LongSwell/TideSeaV43_LongSwell_F07.png"
+      ],
+      "logical_canvas": [
+        1024,
+        512
+      ],
+      "logical_source_canvas": [
+        2048,
+        1024
+      ],
+      "pivot": [
+        0.5,
+        0.13671875
+      ],
+      "pixels_per_unit": 256,
+      "baseline_top_left_y": 442,
+      "duration_ms": 170,
+      "loop": true,
+      "phase_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "world_composite_target_m": [
+        2.8,
+        0.34
+      ],
+      "ownership": "connected crest, lip and foam alpha only"
+    },
+    "WindWave": {
+      "label": "普通风浪",
+      "frames": [
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F00.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F01.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F02.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F03.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F04.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F05.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F06.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/WindWave/TideSeaV84_Balanced_WindWave_F07.png"
+      ],
+      "source_frames": [
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F00.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F01.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F02.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F03.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F04.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F05.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F06.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/WindWave/TideSeaV43_WindWave_F07.png"
+      ],
+      "logical_canvas": [
+        1024,
+        512
+      ],
+      "logical_source_canvas": [
+        2048,
+        1024
+      ],
+      "pivot": [
+        0.5,
+        0.13671875
+      ],
+      "pixels_per_unit": 256,
+      "baseline_top_left_y": 442,
+      "duration_ms": 125,
+      "loop": true,
+      "phase_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "world_composite_target_m": [
+        1.8,
+        0.56
+      ],
+      "ownership": "connected crest, lip and foam alpha only"
+    },
+    "StormBreaker": {
+      "label": "暴潮碎浪",
+      "frames": [
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F00.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F01.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F02.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F03.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F04.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F05.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F06.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Waves/StormBreaker/TideSeaV84_Balanced_StormBreaker_F07.png"
+      ],
+      "source_frames": [
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F00.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F01.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F02.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F03.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F04.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F05.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F06.png",
+        "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Waves/StormBreaker/TideSeaV43_StormBreaker_F07.png"
+      ],
+      "logical_canvas": [
+        1024,
+        512
+      ],
+      "logical_source_canvas": [
+        2048,
+        1024
+      ],
+      "pivot": [
+        0.5,
+        0.13671875
+      ],
+      "pixels_per_unit": 256,
+      "baseline_top_left_y": 442,
+      "duration_ms": 95,
+      "loop": true,
+      "phase_order": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "world_composite_target_m": [
+        2.25,
+        0.92
+      ],
+      "ownership": "connected crest, lip and foam alpha only"
+    }
+  },
+  "clouds": {
+    "FarCloudWall": {
+      "label": "远层云墙",
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_FarCloudWall_Seamless.png",
+      "source_path": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_FarCloudWall_Seamless.png",
+      "logical_canvas": [
+        2048,
+        512
+      ],
+      "logical_source_canvas": [
+        4096,
+        1024
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixels_per_unit": 128,
+      "wrap_u": "Repeat",
+      "wrap_v": "Clamp",
+      "parallax_multiplier": 0.08,
+      "edge_column_max_error": 0,
+      "ownership": "cloud alpha only; daylight and weather tint are runtime-owned"
+    },
+    "MidWeatherBank": {
+      "label": "中层雨云",
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_MidWeatherBank_Seamless.png",
+      "source_path": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_MidWeatherBank_Seamless.png",
+      "logical_canvas": [
+        2048,
+        512
+      ],
+      "logical_source_canvas": [
+        4096,
+        1024
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixels_per_unit": 128,
+      "wrap_u": "Repeat",
+      "wrap_v": "Clamp",
+      "parallax_multiplier": 0.19,
+      "edge_column_max_error": 0,
+      "ownership": "cloud alpha only; daylight and weather tint are runtime-owned"
+    },
+    "NearScud": {
+      "label": "近层疾云",
+      "path": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/Runtime/Balanced/Clouds/TideSeaV84_Balanced_NearScud_Seamless.png",
+      "source_path": "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_NearScud_Seamless.png",
+      "logical_canvas": [
+        2048,
+        512
+      ],
+      "logical_source_canvas": [
+        4096,
+        1024
+      ],
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "pixels_per_unit": 128,
+      "wrap_u": "Repeat",
+      "wrap_v": "Clamp",
+      "parallax_multiplier": 0.38,
+      "edge_column_max_error": 0,
+      "ownership": "cloud alpha only; daylight and weather tint are runtime-owned"
+    }
+  },
+  "external_vortex": {
+    "profile": "Balanced",
+    "contract": "Assets/Art/GeneratedAI/ProductionSideViewVortexV70/runtime-contract.json",
+    "copied_runtime_png_count": 0
+  },
+  "ownership": {
+    "continuous_ocean": "V56/current continuous ocean remains authoritative for water body, height and slope.",
+    "waves": "V84 owns connected crest/lip/foam alpha only; runtime samples the shared ocean field.",
+    "clouds": "V84 owns cloud alpha only; runtime owns tint, wind, daylight and parallax offsets.",
+    "vortex": "V70 Balanced owns vortex painted layers; runtime owns current, suction, collision and route blocking."
+  },
+  "residency_contract": "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/residency-index.json",
+  "import": {
+    "texture_type": "Sprite (2D and UI)",
+    "mipmaps": true,
+    "border_mipmap": true,
+    "preserve_alpha_coverage": true,
+    "filter": "Bilinear",
+    "platform_compression": "None in source package; choose only after Windows/macOS Metal Game View and Profiler validation."
+  },
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/TideSeaWeatherV84_QualityGate_4K.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/TideSeaWeatherV84_ResidencyBudget_4K.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/TideSeaWeatherV84_AtlasBoundary_4K.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/TideSeaWeatherV84_RuntimeProjection_4K.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/Raw/TideSeaWeatherV84_Balanced_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherRuntimeProfilesV84/QA/Raw/TideSeaWeatherV84_Balanced_960x720.png"
+  ],
+  "forbidden": [
+    "Do not replace the continuous ocean with a V84 frame or add a rectangular local sea patch.",
+    "Do not display V43 and V84 wave/cloud owners together.",
+    "Do not move the wave baseline, change phase order, bake cloud tint, or copy V70 into this package.",
+    "Do not atlas Repeat clouds or all weather/action/repair states into one resident atlas.",
+    "Do not update the runtime manifest before Catalog replacement, Game View, Profiler and target-platform validation."
+  ],
+  "known_limitations": [
+    "No Unity Catalog, scene, prefab, controller or AnimationClip references V84 yet.",
+    "The source-side mip budget does not include Unity allocator overhead, compression blocks, atlas padding or duplicate runtime instances.",
+    "V39 6K boat layers, V78 family loading, global SpriteAtlas and Windows/macOS Metal profiling remain separate performance work."
+  ]
+}

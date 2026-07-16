@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c59b9b12e091e8d40b3d7d5b5767a426, type: 3}
+  m_Name: V30HouseRuntimeCatalog
+  m_EditorClassIdentifier: 
+  version: 30
+  exteriorFrames:
+  - {fileID: 21300000, guid: 8bda48ed3f5f592298937217368ecf27, type: 3}
+  - {fileID: 21300000, guid: de6fe98fade05221907e20483a047957, type: 3}
+  - {fileID: 21300000, guid: 8a456a2c128d5ed291be42d6b2053ffd, type: 3}
+  - {fileID: 21300000, guid: 41ae6e31229755ea9e702975be2c0b65, type: 3}
+  - {fileID: 21300000, guid: 0e51e7d64902590387451a78924ca330, type: 3}
+  - {fileID: 21300000, guid: cdb20ba24a9c5e66bc08ac5ef0507c7b, type: 3}
+  - {fileID: 21300000, guid: e21c23ace0715150b59816155f99b345, type: 3}
+  - {fileID: 21300000, guid: 68f0b8fe1dd350068c212eeadd53c8f3, type: 3}
+  - {fileID: 21300000, guid: 5831d22bb87d5b4e82045c564606077f, type: 3}
+  - {fileID: 21300000, guid: fe0b02c0e29d5fcdb997dbf2bfbde294, type: 3}
+  - {fileID: 21300000, guid: 2c43c7bd607f5dbcaf9e0637dd0cada6, type: 3}
+  - {fileID: 21300000, guid: 35c98b6bc3ff58efaf57b6c22491f851, type: 3}
+  exteriorNoCloth: {fileID: 21300000, guid: 10be5d656e2b57dd8d878f382eb0cfe3, type: 3}
+  interiorFound: {fileID: 21300000, guid: 5d3fb2b3dd5c53d19f42c3e2342bca2c, type: 3}
+  interiorClean: {fileID: 21300000, guid: 8c8b333de42e51e087f24a06a9ef680f, type: 3}
+  interiorRepairedFrames:
+  - {fileID: 21300000, guid: b37b1d6dcab75dbca8400ae65e61df1e, type: 3}
+  - {fileID: 21300000, guid: 1833d3f97ea35a71b8bb2f6a47ba6d03, type: 3}
+  - {fileID: 21300000, guid: 8360454e14c752c6a19f9bd81b0c94f6, type: 3}
+  - {fileID: 21300000, guid: e482d74e12585f1e857d6dcc2a7acd5d, type: 3}
+  - {fileID: 21300000, guid: 2773e211792655689fe46827deeb38b8, type: 3}
+  - {fileID: 21300000, guid: 6edc1a73e2615cdfa8cdfef4a0d87785, type: 3}
+  - {fileID: 21300000, guid: 16906ceaaf925d66a4f3a7c3f50bd0ad, type: 3}
+  - {fileID: 21300000, guid: 5d015cfd921e59beb93273114fcc3da0, type: 3}
+  - {fileID: 21300000, guid: 1aa75cb468565463a033ab4215f68c03, type: 3}
+  - {fileID: 21300000, guid: aa6d8f2d589d5a8092d0f68792ce694b, type: 3}
+  - {fileID: 21300000, guid: 569b2f42c80a5cf1b7c64da0fc836db0, type: 3}
+  - {fileID: 21300000, guid: eac8dfd3b1065e6d82cb59cbb03fc226, type: 3}
+  stableBase: {fileID: 21300000, guid: 14da92c1ae0a570f96cdcb99a9c5219e, type: 3}
+  repairOwners:
+  - key: InteriorEnvelope
+    displayNameZh: "\u5BA4\u5185\u56F4\u62A4\u4E0E\u627F\u91CD"
+    damageSprite: {fileID: 21300000, guid: 508f185852235996b159b3c3688af84e, type: 3}
+    repairSprite: {fileID: 21300000, guid: a92fca81a34e5f7793cbc78da8c35c7b, type: 3}
+    worldOffsetFromHousePivot: {x: -0.075521, y: 4.036458}
+    originTopLeft: {x: 102, y: 454}
+    sourceSize: {x: 1303, y: 518}
+  - key: RoofLeft
+    displayNameZh: "\u5DE6\u6BB5\u5185\u5C4B\u9762"
+    damageSprite: {fileID: 21300000, guid: 5df99ba6c5c95c1c9382b39dca4f2b30, type: 3}
+    repairSprite: {fileID: 21300000, guid: 431f4234920d5cd798fb24a6402eeb11, type: 3}
+    worldOffsetFromHousePivot: {x: -1.979167, y: 5.166667}
+    originTopLeft: {x: 220, y: 407}
+    sourceSize: {x: 336, y: 178}
+  - key: RoofCenter
+    displayNameZh: "\u4E2D\u6BB5\u5185\u5C4B\u9762"
+    damageSprite: {fileID: 21300000, guid: 95b267b70603557688d4bb867388d284, type: 3}
+    repairSprite: {fileID: 21300000, guid: 4722caccca3a5b40bab766a463fe9577, type: 3}
+    worldOffsetFromHousePivot: {x: -0.354167, y: 5.119792}
+    originTopLeft: {x: 548, y: 444}
+    sourceSize: {x: 304, y: 122}
+  - key: RoofRight
+    displayNameZh: "\u53F3\u6BB5\u5185\u5C4B\u9762"
+    damageSprite: {fileID: 21300000, guid: eaa3db229f6b51c89b99961ab0daae68, type: 3}
+    repairSprite: {fileID: 21300000, guid: 1e335d0b308159819d3dfe6f4dde7e54, type: 3}
+    worldOffsetFromHousePivot: {x: 1.867188, y: 5.109375}
+    originTopLeft: {x: 1062, y: 466}
+    sourceSize: {x: 129, y: 82}
+  - key: MainFloor
+    displayNameZh: "\u4E3B\u751F\u6D3B\u697C\u677F"
+    damageSprite: {fileID: 21300000, guid: 1feeb150aff452bea814106840620ee9, type: 3}
+    repairSprite: {fileID: 21300000, guid: 9f1ca94693405e9788cbc3d501352246, type: 3}
+    worldOffsetFromHousePivot: {x: -0.304688, y: 2.760417}
+    originTopLeft: {x: 106, y: 942}
+    sourceSize: {x: 1207, y: 32}
+  - key: EntryDoor
+    displayNameZh: "\u5165\u53E3\u95E8\u4E0E\u95E8\u69DB"
+    damageSprite: {fileID: 21300000, guid: b400a3ebd88a5bcfb1303b7db52df06a, type: 3}
+    repairSprite: {fileID: 21300000, guid: 50da2e5d9438546aa4a98f37147b5501, type: 3}
+    worldOffsetFromHousePivot: {x: -1.184896, y: 3.809896}
+    originTopLeft: {x: 416, y: 540}
+    sourceSize: {x: 249, y: 433}
+  - key: Workbench
+    displayNameZh: "\u7EF4\u4FEE\u5DE5\u4F5C\u53F0"
+    damageSprite: {fileID: 21300000, guid: e9f553b8487858aeaf9868117de44224, type: 3}
+    repairSprite: {fileID: 21300000, guid: beb684c7fcdf56e6b572236e453d5de7, type: 3}
+    worldOffsetFromHousePivot: {x: -2.161458, y: 3.773438}
+    originTopLeft: {x: 192, y: 577}
+    sourceSize: {x: 322, y: 373}
+  - key: Bed
+    displayNameZh: "\u5E8A\u94FA\u4E0E\u5E72\u71E5\u50A8\u7269"
+    damageSprite: {fileID: 21300000, guid: 6113cbc179615db596c47fc98da3dad5, type: 3}
+    repairSprite: {fileID: 21300000, guid: e2409940909b56a09f707d0f15d052a8, type: 3}
+    worldOffsetFromHousePivot: {x: 0.044271, y: 3.822917}
+    originTopLeft: {x: 657, y: 558}
+    sourceSize: {x: 239, y: 392}
+  - key: Stove
+    displayNameZh: "\u7089\u7076\u4E0E\u70DF\u7BA1"
+    damageSprite: {fileID: 21300000, guid: 402919d853e05dc6ad44e67267fb8fa4, type: 3}
+    repairSprite: {fileID: 21300000, guid: 0dcaf3e21ae556fd9532ede56037e802, type: 3}
+    worldOffsetFromHousePivot: {x: 0.984375, y: 3.929688}
+    originTopLeft: {x: 844, y: 517}
+    sourceSize: {x: 226, y: 433}
+  - key: ChartDesk
+    displayNameZh: "\u6D77\u56FE\u4E0E\u65E0\u7EBF\u7535\u684C"
+    damageSprite: {fileID: 21300000, guid: 753952375cdf55a99478ad9be6c744ab, type: 3}
+    repairSprite: {fileID: 21300000, guid: 7f6b6ec85a425854ba8fbf3bf8a1f9a5, type: 3}
+    worldOffsetFromHousePivot: {x: 2.145833, y: 3.869792}
+    originTopLeft: {x: 1062, y: 540}
+    sourceSize: {x: 236, y: 410}
+  - key: Lookout
+    displayNameZh: "\u77AD\u671B\u95F4\u4E0E\u5185\u68AF"
+    damageSprite: {fileID: 21300000, guid: bd443b0350305304b90f5939fe94f176, type: 3}
+    repairSprite: {fileID: 21300000, guid: 1b2d979f8444565e914e6ed9982c5496, type: 3}
+    worldOffsetFromHousePivot: {x: 0.885417, y: 5.802083}
+    originTopLeft: {x: 686, y: 222}
+    sourceSize: {x: 504, y: 304}
+  - key: LightAndHeat
+    displayNameZh: "\u706F\u706B\u4E0E\u7089\u706B"
+    damageSprite: {fileID: 21300000, guid: 30d6a021ce405c0590529160d7383dd0, type: 3}
+    repairSprite: {fileID: 21300000, guid: a282cf6831a355ac9fcca50295546a82, type: 3}
+    worldOffsetFromHousePivot: {x: -0.236979, y: 4.552083}
+    originTopLeft: {x: 227, y: 254}
+    sourceSize: {x: 991, y: 720}

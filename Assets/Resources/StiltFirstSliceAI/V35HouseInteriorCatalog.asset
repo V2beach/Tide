@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f914b1bc198af54ab0559e931060723, type: 3}
+  m_Name: V35HouseInteriorCatalog
+  m_EditorClassIdentifier: 
+  version: 35
+  stableBase: {fileID: 21300000, guid: b16773c762c475f419de415ae5ca9fb3, type: 3}
+  owners:
+  - key: Foundation
+    displayNameZh: "\u6869\u57FA\u6F6E\u95F4\u5C42"
+    gameplayOwner: Stilt
+    requiredStep: 1
+    damageSprite: {fileID: 21300000, guid: d62d29e1e5be6d146874d768222ee028, type: 3}
+    repairSprite: {fileID: 21300000, guid: 2ea3092d35349aa4f8186b59b6fbe79f, type: 3}
+    worldOffsetFromHousePivot: {x: -0.640625, y: 1.289062}
+    originTopLeft: {x: 208, y: 1276}
+    sourceSize: {x: 1304, y: 756}
+  - key: AccessLadder
+    displayNameZh: "\u5916\u68AF\u4E0E\u767B\u8239\u8FDE\u63A5"
+    gameplayOwner: Stilt
+    requiredStep: 2
+    damageSprite: {fileID: 21300000, guid: efcd3781efb45614290bfb3d83ef06b4, type: 3}
+    repairSprite: {fileID: 21300000, guid: a5607f1883059c84393c6f03101153de, type: 3}
+    worldOffsetFromHousePivot: {x: -0.029297, y: 1.568359}
+    originTopLeft: {x: 793, y: 1277}
+    sourceSize: {x: 447, y: 611}
+  - key: RoofLeft
+    displayNameZh: "\u5DE6\u5C4B\u9762"
+    gameplayOwner: Roof
+    requiredStep: 1
+    damageSprite: {fileID: 21300000, guid: 17d4c721ec619734d9b9f7bdb03a1208, type: 3}
+    repairSprite: {fileID: 21300000, guid: 31b17c644e5cd4f4490fa94eb309c9e3, type: 3}
+    worldOffsetFromHousePivot: {x: -1.589844, y: 4.332031}
+    originTopLeft: {x: 261, y: 722}
+    sourceSize: {x: 712, y: 306}
+  - key: RoofRight
+    displayNameZh: "\u53F3\u5C4B\u9762"
+    gameplayOwner: Roof
+    requiredStep: 2
+    damageSprite: {fileID: 21300000, guid: e9090ebe2df111347b51ec9a14057327, type: 3}
+    repairSprite: {fileID: 21300000, guid: 8231d63fe3e52904d9dbc037f1e11f7c, type: 3}
+    worldOffsetFromHousePivot: {x: 0.671875, y: 4.917969}
+    originTopLeft: {x: 915, y: 423}
+    sourceSize: {x: 562, y: 604}
+  - key: Lookout
+    displayNameZh: "\u77AD\u671B\u95F4\u4E0E\u5185\u68AF"
+    gameplayOwner: Roof
+    requiredStep: 2
+    damageSprite: {fileID: 21300000, guid: 5934f4d88d53ed7448539f3cfe24b604, type: 3}
+    repairSprite: {fileID: 21300000, guid: 6b2462af654573e45bd6597eba91b505, type: 3}
+    worldOffsetFromHousePivot: {x: -0.238281, y: 5.068359}
+    originTopLeft: {x: 778, y: 510}
+    sourceSize: {x: 370, y: 353}
+  - key: InteriorEnvelope
+    displayNameZh: "\u5BA4\u5185\u56F4\u62A4"
+    gameplayOwner: Interior
+    requiredStep: 1
+    damageSprite: {fileID: 21300000, guid: c17be9f71ff39b345a869a520946f877, type: 3}
+    repairSprite: {fileID: 21300000, guid: 9f887e182bf84334ab67afd0cd0f9345, type: 3}
+    worldOffsetFromHousePivot: {x: -2.701172, y: 3.25}
+    originTopLeft: {x: 208, y: 1004}
+    sourceSize: {x: 249, y: 296}
+  - key: Workbench
+    displayNameZh: "\u5DE5\u4F5C\u53F0"
+    gameplayOwner: Interior
+    requiredStep: 1
+    damageSprite: {fileID: 21300000, guid: b4787ad607b05ac4f95fdfe03473547f, type: 3}
+    repairSprite: {fileID: 21300000, guid: 3b69f9edf765b0b408c15e54a10d3d4f, type: 3}
+    worldOffsetFromHousePivot: {x: -1.783203, y: 3.416016}
+    originTopLeft: {x: 433, y: 918}
+    sourceSize: {x: 269, y: 383}
+  - key: EntryDoor
+    displayNameZh: "\u5165\u53E3\u4E0E\u95E8\u69DB"
+    gameplayOwner: Interior
+    requiredStep: 1
+    damageSprite: {fileID: 21300000, guid: 49998a2c8d2281742b7e76eb1d462b1f, type: 3}
+    repairSprite: {fileID: 21300000, guid: e98b5cb637d57c14eaaa95977df5cf53, type: 3}
+    worldOffsetFromHousePivot: {x: -0.892578, y: 3.474609}
+    originTopLeft: {x: 678, y: 888}
+    sourceSize: {x: 235, y: 413}
+  - key: Bed
+    displayNameZh: "\u7761\u94FA"
+    gameplayOwner: Interior
+    requiredStep: 2
+    damageSprite: {fileID: 21300000, guid: 595806d5f5847114fb599e0ed1afc49f, type: 3}
+    repairSprite: {fileID: 21300000, guid: ffcd00445ba9f354292b1648e3e56b03, type: 3}
+    worldOffsetFromHousePivot: {x: -0.28125, y: 3.25}
+    originTopLeft: {x: 858, y: 1003}
+    sourceSize: {x: 188, y: 298}
+  - key: ChartRadio
+    displayNameZh: "\u6D77\u56FE\u4E0E\u65E0\u7EBF\u7535"
+    gameplayOwner: Interior
+    requiredStep: 2
+    damageSprite: {fileID: 21300000, guid: 90378d0c4f9972f47a2ea108849cadc0, type: 3}
+    repairSprite: {fileID: 21300000, guid: 5c88d4d3d151b174981875d3bb684322, type: 3}
+    worldOffsetFromHousePivot: {x: 1.345703, y: 3.474609}
+    originTopLeft: {x: 1225, y: 888}
+    sourceSize: {x: 287, y: 413}
+  - key: Stove
+    displayNameZh: "\u7089\u4F53\u4E0E\u70DF\u9053"
+    gameplayOwner: Lamp
+    requiredStep: 1
+    damageSprite: {fileID: 21300000, guid: cb746ad02f4e8ad498ad1e607b7aacca, type: 3}
+    repairSprite: {fileID: 21300000, guid: 6a90cf98825ca164f84b54a7829fb565, type: 3}
+    worldOffsetFromHousePivot: {x: 0.445312, y: 4.041016}
+    originTopLeft: {x: 1018, y: 598}
+    sourceSize: {x: 240, y: 703}
+  - key: LightAndHeat
+    displayNameZh: "\u706F\u706B\u4E0E\u6696\u5149"
+    gameplayOwner: Lamp
+    requiredStep: 2
+    damageSprite: {fileID: 21300000, guid: bfce2e7ae4dd767419a9c9f582a79426, type: 3}
+    repairSprite: {fileID: 21300000, guid: 884397f502a1d6e48b6a68a3d17fce63, type: 3}
+    worldOffsetFromHousePivot: {x: -0.25, y: 4.207031}
+    originTopLeft: {x: 408, y: 508}
+    sourceSize: {x: 1104, y: 798}

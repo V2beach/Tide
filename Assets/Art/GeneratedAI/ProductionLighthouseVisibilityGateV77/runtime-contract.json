@@ -1,0 +1,89 @@
+{
+  "version": "V77",
+  "request_id": "ART-P1-LIGHTHOUSE-VISIBILITY",
+  "status": "qa_gate_pass_no_runtime_assets",
+  "purpose": "Retire the foam-strip lighthouse hint and express discovery through real V43 fog occlusion of the existing V44 lighthouse under V74/V76 weather.",
+  "runtime_assets": [],
+  "runtime_cost_bytes": 0,
+  "ownership": {
+    "V43": "broad far/mid cloud alpha reused as low horizon fog; runtime owns parallax and opacity",
+    "V44": "lighthouse body and beam frames",
+    "V74": "world time/weather grade before beam emission",
+    "V76": "rain sprites in RainFront and StormSurge only",
+    "runtime": "clue state, fog opacity/offset, lighthouse visibility, beam timing, camera and weather synchronization"
+  },
+  "visibility_states": [
+    {
+      "key": "UnknownRain",
+      "label_zh": "未知｜雨雾",
+      "world_state": "RainFront",
+      "lighthouse_alpha_reference": 0.0,
+      "fog_alpha_reference": 0.82,
+      "beam_alpha_reference": 0.0,
+      "note": "宽幅雾存在，但精确灯塔位置没有泡沫条、光点或局部提示"
+    },
+    {
+      "key": "BearingDusk",
+      "label_zh": "线索中｜黄昏",
+      "world_state": "Dusk",
+      "lighthouse_alpha_reference": 0.24,
+      "fog_alpha_reference": 0.62,
+      "beam_alpha_reference": 0.0,
+      "note": "只允许被雾切断的低对比剪影，不提前显示光束"
+    },
+    {
+      "key": "KnownMoon",
+      "label_zh": "已知｜月夜",
+      "world_state": "MoonNight",
+      "lighthouse_alpha_reference": 0.94,
+      "fog_alpha_reference": 0.28,
+      "beam_alpha_reference": 0.28,
+      "note": "塔体可读，光束作为 V74 后 emission 出现"
+    },
+    {
+      "key": "KnownStorm",
+      "label_zh": "已知｜暴潮",
+      "world_state": "StormSurge",
+      "lighthouse_alpha_reference": 0.72,
+      "fog_alpha_reference": 0.52,
+      "beam_alpha_reference": 0.12,
+      "note": "暴潮压低能见度和光束，但不把已确认方向重新变成提示条"
+    }
+  ],
+  "integration_order": [
+    "render neutral sky, V56 ocean and V43 cloud/fog",
+    "render V44 lighthouse body only when clue state permits",
+    "render V76 rain for rain/storm states",
+    "apply V74 world grade once",
+    "render V44 beam and lens glow as emission only when lighthouse is known and visibility permits",
+    "render UI after the world; never replace visibility with an in-world marker"
+  ],
+  "retire_atomically": [
+    "GeneratedStiltFirstFoggedLighthouseHint",
+    "foggedLighthouseHintRenderer GetFoamSprite assignment",
+    "0.9x0.14m foam-strip update at the lighthouse anchor"
+  ],
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/Raw/TideLighthouseV77_16x9_UnknownRain_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/Raw/TideLighthouseV77_16x9_BearingDusk_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/Raw/TideLighthouseV77_16x9_KnownMoon_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/Raw/TideLighthouseV77_16x9_KnownStorm_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/Raw/TideLighthouseV77_4x3_UnknownRain_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/Raw/TideLighthouseV77_4x3_BearingDusk_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/Raw/TideLighthouseV77_4x3_KnownMoon_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/Raw/TideLighthouseV77_4x3_KnownStorm_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/TideLighthouseV77_16x9_VisibilityProgression_4K.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/TideLighthouseV77_4x3_VisibilityProgression_4K.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/TideLighthouseV77_OldMarkerRejection_4K.png",
+    "Assets/Art/GeneratedAI/ProductionLighthouseVisibilityGateV77/QA/TideLighthouseV77_LayerOwnership_4K.png"
+  ],
+  "forbidden": [
+    "Do not show foam, a cyan bar, glow dot, arrow or local fog puff at the exact unknown lighthouse anchor.",
+    "Do not reveal the lighthouse silhouette or beam in UnknownRain.",
+    "Do not show the beam during BearingDusk.",
+    "Do not bake fog into the V44 lighthouse or beam textures.",
+    "Do not copy V43 cloud pixels into V77; reuse the existing V43 renderer/resource.",
+    "Do not import V77 QA PNGs into Catalog, Scene or Prefab.",
+    "Do not update the authoritative runtime manifest before Unity Game View evidence."
+  ]
+}

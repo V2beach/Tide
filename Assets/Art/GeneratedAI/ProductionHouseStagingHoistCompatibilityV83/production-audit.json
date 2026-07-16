@@ -1,0 +1,118 @@
+{
+  "status": "passed",
+  "strip_audit": {
+    "shared_mask": {
+      "canvas": [
+        2048,
+        2048
+      ],
+      "load_mask_bbox_top_left": [
+        1586,
+        968,
+        1976,
+        1521
+      ],
+      "source_load_alpha_equal_between_exterior_and_interior": true
+    },
+    "exterior": {
+      "removed_alpha_pixels": 25749,
+      "removed_alpha_sum": 3169281,
+      "removed_alpha_bbox_top_left": [
+        1586,
+        968,
+        1871,
+        1464
+      ],
+      "old_load_residual_pixels": 0,
+      "changed_pixels_outside_load_mask": 0,
+      "changed_fixed_structure_pixels": 0
+    },
+    "interior": {
+      "removed_alpha_pixels": 25749,
+      "removed_alpha_sum": 3169281,
+      "removed_alpha_bbox_top_left": [
+        1586,
+        968,
+        1871,
+        1464
+      ],
+      "old_load_residual_pixels": 0,
+      "changed_pixels_outside_load_mask": 0,
+      "changed_fixed_structure_pixels": 0
+    },
+    "interior_v81_builder_metrics": {
+      "removed_alpha_pixels": 25749,
+      "changed_pixels_outside_declared_masks": 0,
+      "old_load_residual_pixels_outside_repaired_brace": 0,
+      "brace_continuity_samples": [
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255,
+        255
+      ],
+      "brace_continuity_all_present": true
+    },
+    "source_identity": {
+      "v69_exterior_is_v66_byte_exact": true,
+      "v69_interior_is_v68_byte_exact": true,
+      "v83_exterior_is_v81_byte_exact": true
+    }
+  },
+  "runtime_png_checks": [
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHouseStagingHoistCompatibilityV83/Runtime/Exterior/TideHouseV83_ExteriorStableBase_NoSuspendedLoad.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "nonempty": true,
+      "transparent_corners": true,
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHouseStagingHoistCompatibilityV83/Runtime/Interior/TideHouseV83_InteriorStableBase_NoSuspendedLoad.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "nonempty": true,
+      "transparent_corners": true,
+      "hidden_rgb_pixels": 0,
+      "visible_magenta_pixels": 0
+    }
+  ],
+  "runtime_png_count": 2,
+  "v69_owner_stage_png_referenced": 84,
+  "v69_owner_stage_png_copied": 0,
+  "source_lock_file_count": 101,
+  "source_lock_unchanged_during_build": true,
+  "qa_png_count": 6,
+  "memory_budget": {
+    "single_active_stable_rgba32_bytes": 16777216,
+    "single_active_stable_rgba32_mib": 16.0,
+    "single_active_stable_full_mip_estimate_mib": 21.33,
+    "stable_replacements_rgba32_bytes": 33554432,
+    "stable_replacements_rgba32_mib": 32.0,
+    "stable_replacements_full_mip_estimate_mib": 42.67,
+    "runtime_increment_after_atomic_v69_replacement_bytes": 0,
+    "rule": "Replace the two V69 stable bases, activate exterior or interior only, and never keep V69/V81/V83 stable bases resident together."
+  },
+  "package_guid_count": 17,
+  "package_guid_collisions": [],
+  "runtime_reference_count": 0,
+  "runtime_manifest_sha256": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489",
+  "runtime_manifest_expected_sha256": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489",
+  "runtime_manifest_updated": false,
+  "unity_integration_claimed": false,
+  "package_payload_sha256": "cb5d9fc51e4790f6ca8d2e1b342f0d8d9c6733419d8af5f968458c5611c059be"
+}

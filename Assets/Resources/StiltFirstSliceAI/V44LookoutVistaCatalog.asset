@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d76bd2866f17764e92d2dcd8c796374, type: 3}
+  m_Name: V44LookoutVistaCatalog
+  m_EditorClassIdentifier: 
+  version: 44
+  nearRoofDamage: {fileID: 21300000, guid: ac111cb621fc59a58d21e15f024b20e8, type: 3}
+  nearRoofRepair: {fileID: 21300000, guid: baa300e17da052be98ff97fc2f63153d, type: 3}
+  nearCrane: {fileID: 21300000, guid: 65d699d8eff955c8b5ef817e4c92660c, type: 3}
+  midWreckField: {fileID: 21300000, guid: 07ec06cf7ddd56e296f62bf937e39653, type: 3}
+  farLighthouse: {fileID: 21300000, guid: b24ac26d6e27513fbd6afbe814cf9595, type: 3}
+  lighthouseBeamFrames:
+  - {fileID: 21300000, guid: e83f9ba6548c5bab9555597c44ab3de4, type: 3}
+  - {fileID: 21300000, guid: ffdb057c9f715545a07fd8f2d4e1f66b, type: 3}
+  - {fileID: 21300000, guid: 24ab5b384bc850ff850611fed0c5efef, type: 3}
+  - {fileID: 21300000, guid: ced6e18c074c52ccbc270e0ea891bfd9, type: 3}
+  - {fileID: 21300000, guid: 36897a12957e5752bb511512bd072be1, type: 3}
+  - {fileID: 21300000, guid: c3977ed215b554dabcc53aa392a5af35, type: 3}
+  - {fileID: 21300000, guid: 97ab34b4f28d57ac881474d15b8ee317, type: 3}
+  - {fileID: 21300000, guid: ba21290fdfaf5d16870a2feddadd5581, type: 3}
+  - {fileID: 21300000, guid: 19310091b3ed53f1bd48a8998341c0c0, type: 3}
+  - {fileID: 21300000, guid: ea34f70d83955842af96ab54775b1349, type: 3}
+  - {fileID: 21300000, guid: f47ce59e85125d3fb77a705f2cb755a9, type: 3}
+  - {fileID: 21300000, guid: a9a94ce7053f583ea7868b155a1f6524, type: 3}

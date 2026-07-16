@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e93c6f13e1454fd4997653ecdf24c50f, type: 3}
+  m_Name: V59TideFindCatalog
+  m_EditorClassIdentifier: 
+  version: 59
+  profile: High
+  fish:
+  - {fileID: 21300000, guid: 847a54c9f287f84945c872b018cba5eb, type: 3}
+  - {fileID: 21300000, guid: 125509d138b51d7a81fa8c004ae62269, type: 3}
+  - {fileID: 21300000, guid: ae02716a45342204906f21bba9af0144, type: 3}
+  wood:
+  - {fileID: 21300000, guid: d38ca2f4ae5aac1985a43343bff86021, type: 3}
+  - {fileID: 21300000, guid: 1b0b71848db1331ae4341966698488c7, type: 3}
+  - {fileID: 21300000, guid: 135d014ea1cdacdb12285032098ef021, type: 3}
+  trash:
+  - {fileID: 21300000, guid: d205e8d6ee3456a1be07b94fff6a834b, type: 3}
+  - {fileID: 21300000, guid: b08af3671cb3d695c68eed6781ac8fc8, type: 3}
+  - {fileID: 21300000, guid: 10d569e5592dfeb40a9db7f27703eeb0, type: 3}
+  relic:
+  - {fileID: 21300000, guid: caeab70f4dcae92d76aa77b026ba600f, type: 3}
+  - {fileID: 21300000, guid: c94293882af19bfc44a03a7c01e45385, type: 3}
+  - {fileID: 21300000, guid: e371b14b45940d243fdcdc9c580bf82e, type: 3}

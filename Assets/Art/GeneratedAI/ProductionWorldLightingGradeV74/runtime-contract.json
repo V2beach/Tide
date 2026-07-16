@@ -1,0 +1,272 @@
+{
+  "version": "V74",
+  "requirement_id": "ART-P1-WORLD-LIGHTING-GRADE",
+  "status": "resource_ready_not_runtime_integrated",
+  "purpose": "Provide one shared time/weather colour authority for V66 house, V67 boat, V61/V62 character, V56 ocean and V43 clouds without duplicating their pixels.",
+  "colour_space": {
+    "source_scene": "Unity linear working colour",
+    "before_lut": "convert linear scene RGB to sRGB transfer values",
+    "lut_domain_and_range": "sRGB 0..1 RGB; alpha is never sampled or changed",
+    "after_lut": "convert sampled sRGB result back to linear for the remaining URP pipeline",
+    "png_storage": "RGBA8 data texture with sRGBTexture=false; RGB stores LUT output, A is constant 255"
+  },
+  "layout": {
+    "logical_size": [
+      32,
+      32,
+      32
+    ],
+    "flattened_size": [
+      1024,
+      32
+    ],
+    "top_left_png_address": "x = rIndex + bIndex * 32; y = 31 - gIndex",
+    "unity_lower_left_address": "x = rIndex + bIndex * 32; y = gIndex",
+    "sampler": "Point + Clamp. Manually fetch eight texels and trilinearly interpolate; never bilinear-sample across adjacent blue slices.",
+    "optional_texture3d": "An Editor/import step may copy the exact 32^3 texels into Texture3D and use trilinear sampling; do not make the PNG CPU-readable at runtime solely for this conversion."
+  },
+  "luts": [
+    {
+      "key": "Day",
+      "path": "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/Runtime/LUT/TideWorldV74_Time_Day_32.cube.png",
+      "size": [
+        1024,
+        32
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "sha256": "b79d31c653b17c8af928798250f7fa4d2fbe87fc336e1317f90dce806d11a084",
+      "meta_sha256": "cb0fa5abccb7ec18875cc2bdee7ca1d0457d08de95577f7263705c4b82b96de3",
+      "importer_valid": true
+    },
+    {
+      "key": "Dusk",
+      "path": "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/Runtime/LUT/TideWorldV74_Time_Dusk_32.cube.png",
+      "size": [
+        1024,
+        32
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "sha256": "506d826589af74d917eaa3222008446fa20dc7b23c9012cbc4317ea7b558ed20",
+      "meta_sha256": "73c522bcec01abba5bb7a99a1274f34be5edba73326e602209e7b07f93f1a1e7",
+      "importer_valid": true
+    },
+    {
+      "key": "Night",
+      "path": "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/Runtime/LUT/TideWorldV74_Time_Night_32.cube.png",
+      "size": [
+        1024,
+        32
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "sha256": "250dc7a9174dcc08ac45687250bc8ccd5440ca1798a1d7d8bf271caf078d6b8f",
+      "meta_sha256": "e7e3aae627b4421c308319a1a6ac94b07989b194db27f64cbf4fa78c7160c68a",
+      "importer_valid": true
+    },
+    {
+      "key": "Rain",
+      "path": "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/Runtime/LUT/TideWorldV74_Weather_Rain_32.cube.png",
+      "size": [
+        1024,
+        32
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "sha256": "555ce5f2104de415d79b0c1f3e5a560f89635fed321088b6757b7006568d1026",
+      "meta_sha256": "7bcfa2058fe7403aea55a517b240fcace22d7b46d5def7df395310810c90181c",
+      "importer_valid": true
+    },
+    {
+      "key": "Storm",
+      "path": "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/Runtime/LUT/TideWorldV74_Weather_Storm_32.cube.png",
+      "size": [
+        1024,
+        32
+      ],
+      "mode": "RGBA",
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "sha256": "551a1cf4b0e3a4176a8ff5aa218be14d3be278c5c4519e258060091cd6cbd0eb",
+      "meta_sha256": "df2671b980d212258b4c3302906b2c73329e5e9b77cb7f6a0479d6ca5e1a1816",
+      "importer_valid": true
+    }
+  ],
+  "state_model": {
+    "time_axis": [
+      "Day",
+      "Dusk",
+      "Night"
+    ],
+    "weather_axis": [
+      "ClearIdentity",
+      "Rain",
+      "Storm"
+    ],
+    "mix_order": [
+      "V62 character wet/salt material response",
+      "sample and blend Day/Dusk/Night LUT outputs by normalized time weights",
+      "sample weather LUT from the time-graded result and blend by weather weight; Clear is identity",
+      "convert sRGB result back to linear",
+      "composite warm window/lighthouse emission and UI after V74"
+    ],
+    "representative_states": [
+      {
+        "key": "OvercastDay",
+        "label_zh": "阴天白昼",
+        "time_weights": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "weather_lut": "ClearIdentity",
+        "cloud_alpha_reference_only": [
+          0.18,
+          0.1,
+          0.0
+        ],
+        "emission_reference_strength": 0.24
+      },
+      {
+        "key": "Dusk",
+        "label_zh": "潮湿黄昏",
+        "time_weights": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "weather_lut": "ClearIdentity",
+        "cloud_alpha_reference_only": [
+          0.28,
+          0.18,
+          0.05
+        ],
+        "emission_reference_strength": 0.62
+      },
+      {
+        "key": "MoonNight",
+        "label_zh": "月夜",
+        "time_weights": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "weather_lut": "ClearIdentity",
+        "cloud_alpha_reference_only": [
+          0.34,
+          0.24,
+          0.08
+        ],
+        "emission_reference_strength": 1.0
+      },
+      {
+        "key": "RainFront",
+        "label_zh": "雨锋",
+        "time_weights": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "weather_lut": "Rain",
+        "cloud_alpha_reference_only": [
+          0.42,
+          0.6,
+          0.28
+        ],
+        "emission_reference_strength": 0.54
+      },
+      {
+        "key": "StormSurge",
+        "label_zh": "暴潮",
+        "time_weights": [
+          0.0,
+          0.35,
+          0.65
+        ],
+        "weather_lut": "Storm",
+        "cloud_alpha_reference_only": [
+          0.65,
+          0.88,
+          0.7
+        ],
+        "emission_reference_strength": 0.8
+      }
+    ],
+    "normalization": "Time weights sum to one. Weather uses one scalar transition or a normalized pair; never stack Rain and Storm at full strength."
+  },
+  "ownership": {
+    "v74_owns": [
+      "world diffuse/ambient colour transform",
+      "time and weather grade data",
+      "offline colour QA"
+    ],
+    "runtime_owns": [
+      "time/weather weights",
+      "URP full-screen implementation",
+      "cloud opacity/motion",
+      "emission masks/intensity",
+      "UI",
+      "target-platform quality tier"
+    ],
+    "other_packages_keep": {
+      "V43": "cloud/wave alpha and motion layers",
+      "V56": "continuous water geometry and waterline",
+      "V61_V62": "character identity and wet/salt material state",
+      "V66": "house geometry, owners and saltwood material",
+      "V67": "boat geometry, owners, sail morph and edge matte"
+    }
+  },
+  "atomic_integration_recipe": [
+    "Add V74 behind one feature flag while retaining the current path as rollback.",
+    "Use AIDaySeaSkyHD as the neutral sky source. AINightSeaSkyHD is comparison/rollback evidence only when V74 time LUT is active.",
+    "Route V66, V67, V61/V62, V56 and V43 diffuse colour through one V74 pass; exclude UI and explicit emission.",
+    "In the same change, retire the old per-renderer day/night/weather tint writers. A frame may use the old path or V74, never both.",
+    "Validate all five representative states in 1600x900 and 960x720 Game View, then validate Shader Variant Collection, Frame Debugger and target-platform Profiler.",
+    "Update the authoritative runtime manifest only after those runtime gates pass."
+  ],
+  "performance": {
+    "runtime_texture_count": 5,
+    "raw_rgba32_bytes": 655360,
+    "raw_rgba32_mib": 0.625,
+    "resident_policy": "Keep Day/Dusk/Night resident; Rain/Storm may share the same small resident set. Do not duplicate graded 4K sprites.",
+    "qa_pngs_are_runtime_forbidden": true
+  },
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_Dusk_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_Dusk_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_FiveState_4K.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_LUTLayout_4K.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_MaterialConsistency_4K.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_MoonNight_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_MoonNight_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_OvercastDay_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_OvercastDay_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_RainFront_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_RainFront_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_StormSurge_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_StormSurge_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/QA/TideWorldV74_TransitionContinuity_4K.png"
+  ],
+  "forbidden": [
+    "Do not run V74 on top of AINightSeaSkyHD plus the old night tint; that is double grading.",
+    "Do not bake five weather copies of house, boat, character, ocean or cloud textures.",
+    "Do not apply V74 to UI, interaction prompts or already-linear emission output.",
+    "Do not bilinear-sample the flattened texture across blue-slice boundaries.",
+    "Do not update the runtime manifest from resource-side QA."
+  ]
+}

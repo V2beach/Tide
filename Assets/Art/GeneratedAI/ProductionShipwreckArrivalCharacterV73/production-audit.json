@@ -1,0 +1,83 @@
+{
+  "package": "ProductionShipwreckArrivalCharacterV73",
+  "status": "passed",
+  "scope": "complete_body_v72_stern_cling_release_to_exact_v64_swim_endpoint_not_runtime_integrated",
+  "summary": {
+    "logical_frame_count": 8,
+    "runtime_png_count": 16,
+    "profile_count": 2,
+    "qa_artifact_count": 7,
+    "endpoint_exact_reconstruction": true,
+    "fixed_contact_drift_pixels": 0.0,
+    "all_declared_anchors_on_visible_pixels": true,
+    "generated_visible_extent_range_pixels": [
+      849,
+      850
+    ],
+    "transparent_corners": true,
+    "hidden_rgb_pixels": 0,
+    "visible_magenta_pixels": 0,
+    "maximum_palette_cdf_distance_to_v64_endpoint": 0.015692,
+    "release_progress_monotone": true,
+    "root_shoreward_monotone": true,
+    "tight_crop_texture_memory": {
+      "High": {
+        "rgba32_mib": 12.7074,
+        "rgba32_with_mips_mib": 16.9432
+      },
+      "Balanced": {
+        "rgba32_mib": 7.293,
+        "rgba32_with_mips_mib": 9.724
+      }
+    },
+    "compressed_runtime_bytes": {
+      "High": 2554792,
+      "Balanced": 1631477
+    },
+    "runtime_and_qa_payload_sha256": "c5459ccea0ada72c0370bee0b585c819f8732c974ad8b4c5c36200f8c58ead71",
+    "guid_count": 39,
+    "unique_guid_count": 39,
+    "dependency_hashes_unchanged": true,
+    "authoritative_runtime_manifest_sha256": "7cfd990fd3f85495e6b8a2647aae193dbcb9e0a4c3b6729b96daa24658920470",
+    "authoritative_runtime_manifest_unchanged": true,
+    "runtime_reference_count": 0
+  },
+  "gates": {
+    "runtime_png_count": 16,
+    "endpoint_exact_reconstruction": true,
+    "maximum_fixed_contact_drift_pixels": 0.01,
+    "all_declared_anchors_on_visible_pixels": true,
+    "maximum_generated_extent_error_pixels": 2,
+    "transparent_corners": true,
+    "hidden_rgb_pixels": 0,
+    "visible_magenta_pixels": 0,
+    "maximum_palette_cdf_distance_to_v64_endpoint": 0.18,
+    "release_and_root_curves_monotone": true,
+    "dependency_hashes_unchanged": true,
+    "authoritative_runtime_manifest_unchanged": true,
+    "all_guids_unique": true,
+    "runtime_reference_count": 0
+  },
+  "dependency_sha256": {
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Source/TideCharacterV73_ClingReleaseSheet_Iteration01.png": "41c3afced972a817b925be76042249a003b331ed8a451dafc1ef26e674e72bba",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Source/TideCharacterV73_ClingReleaseSheet_SelectedChroma.png": "26f9ae96442bd4c283505f657536e981b6d0e225c4a279e640b2f9e863aa24af",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Source/TideCharacterV73_ClingReleaseSheet_SelectedAlpha.png": "7e853d0ddb5c5b6775541c3b3918403f3ac46500dbf0d94f0c6f4bf6484e6514",
+    "Assets/Art/GeneratedAI/ProductionCharacterWaterTransitionV64/Runtime/Character/WaterTransition/TideCharacterV64_WaterTransition_F07.png": "fab578328635d8cd85297aac88abc7e1af76c031bd07464a0c762808494f57ef",
+    "Assets/Art/GeneratedAI/ProductionCharacterWaterTransitionV64/Runtime/Character/WaterTransition/TideCharacterV64_WaterTransition_F07.png.meta": "d8f6a026bbac9ced89d4cc45e7c397d276ed6ad27581665781899ca35d188356",
+    "Assets/Art/GeneratedAI/ProductionCharacterWaterTransitionV64/runtime-contract.json": "1b0eb93b45aaa22c87c91c91f4099557eb3ac11b99357109bfc3d1ed9b6a5c54",
+    "Assets/Art/GeneratedAI/ProductionCharacterWaterTransitionV64/production-audit.json": "981acd19cf015c0619db72c8c7132b0bb8e279aa2ea09b0aa5ac097b0fb6f60c",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png": "30ddfa716f4c90a369139e22d3b700c5a1c20b2bef505f860e3fd2f8af288bb8",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/runtime-contract.json": "3c9880711111ebbbea870cbdfe962f029b466c602981e8cb782c5e8145c3cf99",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/production-audit.json": "07b8ae91c9ae90a92eaf0aaa73aba74a43ee965f577f6575d5e6235e41d5f821",
+    "Docs/tide-current-runtime-resource-manifest-2026-07-14.md": "7cfd990fd3f85495e6b8a2647aae193dbcb9e0a4c3b6729b96daa24658920470"
+  },
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_ContactSequence_4K.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_AnchorGate_4K.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_V72Layering_4K.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_EndpointContinuity_4K.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_Runtime_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_Runtime_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_ClingRelease.gif"
+  ]
+}

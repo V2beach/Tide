@@ -1,0 +1,135 @@
+{
+  "package": "ProductionHeavyWreckDismantlingV85",
+  "operation": "read-only partition of V72 Balanced pixels; V59 materials and V65 rope referenced without copying",
+  "dependencies": [
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionBoatSailHandlingV65/Runtime/Props/TideBoatV65_HandlingLineTile.png",
+      "sha256": "a08c248985d48604bd89b4afeba46b56a888e029202cf11413b40481e13ec002"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionBoatSailHandlingV65/Runtime/Props/TideBoatV65_HandlingLineTile.png.meta",
+      "sha256": "415bf9643f4d7674bd2acc2e424cf0c97e47958d4d4c89bc294ffa98c23db9b0"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHouseStagingHoistCompatibilityV83/QA/Raw/TideHouseV83_Exterior_1600x900.png",
+      "sha256": "45f145a45077b004a9b4cdeb5c7e08e438650b702e29167d3e7b6e74762ace73"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionHouseStagingHoistCompatibilityV83/QA/Raw/TideHouseV83_Exterior_1600x900.png.meta",
+      "sha256": "4dd39762077b3f5a255b153cbe6821bd3ce8621b5a42204674e985a37afc5ee2"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSalvageTransferGateV82/production-audit.json",
+      "sha256": "f3de4ff2f01f6f6b1a544aec8375abd1cfc784e37b38d363071123f50b0ac0bf"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionSalvageTransferGateV82/runtime-contract.json",
+      "sha256": "f152d61a2dc39de9f3a15b887e50562f0b5f43744e460addf79b51dbb5611911"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BowSection/TideShipwreckV72_BowSection.png",
+      "sha256": "b809df60a2b89edb5df848d20e99a69b43f850655eab9bebbecd9f545dba31a6"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BowSection/TideShipwreckV72_BowSection.png.meta",
+      "sha256": "015c3ca85f2b9535bb35d90dd1a7f3c5f59c36f2b8b2d168b49c8dadabf47ef8"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BrokenMast/TideShipwreckV72_BrokenMast.png",
+      "sha256": "49ad3ef30fbaf6553128d741de79809a5e69ba6cdfa1167f2ef5c3d73312aa45"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BrokenMast/TideShipwreckV72_BrokenMast.png.meta",
+      "sha256": "e376622f896281619b2187409ce847de52a23f84daca4b05a1a5a38eb0893bc5"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png",
+      "sha256": "42baa2bed719f7ade63a6aa8ecb76f7f89c38f1513baaf168c22acebcc95217e"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png.meta",
+      "sha256": "68c43807379209a9541ea704a977d2efe1a0391831277ebda5e5a6c3c98b0592"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png",
+      "sha256": "1c147bddade3236ab20bc465edc0f4b623866bd80c16f58bb0734b6c46ce6410"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png.meta",
+      "sha256": "815ef38073ef3b4780d329742f4ab77fb3dbdb80f06bb7852559de4a844210c4"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/SternHull/TideShipwreckV72_SternHull.png",
+      "sha256": "de153a4c39aa3062cc7678f9248c40ba6802017a3e13c349e48062c79ac73d09"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/SternHull/TideShipwreckV72_SternHull.png.meta",
+      "sha256": "ee08dd107d25c523c3ba1f6939b8d58ea9a19106a8babbc8f242511a88806873"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/production-audit.json",
+      "sha256": "07b8ae91c9ae90a92eaf0aaa73aba74a43ee965f577f6575d5e6235e41d5f821"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/runtime-contract.json",
+      "sha256": "3c9880711111ebbbea870cbdfe962f029b466c602981e8cb782c5e8145c3cf99"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Trash/TideFindsV59_T01_NetRopeShackle.png",
+      "sha256": "4d543da6d0da2c689bfb213da1a6a4be334e2885f64dafaf80b6d07c93c96efe"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Trash/TideFindsV59_T01_NetRopeShackle.png.meta",
+      "sha256": "55881429a3b6241769b537d564181e9329ca199108d1e25b5c6798a0f83d5258"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Trash/TideFindsV59_T02_SailclothCorkChain.png",
+      "sha256": "15012a405e39dcea61c4aa215408908f14d8b9f6de4c707fe3ba3e0067d749b6"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Trash/TideFindsV59_T02_SailclothCorkChain.png.meta",
+      "sha256": "14557342da0c9ab1bf78f14ed2d31e925d5882fc5d64befd0214448a427ba2e8"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Wood/TideFindsV59_W01_SaltHullPlank.png",
+      "sha256": "140496b7b6a1789794b0c33696570e0000f2ad8956cbe6b617dc6dff83cb06f0"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Wood/TideFindsV59_W01_SaltHullPlank.png.meta",
+      "sha256": "18725f117d1c9fb49b665244489a3054d08a199334aeb2e24b971bab88d3b5b0"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Wood/TideFindsV59_W02_RopeSpar.png",
+      "sha256": "ae4c263c75a92b07b45a2fc9d0e29ce98f33c17106bf4d8575a45cb9067c467b"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Wood/TideFindsV59_W02_RopeSpar.png.meta",
+      "sha256": "252050b44bd13cb2e4e526ace5724df737a8f9edaeffc985c5c21505ce936ff2"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Wood/TideFindsV59_W03_TwinStrakes.png",
+      "sha256": "5dc18e8cf7cbc12a0027b2476a2a0ac3d7ab597f6765e591e184d66f1ca96c91"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/Runtime/Balanced/Wood/TideFindsV59_W03_TwinStrakes.png.meta",
+      "sha256": "08eb34502953d96aaf44cb75cc8dfbf59fee29eb8ece72f05ee90048774a620b"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/production-audit.json",
+      "sha256": "ad611d673f8e8c03507d5da47043d34451aebadbd8cee235b6d1ed72605847e3"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionTideBorneFindsV59/tide-finds-contract.json",
+      "sha256": "4ab76f453e5816ce5001a87a575750a8d1d29de661d4de59eb78e785036ea562"
+    },
+    {
+      "path": "Docs/tide-current-runtime-resource-manifest-2026-07-14.md",
+      "sha256": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489"
+    },
+    {
+      "path": "Tools/build_v85_heavy_wreck_dismantling.py",
+      "sha256": "231a88c6b6f514794162ccf2b5e7ead51dc91ee14023f5c74538d713ca83167a"
+    }
+  ],
+  "runtime_manifest_sha256": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489"
+}

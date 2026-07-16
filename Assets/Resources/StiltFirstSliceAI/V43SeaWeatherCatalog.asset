@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c9439fab74570845b708532a3740c41, type: 3}
+  m_Name: V43SeaWeatherCatalog
+  m_EditorClassIdentifier: 
+  version: 43
+  longSwellFrames:
+  - {fileID: 21300000, guid: 5af1879bf9c55647906360cd2f8bca79, type: 3}
+  - {fileID: 21300000, guid: f4061e47e4f3557ab714d8251264b674, type: 3}
+  - {fileID: 21300000, guid: d30a54e363be56bda2a7a3e759ad2e15, type: 3}
+  - {fileID: 21300000, guid: 33ef149cdae35f01a0e79afceabe1938, type: 3}
+  - {fileID: 21300000, guid: 29e1fe028db952adb1389d6b38e6ac8d, type: 3}
+  - {fileID: 21300000, guid: 776b1bef7fd75ac6ac5e8e55474855da, type: 3}
+  - {fileID: 21300000, guid: 6d8cad368b0952d4937e1ed3ccf95efe, type: 3}
+  - {fileID: 21300000, guid: 32081e8a4fb15cbda388ac17b0da259d, type: 3}
+  windWaveFrames:
+  - {fileID: 21300000, guid: a09d95b2495e5a4584b8c6f69f270459, type: 3}
+  - {fileID: 21300000, guid: 6bc59e8ea08c5e46b9348d0c09e693e5, type: 3}
+  - {fileID: 21300000, guid: 7664fcd4868452c4831c5afcfceef6ff, type: 3}
+  - {fileID: 21300000, guid: fd006338089454d8b74b9a4baafa5529, type: 3}
+  - {fileID: 21300000, guid: cd1a1b9343d65b98b71e1455b5bf48df, type: 3}
+  - {fileID: 21300000, guid: 02fb5b5ddd0355c38ad10449a85621bc, type: 3}
+  - {fileID: 21300000, guid: 40266f8719055c66a6587b74ace028b5, type: 3}
+  - {fileID: 21300000, guid: d2a82bb8622b507abc6d7eb249742e03, type: 3}
+  stormBreakerFrames:
+  - {fileID: 21300000, guid: 796af6a1c3df5931b0890056670271d6, type: 3}
+  - {fileID: 21300000, guid: ac909140b9ec5dc1a181465e668dc80d, type: 3}
+  - {fileID: 21300000, guid: 7db7996be5cd5036a31fdefd8c10ca34, type: 3}
+  - {fileID: 21300000, guid: cffeff4261a754329a4e810484cb4223, type: 3}
+  - {fileID: 21300000, guid: 8ee5d1b8fb3d5330a09cfc2e7463d18d, type: 3}
+  - {fileID: 21300000, guid: 0617ace78f135929bfac4a1301c63305, type: 3}
+  - {fileID: 21300000, guid: f78031ec4f545cfc9117dc2761bd7792, type: 3}
+  - {fileID: 21300000, guid: 09b17c00a0c554e7984cb0cd9b74314f, type: 3}
+  vortexDepressionFrames:
+  - {fileID: 21300000, guid: d309573640d25e1fbb4b269e1a2d35bc, type: 3}
+  - {fileID: 21300000, guid: 5e20f3c8feba5090bf980ceca7e3e0e9, type: 3}
+  - {fileID: 21300000, guid: 10e7ea0fa9da5be5bd657da8f9f6c6c5, type: 3}
+  - {fileID: 21300000, guid: 7a962abb9b595179bebae8b87efe37a8, type: 3}
+  - {fileID: 21300000, guid: 8faa4e36c44b50b2828026de0adfa7b1, type: 3}
+  - {fileID: 21300000, guid: 138f66b1591559ab9cdfd78303449ae4, type: 3}
+  - {fileID: 21300000, guid: 110fc22104005bd083e765f776dedaeb, type: 3}
+  - {fileID: 21300000, guid: 2e4e3b5c194c5bcbb17413236fb77ba0, type: 3}
+  - {fileID: 21300000, guid: 27bc3d90b02051178d126ae7f5ea743e, type: 3}
+  - {fileID: 21300000, guid: 3f6ccec0569e5d37a52b6bbea7505bf3, type: 3}
+  - {fileID: 21300000, guid: 2643a0f0835856dcbbdc5e0193678bef, type: 3}
+  - {fileID: 21300000, guid: dfd9a359e466512397572ae44b57afc9, type: 3}
+  vortexInnerFlowFrames:
+  - {fileID: 21300000, guid: 75dbeb0597b15f55840cfafad86811a5, type: 3}
+  - {fileID: 21300000, guid: 00888fc136985d7fb69835b8ae00eae6, type: 3}
+  - {fileID: 21300000, guid: ec9c8aa334cb59ccaa7fbbefd26d28dd, type: 3}
+  - {fileID: 21300000, guid: ea8669975ebc5fe8bb8be6de59678a83, type: 3}
+  - {fileID: 21300000, guid: 95c0879ecd9e5fd39b2191a3f76c7391, type: 3}
+  - {fileID: 21300000, guid: fa5f7fda177251f9a69ef31311f44e33, type: 3}
+  - {fileID: 21300000, guid: 1d5cc8ce14ee556eb42d3e1a992ca0e1, type: 3}
+  - {fileID: 21300000, guid: cae2821d21a659a2885d8b2d18fe412c, type: 3}
+  - {fileID: 21300000, guid: 799597a058f95b81b1b61b769c06f175, type: 3}
+  - {fileID: 21300000, guid: 2aab40ffb0bf5b3688398fef60b8849c, type: 3}
+  - {fileID: 21300000, guid: dbfec80fd80c5dd2ab3f4464ddc434aa, type: 3}
+  - {fileID: 21300000, guid: 7e1d31e6a47d59caa26f0c670cd8c6ae, type: 3}
+  vortexOuterFoamFrames:
+  - {fileID: 21300000, guid: fe7c2e03b9d05567af486b2cc638411e, type: 3}
+  - {fileID: 21300000, guid: 8faf50a748195b19bbb8a955c6917c1d, type: 3}
+  - {fileID: 21300000, guid: b4413faac9b6565f879e4a893d2968fd, type: 3}
+  - {fileID: 21300000, guid: 694529342a9c550e8ea987aa1417a2fe, type: 3}
+  - {fileID: 21300000, guid: 36e4d1fe18cb5eea8225609d05182db1, type: 3}
+  - {fileID: 21300000, guid: b74cf8c99a5450a3a2f9090cd4ba5468, type: 3}
+  - {fileID: 21300000, guid: 58788de4ad945d6c90d43dad1e8dd3af, type: 3}
+  - {fileID: 21300000, guid: 01b1dc6abb435885a98a13994b310046, type: 3}
+  - {fileID: 21300000, guid: 128e38a6d9e3520ca8243698d8ff652d, type: 3}
+  - {fileID: 21300000, guid: c8dc3a8a229f568d99934399c179b8bc, type: 3}
+  - {fileID: 21300000, guid: 7e422d8f169b54b18ae5ef371ca6d04d, type: 3}
+  - {fileID: 21300000, guid: d04d852ce6cf58b8bf2b7309323a6700, type: 3}
+  farCloudWall: {fileID: 21300000, guid: d3afd7a295f25cf79c0ff92c4d9dd282, type: 3}
+  midWeatherBank: {fileID: 21300000, guid: 81c699268f9c5dc1b3535215b60fb310, type: 3}
+  nearScud: {fileID: 21300000, guid: b4ef2571a8df59258897010e91b80521, type: 3}

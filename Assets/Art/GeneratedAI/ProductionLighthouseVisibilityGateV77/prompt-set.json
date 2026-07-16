@@ -1,0 +1,12 @@
+{
+  "package": "ProductionLighthouseVisibilityGateV77",
+  "generation_mode": "qa_composition_only_no_model_generation_no_runtime_pixels",
+  "source_identity": [
+    "V43 fog",
+    "V44 lighthouse/beam",
+    "V56 ocean",
+    "V74 grade",
+    "V76 rain"
+  ],
+  "visual_rule": "discovery is caused by physical visibility and accumulated clues, never a marker at the answer coordinate"
+}

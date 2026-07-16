@@ -1,0 +1,377 @@
+{
+  "package": "ProductionLighthouseVisibilityGateV77",
+  "status": "pass",
+  "scope": "qa_only_no_runtime_assets",
+  "runtime_png_count": 0,
+  "qa_png_count": 12,
+  "metrics": {
+    "16x9": {
+      "UnknownRain": {
+        "world_state": "RainFront",
+        "scene_size": [
+          1600,
+          900
+        ],
+        "lighthouse_difference_from_no_lighthouse": 0.0,
+        "fog": {
+          "bbox": [
+            0,
+            437,
+            1600,
+            828
+          ],
+          "span_ratio": 1.0,
+          "mean_alpha": 0.1942398883442266,
+          "max_alpha": 142
+        },
+        "lighthouse_alpha_bbox": {
+          "bbox": null,
+          "span_ratio": 0.0,
+          "mean_alpha": 0.0,
+          "max_alpha": 0
+        },
+        "beam_alpha_bbox": {
+          "bbox": null,
+          "span_ratio": 0.0,
+          "mean_alpha": 0.0,
+          "max_alpha": 0
+        },
+        "exactly_matches_no_lighthouse_baseline": true
+      },
+      "BearingDusk": {
+        "world_state": "Dusk",
+        "scene_size": [
+          1600,
+          900
+        ],
+        "lighthouse_difference_from_no_lighthouse": 0.012071391603620375,
+        "fog": {
+          "bbox": [
+            0,
+            437,
+            1600,
+            827
+          ],
+          "span_ratio": 1.0,
+          "mean_alpha": 0.14741188997821353,
+          "max_alpha": 107
+        },
+        "lighthouse_alpha_bbox": {
+          "bbox": [
+            1192,
+            538,
+            1337,
+            725
+          ],
+          "span_ratio": 0.090625,
+          "mean_alpha": 0.0014654357298474945,
+          "max_alpha": 61
+        },
+        "beam_alpha_bbox": {
+          "bbox": null,
+          "span_ratio": 0.0,
+          "mean_alpha": 0.0,
+          "max_alpha": 0
+        },
+        "exactly_matches_no_lighthouse_baseline": false
+      },
+      "KnownMoon": {
+        "world_state": "MoonNight",
+        "scene_size": [
+          1600,
+          900
+        ],
+        "lighthouse_difference_from_no_lighthouse": 0.04042092180520835,
+        "fog": {
+          "bbox": [
+            0,
+            438,
+            1600,
+            826
+          ],
+          "span_ratio": 1.0,
+          "mean_alpha": 0.0662563071895425,
+          "max_alpha": 48
+        },
+        "lighthouse_alpha_bbox": {
+          "bbox": [
+            1191,
+            538,
+            1338,
+            725
+          ],
+          "span_ratio": 0.091875,
+          "mean_alpha": 0.005766892701525054,
+          "max_alpha": 240
+        },
+        "beam_alpha_bbox": {
+          "bbox": [
+            1274,
+            530,
+            1600,
+            572
+          ],
+          "span_ratio": 0.20375,
+          "mean_alpha": 0.00036066721132897603,
+          "max_alpha": 27
+        },
+        "exactly_matches_no_lighthouse_baseline": false
+      },
+      "KnownStorm": {
+        "world_state": "StormSurge",
+        "scene_size": [
+          1600,
+          900
+        ],
+        "lighthouse_difference_from_no_lighthouse": 0.015818613379679394,
+        "fog": {
+          "bbox": [
+            0,
+            437,
+            1600,
+            827
+          ],
+          "span_ratio": 1.0,
+          "mean_alpha": 0.12350005991285402,
+          "max_alpha": 90
+        },
+        "lighthouse_alpha_bbox": {
+          "bbox": [
+            1191,
+            538,
+            1337,
+            725
+          ],
+          "span_ratio": 0.09125,
+          "mean_alpha": 0.0044197766884531585,
+          "max_alpha": 184
+        },
+        "beam_alpha_bbox": {
+          "bbox": [
+            1287,
+            537,
+            1579,
+            566
+          ],
+          "span_ratio": 0.1825,
+          "mean_alpha": 0.00013658769063180828,
+          "max_alpha": 11
+        },
+        "exactly_matches_no_lighthouse_baseline": false
+      }
+    },
+    "4x3": {
+      "UnknownRain": {
+        "world_state": "RainFront",
+        "scene_size": [
+          960,
+          720
+        ],
+        "lighthouse_difference_from_no_lighthouse": 0.0,
+        "fog": {
+          "bbox": [
+            0,
+            405,
+            960,
+            641
+          ],
+          "span_ratio": 1.0,
+          "mean_alpha": 0.14577361905410313,
+          "max_alpha": 142
+        },
+        "lighthouse_alpha_bbox": {
+          "bbox": null,
+          "span_ratio": 0.0,
+          "mean_alpha": 0.0,
+          "max_alpha": 0
+        },
+        "beam_alpha_bbox": {
+          "bbox": null,
+          "span_ratio": 0.0,
+          "mean_alpha": 0.0,
+          "max_alpha": 0
+        },
+        "exactly_matches_no_lighthouse_baseline": true
+      },
+      "BearingDusk": {
+        "world_state": "Dusk",
+        "scene_size": [
+          960,
+          720
+        ],
+        "lighthouse_difference_from_no_lighthouse": 0.013151400783858324,
+        "fog": {
+          "bbox": [
+            0,
+            405,
+            960,
+            641
+          ],
+          "span_ratio": 1.0,
+          "mean_alpha": 0.11064047748729121,
+          "max_alpha": 107
+        },
+        "lighthouse_alpha_bbox": {
+          "bbox": [
+            651,
+            430,
+            768,
+            580
+          ],
+          "span_ratio": 0.121875,
+          "mean_alpha": 0.001962821123819898,
+          "max_alpha": 61
+        },
+        "beam_alpha_bbox": {
+          "bbox": null,
+          "span_ratio": 0.0,
+          "mean_alpha": 0.0,
+          "max_alpha": 0
+        },
+        "exactly_matches_no_lighthouse_baseline": false
+      },
+      "KnownMoon": {
+        "world_state": "MoonNight",
+        "scene_size": [
+          960,
+          720
+        ],
+        "lighthouse_difference_from_no_lighthouse": 0.04298284562772706,
+        "fog": {
+          "bbox": [
+            0,
+            406,
+            960,
+            640
+          ],
+          "span_ratio": 1.0,
+          "mean_alpha": 0.04972350444807553,
+          "max_alpha": 48
+        },
+        "lighthouse_alpha_bbox": {
+          "bbox": [
+            651,
+            430,
+            769,
+            580
+          ],
+          "span_ratio": 0.12291666666666666,
+          "mean_alpha": 0.007724968228031954,
+          "max_alpha": 240
+        },
+        "beam_alpha_bbox": {
+          "bbox": [
+            716,
+            428,
+            938,
+            453
+          ],
+          "span_ratio": 0.23125,
+          "mean_alpha": 0.00029793595679012346,
+          "max_alpha": 27
+        },
+        "exactly_matches_no_lighthouse_baseline": false
+      },
+      "KnownStorm": {
+        "world_state": "StormSurge",
+        "scene_size": [
+          960,
+          720
+        ],
+        "lighthouse_difference_from_no_lighthouse": 0.01695755381554567,
+        "fog": {
+          "bbox": [
+            0,
+            405,
+            960,
+            641
+          ],
+          "span_ratio": 1.0,
+          "mean_alpha": 0.0926827285312273,
+          "max_alpha": 90
+        },
+        "lighthouse_alpha_bbox": {
+          "bbox": [
+            651,
+            430,
+            769,
+            580
+          ],
+          "span_ratio": 0.12291666666666666,
+          "mean_alpha": 0.005919985702614379,
+          "max_alpha": 184
+        },
+        "beam_alpha_bbox": {
+          "bbox": [
+            723,
+            432,
+            899,
+            449
+          ],
+          "span_ratio": 0.18333333333333332,
+          "mean_alpha": 0.00010879062273057371,
+          "max_alpha": 11
+        },
+        "exactly_matches_no_lighthouse_baseline": false
+      }
+    }
+  },
+  "old_marker_metrics": {
+    "bbox": [
+      1193,
+      543,
+      1299,
+      560
+    ],
+    "span_ratio": 0.06625,
+    "mean_alpha": 0.000255,
+    "max_alpha": 54
+  },
+  "gates": {
+    "eight_raw_double_aspect_state_scenes": true,
+    "four_qa_boards_exact_4096x2160": true,
+    "raw_scene_sizes_match_declared_aspects": true,
+    "unknown_state_has_zero_lighthouse_or_beam_leak": true,
+    "fog_is_broad_weather_not_local_marker": true,
+    "bearing_state_is_subtle_silhouette": true,
+    "known_states_keep_lighthouse_readable": true,
+    "beam_only_exists_in_known_night_or_storm": true,
+    "current_runtime_foam_marker_evidence_is_named": true,
+    "runtime_png_count_zero": true,
+    "runtime_reference_count_zero": true,
+    "all_package_guids_unique": true,
+    "dependencies_unchanged_during_build": true,
+    "authoritative_runtime_manifest_unchanged_during_build": true
+  },
+  "runtime_reference_count": 0,
+  "guid_audit": {
+    "package_meta_count": 14,
+    "unique_within_package": true,
+    "collisions_with_repository": []
+  },
+  "dependency_sha256": {
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/runtime-contract.json": "eb2d60cb537bcedb79c694e20dcaa97ce55bc77e59f018dfd3416963b67b2bfb",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/production-audit.json": "23b116dd1c088b3157d437210e54c5a28fb6b6d0b3a21a4130a9a5c8373761c2",
+    "Assets/Art/GeneratedAI/ProductionLookoutVistaLayersV44/runtime-contract.json": "d78e433e011e4f320201a118933b8e8be20e57a8340b118ad72ac120d0d39d12",
+    "Assets/Art/GeneratedAI/ProductionLookoutVistaLayersV44/production-audit.json": "a28aa4e9ab4cf5519a218f66229affaff95e5f679eee566afc78b225b5c6e250",
+    "Assets/Art/GeneratedAI/ProductionContinuousOceanBaseV56/runtime-contract.json": "bf97d2f30a03aade475ef4141c462a1647dd9ad638ab05f935086c8d637bdd61",
+    "Assets/Art/GeneratedAI/ProductionContinuousOceanBaseV56/production-audit.json": "f7daace097e003369db0ee2a4806178d60b3bd78d8633267c2711e18ac589b9d",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/runtime-contract.json": "ef8d1ae0e9eafba6afd7d97e18bc342843b2894e752de28a08d8d7a4440c0672",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/production-audit.json": "2842da6d1440769c03decbc75aa93ec3035130fda455330633cdf99bceb2dc5c",
+    "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/runtime-contract.json": "138ac280d884120fb9c69a795bf9401c5a7412aa1452b04673e7694dc4b38287",
+    "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/production-audit.json": "d7e605199ee7cd2c78386d2f84906dba8d1308d7eb4c68b2ef9c0d5c1a7a4748",
+    "Tools/build_v74_world_lighting_grade.py": "9f7f0df9cf97da71b7c4d1f0c8ffc00de970740e4e3cc8ca2423c5a388c65dd6",
+    "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs": "b26828f10673fe5e44ab66a5ef318df938d8d502306a7c6004139ef8f9a5f3df",
+    "Assets/Art/GeneratedAI/ProductionLookoutVistaLayersV44/Runtime/Far/TideLookoutV44_FarLighthouse.png": "075e907368ef1771b96ff1badf9fc5511ff3d009c563592439b4079d35886bfd",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/Runtime/Clouds/TideSeaV43_MidWeatherBank_Seamless.png": "954aaf8e074bc6044ec7a1302d5a0491e1142433c1fb505d929cd8353278d72f",
+    "Docs/tide-current-runtime-resource-manifest-2026-07-14.md": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489"
+  },
+  "authoritative_runtime_manifest_sha256": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489",
+  "authoritative_runtime_manifest_unchanged_during_build": true,
+  "payload_sha256": "53d972d9ecfd5a62c3eeb2aa33a74d34f1abe5d51cd871102faf8a55e51c29cd",
+  "known_limits": [
+    "V77 is offline QA and does not prove the Unity renderer order or clue state is integrated.",
+    "Runtime must remove the old foam hint and reuse V43 fog; V77 provides no replacement texture.",
+    "Actual visibility still requires 16:9/4:3 Game View under live cloud, rain, parallax and camera motion."
+  ]
+}

@@ -1,178 +1,73 @@
 # Tide 开发流程
 
-本文记录当前已经核验过的 Windows / macOS 双机开发流程。它不是宏大的团队规范，目标只有一个：让你在两台电脑之间切换时不丢资源、不提交 Unity 生成垃圾、不把场景冲突攒成灾难。
+## 日常入口
 
-## 已核验状态
+1. 在 `D:/UnityEditor/Projects/Tide` 拉取 `main` 与 LFS 对象。
+2. 打开 `Assets/Scenes/Tide_StiltHouse_FirstSlice.unity`。
+3. 从 `Docs/tide-task-tracking.md` 只取一个 P0/P1 叶子任务。
+4. 修改前先追 `Docs/code-reading-map.md` 中对应的输入、状态和表现链。
+5. 用纯模型或聚焦探针验证规则，再进 Play 调节动作和表现。
+6. 视觉结论只使用用户原始 Game View/录像；不得用自动裁图替代。
 
-核验时间：`2026-07-07`
+## 当前架构门
 
-- 仓库：`https://github.com/V2beach/Tide.git`
-- Windows 本机路径：`D:\UnityEditor\Projects\Tide`
-- Unity 版本：`2022.3.62f3`
-- 渲染管线：URP `14.0.12`
-- Renderer：URP 2D Renderer
-- Git LFS：已配置，远端指向 GitHub LFS
-- Unity 序列化：Force Text
-- Unity Version Control：Visible Meta Files
-- 主分支：`main`
+- `TideOceanFieldModel` 是潮位、浪坡、流速和扰动的唯一海况来源。
+- 纯 Model 不读取 `Input`、Renderer、Scene 或 `Time.time`。
+- Controller 只编排意图、模型和 presenter；不能维护第二套船位、潮位或可走面。
+- 可见物、交互点、碰撞和动画接触必须读取同一组世界锚点。
+- 新资源必须有 owner 与互斥表。旧 owner 退出后才能显示新 owner。
+- 人物、房屋、船不得用状态切换时改变 scale 的办法修比例。
 
-## Windows 日常流程
+## 验证层级
 
-开始开发前：
-
-```powershell
-cd D:\UnityEditor\Projects\Tide
-git status
-git pull --rebase
-git lfs pull
-```
-
-然后从 Unity Hub 打开：
-
-```text
-D:\UnityEditor\Projects\Tide
-```
-
-结束开发时：
+最小静态门：
 
 ```powershell
-cd D:\UnityEditor\Projects\Tide
-git status
-git add Assets Packages ProjectSettings Docs README.md .gitignore .gitattributes
-git commit -m "描述这次改动"
-git push
+pwsh Tools/check-prototype-loop.ps1
 ```
 
-如果 `git status` 出现没见过的文件，先看清楚再提交。尤其不要把 `Library/`、`Temp/`、`Logs/`、`UserSettings/` 之类目录加进 Git。
+同步/LFS 门：
 
-## macOS 首次准备
-
-安装同一个 Unity 版本：
-
-```text
-Unity 2022.3.62f3
+```powershell
+pwsh Tools/check-unity-sync.ps1
 ```
 
-安装 Git 和 Git LFS：
+Unity 核心探针与聚合门：
 
-```bash
-brew install git git-lfs
-git lfs install
+```powershell
+pwsh Tools/check-tide-play-readiness.ps1
 ```
 
-克隆项目：
+macOS 将 `pwsh ...ps1` 换成对应的 `bash Tools/...sh`。
 
-```bash
-mkdir -p ~/Projects
-cd ~/Projects
-git clone https://github.com/V2beach/Tide.git tide
-cd tide
-git lfs pull
+聚合门通过后仍要按 `Docs/prototype-playtest-walkthrough.md` 手玩。规则、编译、视觉是三种证据，不能互相冒充。
+
+## 提交规则
+
+```powershell
+git status --short
+git diff --check
+git add -A
+git lfs ls-files
+git diff --cached --stat
+git commit -m "描述本轮可验证结果"
+git push origin main
 ```
 
-然后从 Unity Hub 打开：
+- 一个提交只表达一轮可验证收敛。
+- 改场景、Prefab、Catalog 或资源时必须连同 `.meta` 提交。
+- 两台电脑不要同时修改同一场景；切换设备前先提交并推送。
+- `Library/`、`Temp/`、`Logs/`、截图证据、QA/GIF/UHD 不得暂存。
 
-```text
-~/Projects/tide
-```
+## 资源接入
 
-第一次打开会重新生成 `Library/`。这一步会慢，但它是每台电脑自己的本地缓存，不需要也不应该同步。
+1. 先读 `Docs/tide-current-runtime-resource-manifest-2026-07-14.md`。
+2. 再按 `Docs/tide-production-art-handoff.md` 审核世界逻辑、视角、比例、透明层、锚点和 owner。
+3. 只选一个运行档，默认 Balanced。
+4. 原子接入 Catalog/Renderer，并退役同职责旧资源。
+5. 验证 16:9、4:3、内外景、昼夜、潮位和遮挡。
+6. 记录未做的 Atlas、Profiler、Windows/macOS 平台测试，不能把资源侧 QA 写成项目终验。
 
-## macOS 日常流程
+## 三种 Prompt
 
-开始开发前：
-
-```bash
-cd ~/Projects/tide
-git status
-git pull --rebase
-git lfs pull
-```
-
-结束开发时：
-
-```bash
-cd ~/Projects/tide
-git status
-git add Assets Packages ProjectSettings Docs README.md .gitignore .gitattributes
-git commit -m "描述这次改动"
-git push
-```
-
-## 哪些内容进 Git
-
-应该提交：
-
-- `Assets/`
-- `Packages/`
-- `ProjectSettings/`
-- `Docs/`
-- `README.md`
-- `.gitignore`
-- `.gitattributes`
-
-不要提交：
-
-- `Library/`
-- `Temp/`
-- `Obj/`
-- `Build/`
-- `Builds/`
-- `Logs/`
-- `UserSettings/`
-- IDE 自动生成文件，例如 `.sln`、`.csproj`、`.idea/`、`.vscode/`
-
-## Unity 资源规则
-
-- 移动或重命名资源时，优先在 Unity Editor 里操作，确保 `.meta` 跟着资源一起变化。
-- 新增资源时，资源文件和 `.meta` 文件要一起提交。
-- 不要在 Windows 和 macOS 上同时改同一个 `.unity` 场景。
-- 不要长时间攒着大量未提交的场景改动。Unity 场景即使用文本序列化，冲突也很难合。
-- 图片、音频、字体、PSD/PSB、Aseprite、视频、FBX、Blend 等二进制资源已通过 `.gitattributes` 进入 Git LFS。
-
-## 分支节奏
-
-当前个人原型阶段可以先保持：
-
-```text
-main
-```
-
-开始做明确玩法后，再使用短生命周期分支：
-
-```bash
-git switch -c feature/tide-core
-git switch -c feature/level-prototype
-git switch -c feature/audio-vfx
-```
-
-每个分支只做一个小目标，验证后合回 `main`。
-
-## 提交前检查
-
-每次提交前至少过一遍：
-
-1. `git status` 里只有你预期的文件。
-2. 没有 Unity 生成目录被暂存。
-3. 新增二进制资源按规则进入 Git LFS。
-4. 改过场景或 Prefab 后，Unity 已保存并正常关闭。
-5. 这次提交小到可以用一句话讲清楚。
-
-## 出问题时先看这里
-
-macOS 打开后资源缺失：
-
-```bash
-git lfs pull
-```
-
-Unity 提示版本不一致：先停下，安装 `2022.3.62f3`，不要随手升级工程。
-
-Git 出现大量换行变化：
-
-```bash
-git diff --stat
-git diff -- Assets Packages ProjectSettings Docs
-```
-
-如果只是换行导致的变化，不要急着提交，先确认 `.gitattributes` 是否生效。
+日常开发收敛、Playtest 优先和架构收敛 Prompt 统一放在 `Docs/ai-work-prompts.md`。

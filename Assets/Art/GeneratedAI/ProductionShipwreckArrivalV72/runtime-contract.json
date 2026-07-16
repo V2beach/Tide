@@ -1,0 +1,1764 @@
+{
+  "package": "ProductionShipwreckArrivalV72",
+  "status": "resource_candidate_not_integrated",
+  "purpose": "Make the opening read as the same V39/V46 sailboat just wrecked, while preserving V55 as the later sparse salvage pool.",
+  "identity": {
+    "same_boat_cues": [
+      "single mast",
+      "clinker plank bands",
+      "right stern rudder",
+      "off-white salt-worn sail",
+      "restrained gray-brown corrosion palette"
+    ],
+    "generated_master": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+    "v39_reference": "Assets/Art/GeneratedAI/ProductionR03R06WorldMatchV20/Runtime/Boat/States18/TideBoatV20_B12_破帆试挂_6K.png",
+    "v55_relationship": "V72 owns the one-off opening main wreck. V55 remains the sparse seeded salvage pool for later short voyages."
+  },
+  "source": {
+    "built_in_image_generation": true,
+    "mode": "built-in image_gen precise-object-edit with magenta chroma removal",
+    "chroma_source": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedChroma.png",
+    "selected_alpha": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "pixels_per_unit": 256.0,
+    "wreck_root_top_left": [
+      768.0,
+      740.0
+    ],
+    "runtime_forbidden": true
+  },
+  "profiles": {
+    "UHD": {
+      "role": "source-derived close-review convenience profile",
+      "logical_canvas": [
+        3072,
+        2048
+      ],
+      "pixels_per_unit": 512.0,
+      "assets": {
+        "ExposedKeelRib": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginStagingV55/Runtime/UHD/Salvage/TideShipwreckV55_PartialKeelRib.png",
+          "source_v40_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginV40/Runtime/Wrecks/TideShipwreckV40_PartialKeelRib.png",
+          "size": [
+            1360,
+            967
+          ],
+          "pixels_per_unit": 512,
+          "pivot_bottom_left": [
+            0.5,
+            0.5
+          ],
+          "anchors": {
+            "waterline": {
+              "pixel_top_left": [
+                680.0,
+                521.8
+              ],
+              "normalized_top_left": [
+                0.5,
+                0.53960703
+              ],
+              "from_sprite_center_m": [
+                0.0,
+                -0.074805
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                -0.074805
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                693.5,
+                606.4
+              ],
+              "normalized_top_left": [
+                0.50992647,
+                0.62709411
+              ],
+              "from_sprite_center_m": [
+                0.026367,
+                -0.240039
+              ],
+              "from_sprite_pivot_m": [
+                0.026367,
+                -0.240039
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                307.4,
+                408.4
+              ],
+              "normalized_top_left": [
+                0.22602941,
+                0.42233713
+              ],
+              "from_sprite_center_m": [
+                -0.727734,
+                0.14668
+              ],
+              "from_sprite_pivot_m": [
+                -0.727734,
+                0.14668
+              ]
+            }
+          }
+        },
+        "BrokenMast": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/BrokenMast/TideShipwreckV72_BrokenMast.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            686,
+            1420
+          ],
+          "pixels_per_unit": 512.0,
+          "pivot_bottom_left": [
+            0.21574344,
+            0.11267606
+          ],
+          "source_crop_top_left": [
+            566,
+            90,
+            909,
+            800
+          ],
+          "world_offset_from_wreck_root": [
+            -0.5,
+            0.078125
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                148.0,
+                1260.0
+              ],
+              "normalized_top_left": [
+                0.21574344,
+                0.88732394
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                148.0,
+                1260.0
+              ],
+              "normalized_top_left": [
+                0.21574344,
+                0.88732394
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                347.919,
+                689.327
+              ],
+              "normalized_top_left": [
+                0.50717127,
+                0.48544172
+              ],
+              "from_sprite_pivot_m": [
+                0.390468,
+                1.114595
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                388.0,
+                600.0
+              ],
+              "normalized_top_left": [
+                0.56559767,
+                0.42253521
+              ],
+              "from_sprite_pivot_m": [
+                0.46875,
+                1.289062
+              ]
+            }
+          }
+        },
+        "CollapsedSailRig": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            1468,
+            812
+          ],
+          "pixels_per_unit": 512.0,
+          "pivot_bottom_left": [
+            0.19346049,
+            0.92610837
+          ],
+          "source_crop_top_left": [
+            666,
+            314,
+            1400,
+            720
+          ],
+          "world_offset_from_wreck_root": [
+            0.15625,
+            1.546875
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                284.0,
+                60.0
+              ],
+              "normalized_top_left": [
+                0.19346049,
+                0.07389163
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                708.0,
+                632.0
+              ],
+              "normalized_top_left": [
+                0.48228883,
+                0.77832512
+              ],
+              "from_sprite_pivot_m": [
+                0.828125,
+                -1.117188
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                743.341,
+                382.259
+              ],
+              "normalized_top_left": [
+                0.50636302,
+                0.47076271
+              ],
+              "from_sprite_pivot_m": [
+                0.89715,
+                -0.629413
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                748.0,
+                284.0
+              ],
+              "normalized_top_left": [
+                0.50953678,
+                0.34975369
+              ],
+              "from_sprite_pivot_m": [
+                0.90625,
+                -0.4375
+              ]
+            }
+          }
+        },
+        "BowSection": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/BowSection/TideShipwreckV72_BowSection.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            1172,
+            764
+          ],
+          "pixels_per_unit": 512.0,
+          "pivot_bottom_left": [
+            0.47440273,
+            0.39267016
+          ],
+          "source_crop_top_left": [
+            82,
+            510,
+            668,
+            892
+          ],
+          "world_offset_from_wreck_root": [
+            -1.59375,
+            -0.007812
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                556.0,
+                464.0
+              ],
+              "normalized_top_left": [
+                0.47440273,
+                0.60732984
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                556.0,
+                460.0
+              ],
+              "normalized_top_left": [
+                0.47440273,
+                0.60209424
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.007812
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                527.272,
+                428.235
+              ],
+              "normalized_top_left": [
+                0.4498909,
+                0.56051709
+              ],
+              "from_sprite_pivot_m": [
+                -0.056109,
+                0.069853
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                420.0,
+                332.0
+              ],
+              "normalized_top_left": [
+                0.35836177,
+                0.43455497
+              ],
+              "from_sprite_pivot_m": [
+                -0.265625,
+                0.257812
+              ]
+            }
+          }
+        },
+        "SternHull": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/SternHull/TideShipwreckV72_SternHull.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            1692,
+            756
+          ],
+          "pixels_per_unit": 512.0,
+          "pivot_bottom_left": [
+            0.5177305,
+            0.41269841
+          ],
+          "source_crop_top_left": [
+            632,
+            520,
+            1478,
+            898
+          ],
+          "world_offset_from_wreck_root": [
+            1.179688,
+            -0.007812
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                876.0,
+                444.0
+              ],
+              "normalized_top_left": [
+                0.5177305,
+                0.58730159
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                876.0,
+                440.0
+              ],
+              "normalized_top_left": [
+                0.5177305,
+                0.58201058
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.007812
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                834.46,
+                467.155
+              ],
+              "normalized_top_left": [
+                0.49317995,
+                0.61793021
+              ],
+              "from_sprite_pivot_m": [
+                -0.081132,
+                -0.045225
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                1376.0,
+                284.0
+              ],
+              "normalized_top_left": [
+                0.81323877,
+                0.37566138
+              ],
+              "from_sprite_pivot_m": [
+                0.976562,
+                0.3125
+              ]
+            }
+          }
+        },
+        "ProvisionCask": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/ProvisionCask/TideShipwreckV72_ProvisionCask.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginStagingV55/Runtime/UHD/Salvage/TideShipwreckV55_ProvisionCask.png",
+          "source_v40_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginV40/Runtime/Wrecks/TideShipwreckV40_ProvisionCask.png",
+          "size": [
+            562,
+            262
+          ],
+          "pixels_per_unit": 512,
+          "pivot_bottom_left": [
+            0.5,
+            0.5
+          ],
+          "anchors": {
+            "waterline": {
+              "pixel_top_left": [
+                281.0,
+                147.24
+              ],
+              "normalized_top_left": [
+                0.5,
+                0.56198473
+              ],
+              "from_sprite_center_m": [
+                0.0,
+                -0.031719
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                -0.031719
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                264.76,
+                137.96
+              ],
+              "normalized_top_left": [
+                0.4711032,
+                0.52656489
+              ],
+              "from_sprite_center_m": [
+                -0.031719,
+                -0.013594
+              ],
+              "from_sprite_pivot_m": [
+                -0.031719,
+                -0.013594
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                366.26,
+                131.0
+              ],
+              "normalized_top_left": [
+                0.65170819,
+                0.5
+              ],
+              "from_sprite_center_m": [
+                0.166523,
+                0.0
+              ],
+              "from_sprite_pivot_m": [
+                0.166523,
+                0.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    "High": {
+      "role": "native imagegen detail and registration authority",
+      "logical_canvas": [
+        1536,
+        1024
+      ],
+      "pixels_per_unit": 256.0,
+      "assets": {
+        "ExposedKeelRib": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginStagingV55/Runtime/High/Salvage/TideShipwreckV55_PartialKeelRib.png",
+          "source_v40_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginV40/Runtime/Wrecks/TideShipwreckV40_PartialKeelRib.png",
+          "size": [
+            680,
+            484
+          ],
+          "pixels_per_unit": 256,
+          "pivot_bottom_left": [
+            0.5,
+            0.5
+          ],
+          "anchors": {
+            "waterline": {
+              "pixel_top_left": [
+                340.0,
+                261.17
+              ],
+              "normalized_top_left": [
+                0.5,
+                0.53960703
+              ],
+              "from_sprite_center_m": [
+                0.0,
+                -0.074882
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                -0.074882
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                346.75,
+                303.514
+              ],
+              "normalized_top_left": [
+                0.50992647,
+                0.62709411
+              ],
+              "from_sprite_center_m": [
+                0.026367,
+                -0.240287
+              ],
+              "from_sprite_pivot_m": [
+                0.026367,
+                -0.240287
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                153.7,
+                204.411
+              ],
+              "normalized_top_left": [
+                0.22602941,
+                0.42233713
+              ],
+              "from_sprite_center_m": [
+                -0.727734,
+                0.146831
+              ],
+              "from_sprite_pivot_m": [
+                -0.727734,
+                0.146831
+              ]
+            }
+          }
+        },
+        "BrokenMast": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/BrokenMast/TideShipwreckV72_BrokenMast.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            343,
+            710
+          ],
+          "pixels_per_unit": 256.0,
+          "pivot_bottom_left": [
+            0.21574344,
+            0.11267606
+          ],
+          "source_crop_top_left": [
+            566,
+            90,
+            909,
+            800
+          ],
+          "world_offset_from_wreck_root": [
+            -0.5,
+            0.078125
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                74.0,
+                630.0
+              ],
+              "normalized_top_left": [
+                0.21574344,
+                0.88732394
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                74.0,
+                630.0
+              ],
+              "normalized_top_left": [
+                0.21574344,
+                0.88732394
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                173.96,
+                344.664
+              ],
+              "normalized_top_left": [
+                0.50717127,
+                0.48544172
+              ],
+              "from_sprite_pivot_m": [
+                0.390468,
+                1.114595
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                194.0,
+                300.0
+              ],
+              "normalized_top_left": [
+                0.56559767,
+                0.42253521
+              ],
+              "from_sprite_pivot_m": [
+                0.46875,
+                1.289062
+              ]
+            }
+          }
+        },
+        "CollapsedSailRig": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            734,
+            406
+          ],
+          "pixels_per_unit": 256.0,
+          "pivot_bottom_left": [
+            0.19346049,
+            0.92610837
+          ],
+          "source_crop_top_left": [
+            666,
+            314,
+            1400,
+            720
+          ],
+          "world_offset_from_wreck_root": [
+            0.15625,
+            1.546875
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                142.0,
+                30.0
+              ],
+              "normalized_top_left": [
+                0.19346049,
+                0.07389163
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                354.0,
+                316.0
+              ],
+              "normalized_top_left": [
+                0.48228883,
+                0.77832512
+              ],
+              "from_sprite_pivot_m": [
+                0.828125,
+                -1.117188
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                371.67,
+                191.13
+              ],
+              "normalized_top_left": [
+                0.50636302,
+                0.47076271
+              ],
+              "from_sprite_pivot_m": [
+                0.89715,
+                -0.629413
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                374.0,
+                142.0
+              ],
+              "normalized_top_left": [
+                0.50953678,
+                0.34975369
+              ],
+              "from_sprite_pivot_m": [
+                0.90625,
+                -0.4375
+              ]
+            }
+          }
+        },
+        "BowSection": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/BowSection/TideShipwreckV72_BowSection.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            586,
+            382
+          ],
+          "pixels_per_unit": 256.0,
+          "pivot_bottom_left": [
+            0.47440273,
+            0.39267016
+          ],
+          "source_crop_top_left": [
+            82,
+            510,
+            668,
+            892
+          ],
+          "world_offset_from_wreck_root": [
+            -1.59375,
+            -0.007812
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                278.0,
+                232.0
+              ],
+              "normalized_top_left": [
+                0.47440273,
+                0.60732984
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                278.0,
+                230.0
+              ],
+              "normalized_top_left": [
+                0.47440273,
+                0.60209424
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.007812
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                263.636,
+                214.118
+              ],
+              "normalized_top_left": [
+                0.4498909,
+                0.56051709
+              ],
+              "from_sprite_pivot_m": [
+                -0.056109,
+                0.069853
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                210.0,
+                166.0
+              ],
+              "normalized_top_left": [
+                0.35836177,
+                0.43455497
+              ],
+              "from_sprite_pivot_m": [
+                -0.265625,
+                0.257812
+              ]
+            }
+          }
+        },
+        "SternHull": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/SternHull/TideShipwreckV72_SternHull.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            846,
+            378
+          ],
+          "pixels_per_unit": 256.0,
+          "pivot_bottom_left": [
+            0.5177305,
+            0.41269841
+          ],
+          "source_crop_top_left": [
+            632,
+            520,
+            1478,
+            898
+          ],
+          "world_offset_from_wreck_root": [
+            1.179688,
+            -0.007812
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                438.0,
+                222.0
+              ],
+              "normalized_top_left": [
+                0.5177305,
+                0.58730159
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                438.0,
+                220.0
+              ],
+              "normalized_top_left": [
+                0.5177305,
+                0.58201058
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.007812
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                417.23,
+                233.578
+              ],
+              "normalized_top_left": [
+                0.49317995,
+                0.61793021
+              ],
+              "from_sprite_pivot_m": [
+                -0.081132,
+                -0.045225
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                688.0,
+                142.0
+              ],
+              "normalized_top_left": [
+                0.81323877,
+                0.37566138
+              ],
+              "from_sprite_pivot_m": [
+                0.976562,
+                0.3125
+              ]
+            }
+          }
+        },
+        "ProvisionCask": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/ProvisionCask/TideShipwreckV72_ProvisionCask.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginStagingV55/Runtime/High/Salvage/TideShipwreckV55_ProvisionCask.png",
+          "source_v40_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginV40/Runtime/Wrecks/TideShipwreckV40_ProvisionCask.png",
+          "size": [
+            281,
+            131
+          ],
+          "pixels_per_unit": 256,
+          "pivot_bottom_left": [
+            0.5,
+            0.5
+          ],
+          "anchors": {
+            "waterline": {
+              "pixel_top_left": [
+                140.5,
+                73.62
+              ],
+              "normalized_top_left": [
+                0.5,
+                0.56198473
+              ],
+              "from_sprite_center_m": [
+                0.0,
+                -0.031719
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                -0.031719
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                132.38,
+                68.98
+              ],
+              "normalized_top_left": [
+                0.4711032,
+                0.52656489
+              ],
+              "from_sprite_center_m": [
+                -0.031719,
+                -0.013594
+              ],
+              "from_sprite_pivot_m": [
+                -0.031719,
+                -0.013594
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                183.13,
+                65.5
+              ],
+              "normalized_top_left": [
+                0.65170819,
+                0.5
+              ],
+              "from_sprite_center_m": [
+                0.166523,
+                0.0
+              ],
+              "from_sprite_pivot_m": [
+                0.166523,
+                0.0
+              ]
+            }
+          }
+        }
+      }
+    },
+    "Balanced": {
+      "role": "1600x900 and 960x720 audition profile",
+      "logical_canvas": [
+        1152,
+        768
+      ],
+      "pixels_per_unit": 192.0,
+      "assets": {
+        "ExposedKeelRib": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginStagingV55/Runtime/Balanced/Salvage/TideShipwreckV55_PartialKeelRib.png",
+          "source_v40_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginV40/Runtime/Wrecks/TideShipwreckV40_PartialKeelRib.png",
+          "size": [
+            510,
+            363
+          ],
+          "pixels_per_unit": 192,
+          "pivot_bottom_left": [
+            0.5,
+            0.5
+          ],
+          "anchors": {
+            "waterline": {
+              "pixel_top_left": [
+                255.0,
+                195.877
+              ],
+              "normalized_top_left": [
+                0.5,
+                0.53960703
+              ],
+              "from_sprite_center_m": [
+                0.0,
+                -0.074882
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                -0.074882
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                260.062,
+                227.635
+              ],
+              "normalized_top_left": [
+                0.50992647,
+                0.62709411
+              ],
+              "from_sprite_center_m": [
+                0.026367,
+                -0.240287
+              ],
+              "from_sprite_pivot_m": [
+                0.026367,
+                -0.240287
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                115.275,
+                153.308
+              ],
+              "normalized_top_left": [
+                0.22602941,
+                0.42233713
+              ],
+              "from_sprite_center_m": [
+                -0.727734,
+                0.146831
+              ],
+              "from_sprite_pivot_m": [
+                -0.727734,
+                0.146831
+              ]
+            }
+          }
+        },
+        "BrokenMast": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BrokenMast/TideShipwreckV72_BrokenMast.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            257,
+            532
+          ],
+          "pixels_per_unit": 192.0,
+          "pivot_bottom_left": [
+            0.21595331,
+            0.11184211
+          ],
+          "source_crop_top_left": [
+            566,
+            90,
+            909,
+            800
+          ],
+          "world_offset_from_wreck_root": [
+            -0.5,
+            0.078125
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                55.5,
+                472.5
+              ],
+              "normalized_top_left": [
+                0.21595331,
+                0.88815789
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                55.5,
+                472.5
+              ],
+              "normalized_top_left": [
+                0.21595331,
+                0.88815789
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                130.47,
+                258.498
+              ],
+              "normalized_top_left": [
+                0.50766463,
+                0.48589796
+              ],
+              "from_sprite_pivot_m": [
+                0.390468,
+                1.114595
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                145.5,
+                225.0
+              ],
+              "normalized_top_left": [
+                0.56614786,
+                0.42293233
+              ],
+              "from_sprite_pivot_m": [
+                0.46875,
+                1.289062
+              ]
+            }
+          }
+        },
+        "CollapsedSailRig": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            550,
+            304
+          ],
+          "pixels_per_unit": 192.0,
+          "pivot_bottom_left": [
+            0.19363636,
+            0.92598684
+          ],
+          "source_crop_top_left": [
+            666,
+            314,
+            1400,
+            720
+          ],
+          "world_offset_from_wreck_root": [
+            0.15625,
+            1.546875
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                106.5,
+                22.5
+              ],
+              "normalized_top_left": [
+                0.19363636,
+                0.07401316
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                265.5,
+                237.0
+              ],
+              "normalized_top_left": [
+                0.48272727,
+                0.77960526
+              ],
+              "from_sprite_pivot_m": [
+                0.828125,
+                -1.117188
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                278.753,
+                143.347
+              ],
+              "normalized_top_left": [
+                0.50682335,
+                0.47153699
+              ],
+              "from_sprite_pivot_m": [
+                0.89715,
+                -0.629413
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                280.5,
+                106.5
+              ],
+              "normalized_top_left": [
+                0.51,
+                0.35032895
+              ],
+              "from_sprite_pivot_m": [
+                0.90625,
+                -0.4375
+              ]
+            }
+          }
+        },
+        "BowSection": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BowSection/TideShipwreckV72_BowSection.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            440,
+            286
+          ],
+          "pixels_per_unit": 192.0,
+          "pivot_bottom_left": [
+            0.47386364,
+            0.39160839
+          ],
+          "source_crop_top_left": [
+            82,
+            510,
+            668,
+            892
+          ],
+          "world_offset_from_wreck_root": [
+            -1.59375,
+            -0.007812
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                208.5,
+                174.0
+              ],
+              "normalized_top_left": [
+                0.47386364,
+                0.60839161
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                208.5,
+                172.5
+              ],
+              "normalized_top_left": [
+                0.47386364,
+                0.60314685
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.007812
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                197.727,
+                160.588
+              ],
+              "normalized_top_left": [
+                0.44937966,
+                0.56149701
+              ],
+              "from_sprite_pivot_m": [
+                -0.056109,
+                0.069853
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                157.5,
+                124.5
+              ],
+              "normalized_top_left": [
+                0.35795455,
+                0.43531469
+              ],
+              "from_sprite_pivot_m": [
+                -0.265625,
+                0.257812
+              ]
+            }
+          }
+        },
+        "SternHull": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/SternHull/TideShipwreckV72_SternHull.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png",
+          "size": [
+            634,
+            284
+          ],
+          "pixels_per_unit": 192.0,
+          "pivot_bottom_left": [
+            0.5181388,
+            0.41373239
+          ],
+          "source_crop_top_left": [
+            632,
+            520,
+            1478,
+            898
+          ],
+          "world_offset_from_wreck_root": [
+            1.179688,
+            -0.007812
+          ],
+          "anchors": {
+            "sprite_pivot": {
+              "pixel_top_left": [
+                328.5,
+                166.5
+              ],
+              "normalized_top_left": [
+                0.5181388,
+                0.58626761
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.0
+              ]
+            },
+            "waterline": {
+              "pixel_top_left": [
+                328.5,
+                165.0
+              ],
+              "normalized_top_left": [
+                0.5181388,
+                0.58098592
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                0.007812
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                312.923,
+                175.183
+              ],
+              "normalized_top_left": [
+                0.4935689,
+                0.61684231
+              ],
+              "from_sprite_pivot_m": [
+                -0.081132,
+                -0.045225
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                516.0,
+                106.5
+              ],
+              "normalized_top_left": [
+                0.81388013,
+                0.375
+              ],
+              "from_sprite_pivot_m": [
+                0.976562,
+                0.3125
+              ]
+            }
+          }
+        },
+        "ProvisionCask": {
+          "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/ProvisionCask/TideShipwreckV72_ProvisionCask.png",
+          "source_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginStagingV55/Runtime/Balanced/Salvage/TideShipwreckV55_ProvisionCask.png",
+          "source_v40_path": "Assets/Art/GeneratedAI/ProductionShipwreckOriginV40/Runtime/Wrecks/TideShipwreckV40_ProvisionCask.png",
+          "size": [
+            211,
+            98
+          ],
+          "pixels_per_unit": 192,
+          "pivot_bottom_left": [
+            0.5,
+            0.5
+          ],
+          "anchors": {
+            "waterline": {
+              "pixel_top_left": [
+                105.5,
+                55.075
+              ],
+              "normalized_top_left": [
+                0.5,
+                0.56198473
+              ],
+              "from_sprite_center_m": [
+                0.0,
+                -0.031638
+              ],
+              "from_sprite_pivot_m": [
+                0.0,
+                -0.031638
+              ]
+            },
+            "center_of_mass": {
+              "pixel_top_left": [
+                99.403,
+                51.603
+              ],
+              "normalized_top_left": [
+                0.4711032,
+                0.52656489
+              ],
+              "from_sprite_center_m": [
+                -0.031756,
+                -0.013559
+              ],
+              "from_sprite_pivot_m": [
+                -0.031756,
+                -0.013559
+              ]
+            },
+            "grab_point": {
+              "pixel_top_left": [
+                137.51,
+                49.0
+              ],
+              "normalized_top_left": [
+                0.65170819,
+                0.5
+              ],
+              "from_sprite_center_m": [
+                0.166721,
+                0.0
+              ],
+              "from_sprite_pivot_m": [
+                0.166721,
+                0.0
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "opening_composition": {
+    "root_rule": "Sample the local ocean surface once for WreckRoot. Align each node placement_anchor to impact_anchor_position_m, then apply one shared stage transform relative to that Impact pose.",
+    "render_layers": [
+      {
+        "name": "BackStructure",
+        "sort_range": [
+          0,
+          2
+        ]
+      },
+      {
+        "name": "CharacterSlot",
+        "sort_range": [
+          4,
+          4
+        ],
+        "resource_owned": false
+      },
+      {
+        "name": "FrontHull",
+        "sort_range": [
+          5,
+          5
+        ]
+      },
+      {
+        "name": "LooseCargo",
+        "sort_range": [
+          6,
+          6
+        ]
+      },
+      {
+        "name": "ForegroundOcean",
+        "sort_range": [
+          7,
+          7
+        ],
+        "resource_owned": false
+      }
+    ],
+    "nodes": [
+      {
+        "node": "BackExposedKeelRib",
+        "asset": "ExposedKeelRib",
+        "sort": 0,
+        "placement_anchor": "waterline",
+        "impact_anchor_position_m": [
+          -0.06,
+          -0.15
+        ],
+        "base_scale": 0.42
+      },
+      {
+        "node": "BackBrokenMast",
+        "asset": "BrokenMast",
+        "sort": 1,
+        "placement_anchor": "sprite_pivot",
+        "impact_anchor_position_m": [
+          -0.5,
+          0.078125
+        ]
+      },
+      {
+        "node": "MidCollapsedSailRig",
+        "asset": "CollapsedSailRig",
+        "sort": 2,
+        "placement_anchor": "sprite_pivot",
+        "impact_anchor_position_m": [
+          0.15625,
+          1.546875
+        ]
+      },
+      {
+        "node": "FrontBowSection",
+        "asset": "BowSection",
+        "sort": 5,
+        "placement_anchor": "sprite_pivot",
+        "impact_anchor_position_m": [
+          -1.59375,
+          -0.007812
+        ]
+      },
+      {
+        "node": "FrontSternHull",
+        "asset": "SternHull",
+        "sort": 5,
+        "placement_anchor": "sprite_pivot",
+        "impact_anchor_position_m": [
+          1.179688,
+          -0.007812
+        ]
+      },
+      {
+        "node": "LooseProvisionCask",
+        "asset": "ProvisionCask",
+        "sort": 6,
+        "placement_anchor": "waterline",
+        "impact_anchor_position_m": [
+          4.0,
+          -0.03
+        ],
+        "base_scale": 0.68
+      }
+    ],
+    "stages": {
+      "Impact": {
+        "time_seconds": 0.0,
+        "transforms": {
+          "ExposedKeelRib": {
+            "offset_m": [
+              0.0,
+              0.0
+            ],
+            "rotation_degrees": 0.0
+          },
+          "BrokenMast": {
+            "offset_m": [
+              0.0,
+              0.0
+            ],
+            "rotation_degrees": 0.0
+          },
+          "CollapsedSailRig": {
+            "offset_m": [
+              0.0,
+              0.0
+            ],
+            "rotation_degrees": 0.0
+          },
+          "BowSection": {
+            "offset_m": [
+              0.0,
+              0.0
+            ],
+            "rotation_degrees": 0.0
+          },
+          "SternHull": {
+            "offset_m": [
+              0.0,
+              0.0
+            ],
+            "rotation_degrees": 0.0
+          },
+          "ProvisionCask": {
+            "offset_m": [
+              0.0,
+              0.0
+            ],
+            "rotation_degrees": 0.0
+          }
+        }
+      },
+      "Breaking": {
+        "time_seconds": 0.8,
+        "transforms": {
+          "BowSection": {
+            "offset_m": [
+              -0.18,
+              -0.08
+            ],
+            "rotation_degrees": -6.0
+          },
+          "SternHull": {
+            "offset_m": [
+              0.08,
+              -0.1
+            ],
+            "rotation_degrees": 2.0
+          },
+          "BrokenMast": {
+            "offset_m": [
+              -0.04,
+              -0.12
+            ],
+            "rotation_degrees": -8.0
+          },
+          "CollapsedSailRig": {
+            "offset_m": [
+              0.1,
+              -0.08
+            ],
+            "rotation_degrees": 4.0
+          },
+          "ExposedKeelRib": {
+            "offset_m": [
+              0.18,
+              -0.16
+            ],
+            "rotation_degrees": 10.0
+          },
+          "ProvisionCask": {
+            "offset_m": [
+              0.18,
+              -0.02
+            ],
+            "rotation_degrees": 8.0
+          }
+        }
+      },
+      "Aftermath": {
+        "time_seconds": 4.0,
+        "transforms": {
+          "BowSection": {
+            "offset_m": [
+              -0.45,
+              -0.35
+            ],
+            "rotation_degrees": -14.0
+          },
+          "SternHull": {
+            "offset_m": [
+              0.12,
+              -0.36
+            ],
+            "rotation_degrees": 5.0
+          },
+          "BrokenMast": {
+            "offset_m": [
+              -0.18,
+              -0.42
+            ],
+            "rotation_degrees": -18.0
+          },
+          "CollapsedSailRig": {
+            "offset_m": [
+              0.2,
+              -0.3
+            ],
+            "rotation_degrees": 8.0
+          },
+          "ExposedKeelRib": {
+            "offset_m": [
+              0.42,
+              -0.25
+            ],
+            "rotation_degrees": 18.0
+          },
+          "ProvisionCask": {
+            "offset_m": [
+              0.4,
+              -0.03
+            ],
+            "rotation_degrees": 18.0
+          }
+        }
+      }
+    },
+    "interpolation": {
+      "Impact_to_Breaking": "easeOutCubic; one-shot; 0.8 seconds",
+      "Breaking_to_Aftermath": "easeInOutSine; 3.2 seconds; ocean bob remains additive on WreckRoot",
+      "detached_rule": "V72 owners remain one wreck graph until Breaking. After Breaking, runtime may detach owner transforms but must retain the declared pivots and stage endpoint offsets."
+    },
+    "character_anchors_m": {
+      "cling_point": [
+        2.16,
+        0.3
+      ],
+      "release_swim_point": [
+        3.15,
+        -0.04
+      ],
+      "inspection_point": [
+        3.55,
+        0.0
+      ],
+      "shoreward_direction": [
+        1.0,
+        0.0
+      ]
+    },
+    "character_rule": "Use a complete V61/V64 full-body sprite. During cling, sort the character behind FrontSternHull and in front of BackStructure; ForegroundOcean occludes the submerged body. Never crop or erase the legs in the character asset.",
+    "walkable_surface": "none; the opening wreck is unstable water-space only",
+    "default_interaction": "arrival context and temporary cling only; salvage pickup ownership remains runtime-specific"
+  },
+  "ownership": {
+    "resource": [
+      "six transparent wreck owners",
+      "sprite pivots",
+      "waterline/center-of-mass/grab anchors",
+      "three stage endpoints",
+      "character arrival anchors"
+    ],
+    "runtime": [
+      "Catalog and Renderer",
+      "stage timing/interpolation",
+      "ocean sampling and bob",
+      "foreground water occlusion",
+      "character state/action",
+      "collision",
+      "buoyancy",
+      "salvage pickup",
+      "camera",
+      "weather",
+      "physics"
+    ]
+  },
+  "forbidden": [
+    "showing V55 opening cluster and V72 main wreck at the same origin",
+    "baking the character, ocean, foam, UI or interaction glow into V72 sprites",
+    "cropping or deleting character legs instead of using hull and water render layers",
+    "mixing UHD, High and Balanced profiles",
+    "interpolating Alpha between duplicate whole-wreck frames",
+    "deriving collision from sprite Alpha"
+  ],
+  "recommended_test_profile": "Balanced",
+  "runtime_manifest_updated": false
+}

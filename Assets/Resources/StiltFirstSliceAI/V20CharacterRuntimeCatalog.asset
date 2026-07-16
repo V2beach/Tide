@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ea5e70009f9d0647bdff28372b09011, type: 3}
+  m_Name: V20CharacterRuntimeCatalog
+  m_EditorClassIdentifier: 
+  version: 20
+  idleFrames:
+  - {fileID: 21300000, guid: 9c559cd2b14453f7b5db12eeaa28b876, type: 3}
+  - {fileID: 21300000, guid: 3a79da89e58e500a9618f36f3fc62ea6, type: 3}
+  - {fileID: 21300000, guid: 7f895943c98c5199821f4ef0831a92ee, type: 3}
+  - {fileID: 21300000, guid: 80c7a4bec7095b61b0f674ade82943ff, type: 3}
+  walkFrames:
+  - {fileID: 21300000, guid: c2b066db033157cfaf4bde691ff13759, type: 3}
+  - {fileID: 21300000, guid: 9392c0b49dbd508c84fb34f10f25d909, type: 3}
+  - {fileID: 21300000, guid: 8a1d739a5f8b54eb8e592ba18c4c3900, type: 3}
+  - {fileID: 21300000, guid: 1303823892fb5e7d966e6ad1c96dbcde, type: 3}
+  - {fileID: 21300000, guid: c7232b7e8904536698c907bd538f1cf5, type: 3}
+  - {fileID: 21300000, guid: 94c0c2c1e8f956f8a29e82bff0101670, type: 3}
+  swimFrames:
+  - {fileID: 21300000, guid: 542d7b7338165f188d324a21364b34b4, type: 3}
+  - {fileID: 21300000, guid: a68b73fb9f8a503cb752f04e223f79c7, type: 3}
+  - {fileID: 21300000, guid: 73897ab7ce9257bb839d87625c62697c, type: 3}
+  - {fileID: 21300000, guid: 36ad33aa554755b1a07538444afa929c, type: 3}
+  - {fileID: 21300000, guid: dfac831acb595f91a6884c717e2cafff, type: 3}
+  - {fileID: 21300000, guid: 329297b9a70f51aa801f15c27dce195c, type: 3}
+  repairFrames:
+  - {fileID: 21300000, guid: 6f7296c6a2275dda8a99be75b79d0a0a, type: 3}
+  - {fileID: 21300000, guid: f09287f7d3905fc997da408451d6f865, type: 3}
+  - {fileID: 21300000, guid: 26946d7f214755768590c65e9fb7e637, type: 3}
+  - {fileID: 21300000, guid: 0303ddd27ebe5fdba4d910a6d760e83a, type: 3}
+  - {fileID: 21300000, guid: 7f0980d036c75e0693991c692b8d880c, type: 3}
+  - {fileID: 21300000, guid: 60275153097654a7bc3b5938fc084844, type: 3}
+  haulFrames:
+  - {fileID: 21300000, guid: e2fc11ddf110557fb2c860df8455ea2f, type: 3}
+  - {fileID: 21300000, guid: f5cc97cbc8d45e8c934b04ea80434b44, type: 3}
+  - {fileID: 21300000, guid: e24d7a784eb156e1b465f2145290c364, type: 3}
+  - {fileID: 21300000, guid: f2e8e30ac8ca5cc5a7c43a2cef300439, type: 3}
+  - {fileID: 21300000, guid: 6c4e743a7689567bb9d88814d69f0813, type: 3}
+  - {fileID: 21300000, guid: ec43b6ad4e515d18be5aac0ecb5fa6c4, type: 3}

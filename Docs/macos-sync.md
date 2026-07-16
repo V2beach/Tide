@@ -1,150 +1,65 @@
-# macOS 同步开发说明
+# Tide macOS 同步开发
 
-## 目标
+## 原则
 
-让 Tide 可以在当前 Windows 电脑和家里的 macOS 电脑之间同步开发。核心方案是 Git 托管源码与项目配置，Git LFS 托管图片、音频、PSD/Aseprite 等二进制资源，Unity 本地生成目录由各电脑自行重建。
+Windows 和 macOS 共享 Git 中的 Unity 源文件，不共享 `Library`、`Temp`、`Logs`、`UserSettings` 等机器缓存。二进制资源由 Git LFS 下载；缺少 LFS 时 Unity 会把指针文本当成损坏图片。
 
-## 一次性准备
-
-### Windows 当前电脑
-
-当前项目路径：
-
-```text
-D:\UnityEditor\Projects\Tide
-```
-
-已确认：
-
-- Unity 版本是 `2022.3.62f3`
-- 项目使用 URP 2D
-- Unity 序列化模式是 Force Text
-- Version Control 模式是 Visible Meta Files
-- 本机已安装 Git LFS
-
-已完成的事：
-
-```powershell
-cd D:\UnityEditor\Projects\Tide
-git status
-git remote -v
-git push
-```
-
-当前远程仓库：
-
-```text
-https://github.com/V2beach/Tide.git
-```
-
-如果本机配置了 GitHub SSH key，也可以改用：
-
-```text
-git@github.com:V2beach/Tide.git
-```
-
-### macOS 家里电脑
-
-安装：
-
-- Unity Hub
-- Unity Editor `2022.3.62f3`
-- Git
-- Git LFS
-- Rider、Visual Studio Code 或你习惯的 C# IDE
-
-推荐安装命令：
+## 首次设置
 
 ```bash
+xcode-select --install
 brew install git git-lfs
 git lfs install
-```
-
-克隆项目：
-
-```bash
-mkdir -p ~/Projects
-cd ~/Projects
-git clone https://github.com/V2beach/Tide.git tide
-cd tide
+git clone https://github.com/V2beach/Tide.git
+cd Tide
 git lfs pull
 ```
 
-然后用 Unity Hub 打开：
+用 Unity Hub 安装与 `ProjectSettings/ProjectVersion.txt` 一致的 `2022.3 LTS` 编辑器，然后打开仓库根目录。首次导入时间较长是正常现象，因为 macOS 会本地重建 `Library`。
 
-```text
-~/Projects/tide
-```
+## 每次切换设备
 
-第一次打开时 Unity 会重新生成 `Library/`，这一步较慢但正常。
-
-## 每次切换电脑前
-
-在当前电脑：
+离开当前设备：
 
 ```bash
-git status
-git add Assets Packages ProjectSettings Docs README.md .gitignore .gitattributes
-git commit -m "描述这次改动"
-git push
+git status --short
+git diff --check
+git add -A
+git commit -m "描述本轮改动"
+git push origin main
 ```
 
-在另一台电脑：
+来到另一台设备：
 
 ```bash
-git pull --rebase
+git pull --ff-only origin main
 git lfs pull
 ```
 
-## Unity 协作注意点
+不要让 Windows 与 macOS 同时编辑 `Tide_StiltHouse_FirstSlice.unity`。场景 YAML 冲突通常比脚本冲突更难可靠合并。
 
-1. 不提交 `Library/`、`Temp/`、`Logs/`、`UserSettings/`。
-2. 不要在两台电脑上同时改同一个 `.unity` 场景或大型 `.prefab`。
-3. 新增图片、音频、字体、PSD、Aseprite 文件后确认它们进入 Git LFS。
-4. 移动或重命名 Unity 资源时，优先在 Unity Editor 内操作，避免 `.meta` 丢失。
-5. 每次做出一个小的可验证进展就提交一次，不要攒到很大再提交。
+## macOS 验证
 
-## 推荐分支节奏
-
-个人项目可以先保持简单：
-
-```text
-main
+```bash
+bash Tools/check-unity-sync.sh
+bash Tools/check-prototype-loop.sh
+bash Tools/check-tide-play-readiness.sh
 ```
 
-当开始做明确玩法时再加短分支：
+第一次打开前没有 Unity 本地缓存时，聚合门可能提示先完成一次导入。导入后重跑。
 
-```text
-feature/tide-core
-feature/level-prototype
-feature/audio-and-vfx
-```
+## 平台注意
 
-每个分支只做一个方向，完成后合回 `main`。
+- 路径大小写必须与磁盘一致；不要依赖 Windows 的大小写宽容。
+- 资源移动和重命名优先在 Unity 内完成，保证 `.meta`/GUID 一起变化。
+- 脚本、JSON、YAML、Unity 文本资源统一 LF；Git 属性已配置。
+- 本地嵌入的 `Packages/com.coplaydev.unity-mcp` 进入仓库，Mac 无需引用 Windows 绝对路径。
+- 目前尚未完成 macOS Metal 玩家构建、纹理显存和 Profiler 签字；编辑器能打开不等于平台验收完成。
 
 ## 常见问题
 
-### macOS 打开项目后资源丢失
+图片显示为几行文本：运行 `git lfs install && git lfs pull`。
 
-先执行：
+场景丢脚本：先检查 `git status`、`.meta` 是否成对，再让 Unity 完成编译；不要随手重建同名脚本制造新 GUID。
 
-```bash
-git lfs pull
-```
-
-如果还缺资源，检查新增资源是否在 Windows 侧被提交。
-
-### Unity 提示版本不同
-
-不要直接升级项目。先在 Unity Hub 安装 `2022.3.62f3`，用完全一致版本打开。
-
-### Git 显示大量换行变化
-
-先不要提交。执行：
-
-```bash
-git status
-git diff --stat
-```
-
-确认是否只是换行导致。当前仓库已用 `.gitattributes` 固定常见文本资源为 LF，后续新文件会稳定很多。
+拉取被本地改动阻塞：先提交当前工作，不要用 `reset --hard` 或删除 `Library` 以外的项目文件解决源文件冲突。

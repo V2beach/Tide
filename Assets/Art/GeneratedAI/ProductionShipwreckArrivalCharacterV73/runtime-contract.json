@@ -1,0 +1,1210 @@
+{
+  "version": 73,
+  "requirement_id": "ART-P0-004-SHIPWRECK-ARRIVAL-CONTACT",
+  "status": "resource_candidate_not_runtime_integrated",
+  "identity": "same V61/V64 S2 survivor; right-facing complete body; exact V64 swim endpoint",
+  "action": {
+    "key": "WreckClingRelease",
+    "playback": "F00_to_F07",
+    "duration_ms_per_frame": 130,
+    "profiles": {
+      "High": {
+        "role": "registration authority",
+        "logical_canvas": [
+          1024,
+          1024
+        ],
+        "pixels_per_unit": 512.0,
+        "frames": [
+          {
+            "frame": 0,
+            "name": "ClingLoad",
+            "event": "grip_loaded",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/High/Character/WreckRelease/TideCharacterV73_WreckRelease_F00.png",
+            "size": [
+              873,
+              515
+            ],
+            "logical_canvas": [
+              1024,
+              1024
+            ],
+            "source_crop_top_left": [
+              79,
+              0,
+              952,
+              515
+            ],
+            "pivot_bottom_left": [
+              0.49599084,
+              0.00582524
+            ],
+            "pixels_per_unit": 512.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                558.0,
+                60.0
+              ],
+              "pelvis": [
+                575.0,
+                262.0
+              ],
+              "front_hand": [
+                643.0,
+                196.0
+              ],
+              "rear_boot": [
+                673.0,
+                295.0
+              ],
+              "front_boot": [
+                669.0,
+                297.0
+              ],
+              "rear_hand": [
+                96.0,
+                406.0
+              ],
+              "body_center": [
+                516.0,
+                252.0
+              ],
+              "local_waterline": [
+                512.0,
+                560.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              2.9725,
+              0.093
+            ],
+            "grip_weight01": 1.0,
+            "release_progress01": 0.0
+          },
+          {
+            "frame": 1,
+            "name": "WaveLoad",
+            "event": "wave_load_peak",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/High/Character/WreckRelease/TideCharacterV73_WreckRelease_F01.png",
+            "size": [
+              874,
+              513
+            ],
+            "logical_canvas": [
+              1024,
+              1024
+            ],
+            "source_crop_top_left": [
+              79,
+              0,
+              953,
+              513
+            ],
+            "pivot_bottom_left": [
+              0.49542334,
+              0.00194932
+            ],
+            "pixels_per_unit": 512.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                620.0,
+                64.0
+              ],
+              "pelvis": [
+                584.0,
+                248.0
+              ],
+              "front_hand": [
+                610.0,
+                200.0
+              ],
+              "rear_boot": [
+                718.0,
+                270.0
+              ],
+              "front_boot": [
+                655.0,
+                349.0
+              ],
+              "rear_hand": [
+                96.0,
+                406.0
+              ],
+              "body_center": [
+                516.0,
+                239.0
+              ],
+              "local_waterline": [
+                512.0,
+                560.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              2.9725,
+              0.093
+            ],
+            "grip_weight01": 1.0,
+            "release_progress01": 0.0
+          },
+          {
+            "frame": 2,
+            "name": "Recover",
+            "event": "grip_recovered",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/High/Character/WreckRelease/TideCharacterV73_WreckRelease_F02.png",
+            "size": [
+              874,
+              590
+            ],
+            "logical_canvas": [
+              1024,
+              1024
+            ],
+            "source_crop_top_left": [
+              80,
+              0,
+              954,
+              590
+            ],
+            "pivot_bottom_left": [
+              0.49427918,
+              0.13220339
+            ],
+            "pixels_per_unit": 512.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                636.0,
+                80.0
+              ],
+              "pelvis": [
+                594.0,
+                306.0
+              ],
+              "front_hand": [
+                721.0,
+                220.0
+              ],
+              "rear_boot": [
+                614.0,
+                385.0
+              ],
+              "front_boot": [
+                612.0,
+                388.0
+              ],
+              "rear_hand": [
+                96.0,
+                406.0
+              ],
+              "body_center": [
+                517.0,
+                289.0
+              ],
+              "local_waterline": [
+                512.0,
+                560.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              2.9725,
+              0.093
+            ],
+            "grip_weight01": 1.0,
+            "release_progress01": 0.0
+          },
+          {
+            "frame": 3,
+            "name": "LookShore",
+            "event": "shore_acquired",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/High/Character/WreckRelease/TideCharacterV73_WreckRelease_F03.png",
+            "size": [
+              874,
+              513
+            ],
+            "logical_canvas": [
+              1024,
+              1024
+            ],
+            "source_crop_top_left": [
+              80,
+              0,
+              954,
+              513
+            ],
+            "pivot_bottom_left": [
+              0.49427918,
+              0.00194932
+            ],
+            "pixels_per_unit": 512.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                560.0,
+                56.0
+              ],
+              "pelvis": [
+                532.0,
+                216.0
+              ],
+              "front_hand": [
+                819.0,
+                110.0
+              ],
+              "rear_boot": [
+                763.0,
+                130.0
+              ],
+              "front_boot": [
+                498.0,
+                256.0
+              ],
+              "rear_hand": [
+                96.0,
+                406.0
+              ],
+              "body_center": [
+                517.0,
+                234.0
+              ],
+              "local_waterline": [
+                512.0,
+                560.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              2.9725,
+              0.093
+            ],
+            "grip_weight01": 1.0,
+            "release_progress01": 0.0
+          },
+          {
+            "frame": 4,
+            "name": "Release",
+            "event": "rear_hand_release",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/High/Character/WreckRelease/TideCharacterV73_WreckRelease_F04.png",
+            "size": [
+              874,
+              706
+            ],
+            "logical_canvas": [
+              1024,
+              1024
+            ],
+            "source_crop_top_left": [
+              83,
+              177,
+              957,
+              883
+            ],
+            "pivot_bottom_left": [
+              0.49084668,
+              0.52549575
+            ],
+            "pixels_per_unit": 512.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                624.0,
+                302.0
+              ],
+              "pelvis": [
+                528.0,
+                544.0
+              ],
+              "front_hand": [
+                839.0,
+                396.0
+              ],
+              "rear_boot": [
+                248.0,
+                769.0
+              ],
+              "front_boot": [
+                294.0,
+                794.0
+              ],
+              "rear_hand": [
+                364.0,
+                487.0
+              ],
+              "body_center": [
+                520.0,
+                530.0
+              ],
+              "local_waterline": [
+                512.0,
+                560.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              3.0,
+              0.05
+            ],
+            "grip_weight01": 0.35,
+            "release_progress01": 0.18
+          },
+          {
+            "frame": 5,
+            "name": "PushOff",
+            "event": "first_stroke",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/High/Character/WreckRelease/TideCharacterV73_WreckRelease_F05.png",
+            "size": [
+              874,
+              357
+            ],
+            "logical_canvas": [
+              1024,
+              1024
+            ],
+            "source_crop_top_left": [
+              81,
+              370,
+              955,
+              727
+            ],
+            "pivot_bottom_left": [
+              0.49313501,
+              0.6022409
+            ],
+            "pixels_per_unit": 512.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                722.0,
+                449.0
+              ],
+              "pelvis": [
+                535.0,
+                562.0
+              ],
+              "front_hand": [
+                875.0,
+                499.0
+              ],
+              "rear_boot": [
+                204.0,
+                608.0
+              ],
+              "front_boot": [
+                246.0,
+                655.0
+              ],
+              "rear_hand": [
+                266.0,
+                511.0
+              ],
+              "body_center": [
+                518.0,
+                548.0
+              ],
+              "local_waterline": [
+                512.0,
+                560.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              3.06,
+              0.01
+            ],
+            "grip_weight01": 0.0,
+            "release_progress01": 0.48
+          },
+          {
+            "frame": 6,
+            "name": "SwimBlend",
+            "event": "swim_blend",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/High/Character/WreckRelease/TideCharacterV73_WreckRelease_F06.png",
+            "size": [
+              874,
+              274
+            ],
+            "logical_canvas": [
+              1024,
+              1024
+            ],
+            "source_crop_top_left": [
+              75,
+              423,
+              949,
+              697
+            ],
+            "pivot_bottom_left": [
+              0.5,
+              0.67518248
+            ],
+            "pixels_per_unit": 512.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                750.0,
+                498.0
+              ],
+              "pelvis": [
+                520.0,
+                575.0
+              ],
+              "front_hand": [
+                886.0,
+                540.0
+              ],
+              "rear_boot": [
+                154.0,
+                550.0
+              ],
+              "front_boot": [
+                188.0,
+                590.0
+              ],
+              "rear_hand": [
+                256.0,
+                566.0
+              ],
+              "body_center": [
+                512.0,
+                560.0
+              ],
+              "local_waterline": [
+                512.0,
+                560.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              3.11,
+              -0.02
+            ],
+            "grip_weight01": 0.0,
+            "release_progress01": 0.78
+          },
+          {
+            "frame": 7,
+            "name": "SwimEndpoint",
+            "event": "swim_endpoint",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/High/Character/WreckRelease/TideCharacterV73_WreckRelease_F07.png",
+            "size": [
+              874,
+              344
+            ],
+            "logical_canvas": [
+              1024,
+              1024
+            ],
+            "source_crop_top_left": [
+              75,
+              388,
+              949,
+              732
+            ],
+            "pivot_bottom_left": [
+              0.5,
+              0.63953488
+            ],
+            "pixels_per_unit": 512.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                758.0,
+                480.0
+              ],
+              "pelvis": [
+                512.0,
+                579.0
+              ],
+              "front_hand": [
+                903.0,
+                544.0
+              ],
+              "rear_boot": [
+                160.0,
+                576.0
+              ],
+              "front_boot": [
+                172.0,
+                592.0
+              ],
+              "rear_hand": [
+                260.0,
+                595.0
+              ],
+              "body_center": [
+                512.0,
+                560.0
+              ],
+              "local_waterline": [
+                512.0,
+                560.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              3.15,
+              -0.04
+            ],
+            "grip_weight01": 0.0,
+            "release_progress01": 1.0
+          }
+        ]
+      },
+      "Balanced": {
+        "role": "runtime audition and memory-saving profile",
+        "logical_canvas": [
+          768,
+          768
+        ],
+        "pixels_per_unit": 384.0,
+        "frames": [
+          {
+            "frame": 0,
+            "name": "ClingLoad",
+            "event": "grip_loaded",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/Balanced/Character/WreckRelease/TideCharacterV73_WreckRelease_F00.png",
+            "size": [
+              661,
+              390
+            ],
+            "logical_canvas": [
+              768,
+              768
+            ],
+            "source_crop_top_left": [
+              56,
+              0,
+              717,
+              390
+            ],
+            "pivot_bottom_left": [
+              0.49621785,
+              0.01538462
+            ],
+            "pixels_per_unit": 384.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                418.5,
+                45.0
+              ],
+              "pelvis": [
+                431.25,
+                196.5
+              ],
+              "front_hand": [
+                482.25,
+                147.0
+              ],
+              "rear_boot": [
+                504.75,
+                221.25
+              ],
+              "front_boot": [
+                501.75,
+                222.75
+              ],
+              "rear_hand": [
+                72.0,
+                304.5
+              ],
+              "body_center": [
+                387.0,
+                189.0
+              ],
+              "local_waterline": [
+                384.0,
+                420.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              2.9725,
+              0.093
+            ],
+            "grip_weight01": 1.0,
+            "release_progress01": 0.0
+          },
+          {
+            "frame": 1,
+            "name": "WaveLoad",
+            "event": "wave_load_peak",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/Balanced/Character/WreckRelease/TideCharacterV73_WreckRelease_F01.png",
+            "size": [
+              662,
+              385
+            ],
+            "logical_canvas": [
+              768,
+              768
+            ],
+            "source_crop_top_left": [
+              56,
+              0,
+              718,
+              385
+            ],
+            "pivot_bottom_left": [
+              0.49546828,
+              0.0025974
+            ],
+            "pixels_per_unit": 384.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                465.0,
+                48.0
+              ],
+              "pelvis": [
+                438.0,
+                186.0
+              ],
+              "front_hand": [
+                457.5,
+                150.0
+              ],
+              "rear_boot": [
+                538.5,
+                202.5
+              ],
+              "front_boot": [
+                491.25,
+                261.75
+              ],
+              "rear_hand": [
+                72.0,
+                304.5
+              ],
+              "body_center": [
+                387.0,
+                179.25
+              ],
+              "local_waterline": [
+                384.0,
+                420.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              2.9725,
+              0.093
+            ],
+            "grip_weight01": 1.0,
+            "release_progress01": 0.0
+          },
+          {
+            "frame": 2,
+            "name": "Recover",
+            "event": "grip_recovered",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/Balanced/Character/WreckRelease/TideCharacterV73_WreckRelease_F02.png",
+            "size": [
+              661,
+              446
+            ],
+            "logical_canvas": [
+              768,
+              768
+            ],
+            "source_crop_top_left": [
+              57,
+              0,
+              718,
+              446
+            ],
+            "pivot_bottom_left": [
+              0.49470499,
+              0.13901345
+            ],
+            "pixels_per_unit": 384.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                477.0,
+                60.0
+              ],
+              "pelvis": [
+                445.5,
+                229.5
+              ],
+              "front_hand": [
+                540.75,
+                165.0
+              ],
+              "rear_boot": [
+                460.5,
+                288.75
+              ],
+              "front_boot": [
+                459.0,
+                291.0
+              ],
+              "rear_hand": [
+                72.0,
+                304.5
+              ],
+              "body_center": [
+                387.75,
+                216.75
+              ],
+              "local_waterline": [
+                384.0,
+                420.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              2.9725,
+              0.093
+            ],
+            "grip_weight01": 1.0,
+            "release_progress01": 0.0
+          },
+          {
+            "frame": 3,
+            "name": "LookShore",
+            "event": "shore_acquired",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/Balanced/Character/WreckRelease/TideCharacterV73_WreckRelease_F03.png",
+            "size": [
+              662,
+              385
+            ],
+            "logical_canvas": [
+              768,
+              768
+            ],
+            "source_crop_top_left": [
+              57,
+              0,
+              719,
+              385
+            ],
+            "pivot_bottom_left": [
+              0.4939577,
+              0.0025974
+            ],
+            "pixels_per_unit": 384.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                420.0,
+                42.0
+              ],
+              "pelvis": [
+                399.0,
+                162.0
+              ],
+              "front_hand": [
+                614.25,
+                82.5
+              ],
+              "rear_boot": [
+                572.25,
+                97.5
+              ],
+              "front_boot": [
+                373.5,
+                192.0
+              ],
+              "rear_hand": [
+                72.0,
+                304.5
+              ],
+              "body_center": [
+                387.75,
+                175.5
+              ],
+              "local_waterline": [
+                384.0,
+                420.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              2.9725,
+              0.093
+            ],
+            "grip_weight01": 1.0,
+            "release_progress01": 0.0
+          },
+          {
+            "frame": 4,
+            "name": "Release",
+            "event": "rear_hand_release",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/Balanced/Character/WreckRelease/TideCharacterV73_WreckRelease_F04.png",
+            "size": [
+              661,
+              535
+            ],
+            "logical_canvas": [
+              768,
+              768
+            ],
+            "source_crop_top_left": [
+              60,
+              130,
+              721,
+              665
+            ],
+            "pivot_bottom_left": [
+              0.49016641,
+              0.52523364
+            ],
+            "pixels_per_unit": 384.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                468.0,
+                226.5
+              ],
+              "pelvis": [
+                396.0,
+                408.0
+              ],
+              "front_hand": [
+                629.25,
+                297.0
+              ],
+              "rear_boot": [
+                186.0,
+                576.75
+              ],
+              "front_boot": [
+                220.5,
+                595.5
+              ],
+              "rear_hand": [
+                273.0,
+                365.25
+              ],
+              "body_center": [
+                390.0,
+                397.5
+              ],
+              "local_waterline": [
+                384.0,
+                420.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              3.0,
+              0.05
+            ],
+            "grip_weight01": 0.35,
+            "release_progress01": 0.18
+          },
+          {
+            "frame": 5,
+            "name": "PushOff",
+            "event": "first_stroke",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/Balanced/Character/WreckRelease/TideCharacterV73_WreckRelease_F05.png",
+            "size": [
+              662,
+              273
+            ],
+            "logical_canvas": [
+              768,
+              768
+            ],
+            "source_crop_top_left": [
+              57,
+              275,
+              719,
+              548
+            ],
+            "pivot_bottom_left": [
+              0.4939577,
+              0.6007326
+            ],
+            "pixels_per_unit": 384.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                541.5,
+                336.75
+              ],
+              "pelvis": [
+                401.25,
+                421.5
+              ],
+              "front_hand": [
+                656.25,
+                374.25
+              ],
+              "rear_boot": [
+                153.0,
+                456.0
+              ],
+              "front_boot": [
+                184.5,
+                491.25
+              ],
+              "rear_hand": [
+                199.5,
+                383.25
+              ],
+              "body_center": [
+                388.5,
+                411.0
+              ],
+              "local_waterline": [
+                384.0,
+                420.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              3.06,
+              0.01
+            ],
+            "grip_weight01": 0.0,
+            "release_progress01": 0.48
+          },
+          {
+            "frame": 6,
+            "name": "SwimBlend",
+            "event": "swim_blend",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/Balanced/Character/WreckRelease/TideCharacterV73_WreckRelease_F06.png",
+            "size": [
+              662,
+              212
+            ],
+            "logical_canvas": [
+              768,
+              768
+            ],
+            "source_crop_top_left": [
+              53,
+              314,
+              715,
+              526
+            ],
+            "pivot_bottom_left": [
+              0.5,
+              0.66981132
+            ],
+            "pixels_per_unit": 384.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                562.5,
+                373.5
+              ],
+              "pelvis": [
+                390.0,
+                431.25
+              ],
+              "front_hand": [
+                664.5,
+                405.0
+              ],
+              "rear_boot": [
+                115.5,
+                412.5
+              ],
+              "front_boot": [
+                141.0,
+                442.5
+              ],
+              "rear_hand": [
+                192.0,
+                424.5
+              ],
+              "body_center": [
+                384.0,
+                420.0
+              ],
+              "local_waterline": [
+                384.0,
+                420.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              3.11,
+              -0.02
+            ],
+            "grip_weight01": 0.0,
+            "release_progress01": 0.78
+          },
+          {
+            "frame": 7,
+            "name": "SwimEndpoint",
+            "event": "swim_endpoint",
+            "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Runtime/Balanced/Character/WreckRelease/TideCharacterV73_WreckRelease_F07.png",
+            "size": [
+              662,
+              264
+            ],
+            "logical_canvas": [
+              768,
+              768
+            ],
+            "source_crop_top_left": [
+              53,
+              288,
+              715,
+              552
+            ],
+            "pivot_bottom_left": [
+              0.5,
+              0.63636364
+            ],
+            "pixels_per_unit": 384.0,
+            "anchors_top_left_logical_canvas": {
+              "head": [
+                568.5,
+                360.0
+              ],
+              "pelvis": [
+                384.0,
+                434.25
+              ],
+              "front_hand": [
+                677.25,
+                408.0
+              ],
+              "rear_boot": [
+                120.0,
+                432.0
+              ],
+              "front_boot": [
+                129.0,
+                444.0
+              ],
+              "rear_hand": [
+                195.0,
+                446.25
+              ],
+              "body_center": [
+                384.0,
+                420.0
+              ],
+              "local_waterline": [
+                384.0,
+                420.0
+              ]
+            },
+            "root_position_from_v72_wreck_root_m": [
+              3.15,
+              -0.04
+            ],
+            "grip_weight01": 0.0,
+            "release_progress01": 1.0
+          }
+        ]
+      }
+    },
+    "events": {
+      "rear_hand_release": 4,
+      "swim_state_handoff": 7
+    }
+  },
+  "registration": {
+    "wreck_contract": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/runtime-contract.json",
+    "wreck_root_character_points_m": {
+      "cling_point": [
+        2.16,
+        0.3
+      ],
+      "release_swim_point": [
+        3.15,
+        -0.04
+      ]
+    },
+    "high_logical_contact_pixel_top_left": [
+      96,
+      406
+    ],
+    "fixed_contact_frames": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "sprite_root_positions_from_v72_wreck_root_m": [
+      [
+        2.9725,
+        0.093
+      ],
+      [
+        2.9725,
+        0.093
+      ],
+      [
+        2.9725,
+        0.093
+      ],
+      [
+        2.9725,
+        0.093
+      ],
+      [
+        3.0,
+        0.05
+      ],
+      [
+        3.06,
+        0.01
+      ],
+      [
+        3.11,
+        -0.02
+      ],
+      [
+        3.15,
+        -0.04
+      ]
+    ],
+    "shoreward_direction": [
+      1.0,
+      0.0
+    ],
+    "rule": "Place the character SpriteRenderer at each declared root position. F00-F03 rear_hand resolves to one V72 stern contact; F04 releases; F07 hands ownership to V64 Swim without moving the root."
+  },
+  "render_ownership": {
+    "sort_order": [
+      {
+        "owner": "V72 BackStructure",
+        "sort": [
+          0,
+          2
+        ]
+      },
+      {
+        "owner": "V73 complete character",
+        "sort": [
+          4,
+          4
+        ]
+      },
+      {
+        "owner": "V72 FrontHull",
+        "sort": [
+          5,
+          5
+        ]
+      },
+      {
+        "owner": "V72 LooseCargo",
+        "sort": [
+          6,
+          6
+        ]
+      },
+      {
+        "owner": "continuous foreground ocean",
+        "sort": [
+          7,
+          7
+        ]
+      }
+    ],
+    "resource": [
+      "complete character pixels",
+      "pose order",
+      "custom pivots",
+      "body anchors",
+      "cling/release events"
+    ],
+    "runtime": [
+      "V72 wreck transforms",
+      "continuous ocean",
+      "wave crests and splash",
+      "root interpolation",
+      "collision",
+      "input/state ownership"
+    ]
+  },
+  "forbidden": [
+    "Do not erase or crop the character legs; FrontHull and ForegroundOcean provide occlusion.",
+    "Do not place the character above or beside a flattened whole-boat Sprite; use the declared V72 sort layers.",
+    "Do not bake boat, ocean, foam, rope, props, weapons or UI into V73 frames.",
+    "Do not mirror or turn the character away from shore during the sequence.",
+    "Do not keep WreckCling and Swim render ownership active simultaneously after F07.",
+    "Do not update the authoritative runtime manifest before Game View and Profiler validation."
+  ],
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_ContactSequence_4K.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_AnchorGate_4K.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_V72Layering_4K.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_EndpointContinuity_4K.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_Runtime_1600x900.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_Runtime_960x720.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/QA/TideCharacterV73_ClingRelease.gif"
+  ]
+}

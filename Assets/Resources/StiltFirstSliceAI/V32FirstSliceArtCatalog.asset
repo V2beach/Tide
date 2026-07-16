@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfa4a29cb0ed2ef47b829d17866278ce, type: 3}
+  m_Name: V32FirstSliceArtCatalog
+  m_EditorClassIdentifier: 
+  version: 32
+  houseFound: {fileID: 21300000, guid: c0bda6f23825236418bbd23f257a33db, type: 3}
+  houseRepaired: {fileID: 21300000, guid: 9c64c18a9b158c34fae39fe27f4abb8a, type: 3}
+  climbFrames:
+  - {fileID: 21300000, guid: 244af6ec96cf14c42ae7a2bf454491de, type: 3}
+  - {fileID: 21300000, guid: 92cf0635b3f241c458f3af929342ba37, type: 3}
+  - {fileID: 21300000, guid: cf753ae8f9382f740b33414990a50041, type: 3}
+  - {fileID: 21300000, guid: 22bb38a16cef11747a21cec468d4728a, type: 3}
+  - {fileID: 21300000, guid: 7eaa90de7f68d6b4eaebe57ce84ffd1c, type: 3}
+  - {fileID: 21300000, guid: ea48d40468e859748a4a4fd98034eacb, type: 3}
+  seatedFrames:
+  - {fileID: 21300000, guid: d390ba94f572d9344b1c7733793af2e9, type: 3}
+  - {fileID: 21300000, guid: 80676f8bd55641743b227499024b892e, type: 3}
+  - {fileID: 21300000, guid: a350a22bfa1a35347ad5df1ef9d8b253, type: 3}
+  - {fileID: 21300000, guid: c4e0d8b3eccb8124ebd999552dcdce47, type: 3}
+  - {fileID: 21300000, guid: 2fc9e40c333bb1a4c93bf437589d144c, type: 3}
+  - {fileID: 21300000, guid: 6feaef242ba00df4a962f3a9e98afef3, type: 3}
+  climbFrameSeconds: 0.1
+  seatedFrameSeconds: 0.14
+  climbUniformScale: 0.58
+  seatedUniformScale: 0.42

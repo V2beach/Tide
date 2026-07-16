@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5f83a0dd3e521448a07b4df255ed7b2, type: 3}
+  m_Name: V37BoatCharacterCatalog
+  m_EditorClassIdentifier: 
+  version: 37
+  trimFrames:
+  - {fileID: 21300000, guid: 4693a809b17931e43aefc0a91713d832, type: 3}
+  - {fileID: 21300000, guid: 1b44071ff84400244aedd064e320277b, type: 3}
+  - {fileID: 21300000, guid: b538952bed432b44faabba963bc08a5e, type: 3}
+  - {fileID: 21300000, guid: c34fb686bd78a414bb7526fac7faf7aa, type: 3}
+  - {fileID: 21300000, guid: 2e8189496f84a6a41ba9bbab838f1ed9, type: 3}
+  - {fileID: 21300000, guid: 0097694bfd966444fbeab4a1118003fc, type: 3}
+  bailFrames:
+  - {fileID: 21300000, guid: 341e0b248e68c1f4c902d3d1e821e106, type: 3}
+  - {fileID: 21300000, guid: 8004e635242176341b82ad4ad3287740, type: 3}
+  - {fileID: 21300000, guid: 0ce92be4938033c4caec6cfc5e509fa4, type: 3}
+  - {fileID: 21300000, guid: 2f79e4a9a07f865408c33852b2fae6e8, type: 3}
+  - {fileID: 21300000, guid: 02b14513835846b40af770a931bbd110, type: 3}
+  - {fileID: 21300000, guid: c83824ce254a5cb489efcd058adc49f4, type: 3}
+  braceFrames:
+  - {fileID: 21300000, guid: ecfa815e79e345746b7efe76b85de813, type: 3}
+  - {fileID: 21300000, guid: e31fa1ef11bcf96438d20b80e5c6955d, type: 3}
+  - {fileID: 21300000, guid: 4853b3e842a52864cb5e5300e39064a5, type: 3}
+  - {fileID: 21300000, guid: 1b621c6732f76444aa5e043d801f1fb5, type: 3}
+  - {fileID: 21300000, guid: f049e792e02c55c48be4578215cd2dc9, type: 3}
+  - {fileID: 21300000, guid: 3d8dc3ba5213b0249b2fe2be0080d89f, type: 3}
+  bailingBucketSprite: {fileID: 21300000, guid: c1055e18898f35c42822bbe5c30410d2, type: 3}
+  uniformScale: 0.42

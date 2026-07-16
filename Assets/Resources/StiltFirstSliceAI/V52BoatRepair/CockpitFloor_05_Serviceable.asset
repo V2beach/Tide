@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38f9ec19b26f194429de3eb8f890d936, type: 3}
+  m_Name: CockpitFloor_05_Serviceable
+  m_EditorClassIdentifier: 
+  version: 67
+  profile: Balanced
+  owner: 2
+  stage: 5
+  sprite: {fileID: 21300000, guid: 16b1b20ffadd1488bc643d60b114d069, type: 3}
+  worldOffsetFromBoatPivot: {x: 0.5, y: 2.205313}

@@ -1,0 +1,568 @@
+{
+  "package": "ProductionWeatherPrecipitationV76",
+  "status": "pass",
+  "scope": "formal_precipitation_resource_candidate_not_runtime_integrated",
+  "runtime_png_count": 16,
+  "qa_png_count": 6,
+  "runtime_assets": [
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Far/TideWeatherV76_RainFar_V01.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        7,
+        20,
+        89,
+        374
+      ],
+      "visible_pixels": 2806,
+      "coverage": 0.07611762152777778,
+      "mean_alpha": 0.0095981838916122,
+      "max_alpha": 108,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "69a95bac46bb412cf3d9f27854966c773bc7bc18afe8c2651418ed727bff62ad"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Far/TideWeatherV76_RainFar_V02.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        9,
+        25,
+        89,
+        376
+      ],
+      "visible_pixels": 2311,
+      "coverage": 0.06268988715277778,
+      "mean_alpha": 0.00856236808959695,
+      "max_alpha": 105,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "3aae8554eec620f325442da40fbf6d6ffcd56ae21597d152e299d681005d49cd"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Far/TideWeatherV76_RainFar_V03.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        7,
+        28,
+        90,
+        362
+      ],
+      "visible_pixels": 2969,
+      "coverage": 0.0805392795138889,
+      "mean_alpha": 0.010974200878267974,
+      "max_alpha": 103,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "245f70438b7882ea6f261fc3a9d71b7d3fc5c613c61e4e63172d66bee626ce16"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Far/TideWeatherV76_RainFar_V04.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        7,
+        48,
+        88,
+        348
+      ],
+      "visible_pixels": 2372,
+      "coverage": 0.06434461805555555,
+      "mean_alpha": 0.008387054908769063,
+      "max_alpha": 95,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "2c76f0bd11cfdc8aa5ae0b4483d6b501f95871900e3fe85f6b9aa12e27e78ab3"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Mid/TideWeatherV76_RainMid_V01.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        11,
+        26,
+        89,
+        375
+      ],
+      "visible_pixels": 4013,
+      "coverage": 0.1088595920138889,
+      "mean_alpha": 0.019209133306100218,
+      "max_alpha": 121,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "05f392721663e8174acd7544918019fe05b66bfdbe9468d6d7d4f76d6a3ec3af"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Mid/TideWeatherV76_RainMid_V02.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        16,
+        22,
+        85,
+        367
+      ],
+      "visible_pixels": 4455,
+      "coverage": 0.120849609375,
+      "mean_alpha": 0.01960667296432462,
+      "max_alpha": 126,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "645690af992d425661dc958ad0d696e0834e49870e6c52814b8632a24ac90c2f"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Mid/TideWeatherV76_RainMid_V03.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        14,
+        74,
+        81,
+        365
+      ],
+      "visible_pixels": 4165,
+      "coverage": 0.11298285590277778,
+      "mean_alpha": 0.017472277539488018,
+      "max_alpha": 123,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "f93d8697d3eb199426ad835bb046aaea53af8cef381130325d153081d103fee4"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Mid/TideWeatherV76_RainMid_V04.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        8,
+        13,
+        88,
+        309
+      ],
+      "visible_pixels": 3653,
+      "coverage": 0.0990939670138889,
+      "mean_alpha": 0.018721171194172114,
+      "max_alpha": 128,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "ab1fe0e75d17a5481db32cd814cb9917c2f7817a4727a1b66886e761649c8c65"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Near/TideWeatherV76_RainNear_V01.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        10,
+        52,
+        83,
+        338
+      ],
+      "visible_pixels": 3786,
+      "coverage": 0.10270182291666667,
+      "mean_alpha": 0.015704252621187364,
+      "max_alpha": 106,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "a2be51cdf5fb2807b9ecb1f8b66c94877b3566ec6eaef9c440374386ee79aa8c"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Near/TideWeatherV76_RainNear_V02.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        67,
+        21,
+        84,
+        295
+      ],
+      "visible_pixels": 2941,
+      "coverage": 0.07977973090277778,
+      "mean_alpha": 0.012652547998366013,
+      "max_alpha": 85,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "4266ab44db56857eed51106cb2c2dc946f1d5deca41d4831d46b0a5c135480dc"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Near/TideWeatherV76_RainNear_V03.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        27,
+        24,
+        70,
+        332
+      ],
+      "visible_pixels": 4045,
+      "coverage": 0.10972764756944445,
+      "mean_alpha": 0.017138246357570806,
+      "max_alpha": 109,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "e8c5ee6571fedfb4054eb703b3e3e45214c525536620029afe88e5dbe31620fa"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Near/TideWeatherV76_RainNear_V04.png",
+      "size": [
+        96,
+        384
+      ],
+      "bbox_alpha_gt_2": [
+        18,
+        55,
+        82,
+        344
+      ],
+      "visible_pixels": 3345,
+      "coverage": 0.09073893229166667,
+      "mean_alpha": 0.011883850762527234,
+      "max_alpha": 86,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "3662a47d901700506f7a37a094ffbd9fb25f6388188a706bd5c5666ef4d380ef"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/NearSeaSpray/TideWeatherV76_NearSeaSpray_V01.png",
+      "size": [
+        256,
+        128
+      ],
+      "bbox_alpha_gt_2": [
+        60,
+        19,
+        256,
+        116
+      ],
+      "visible_pixels": 2396,
+      "coverage": 0.0731201171875,
+      "mean_alpha": 0.009780225566789216,
+      "max_alpha": 106,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "ffd06f0b7a09554b8fecba4d023e593fd05d7ed8579b1d4c67d29ab1882ac036"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/NearSeaSpray/TideWeatherV76_NearSeaSpray_V02.png",
+      "size": [
+        256,
+        128
+      ],
+      "bbox_alpha_gt_2": [
+        81,
+        33,
+        256,
+        115
+      ],
+      "visible_pixels": 2259,
+      "coverage": 0.068939208984375,
+      "mean_alpha": 0.009450994753370098,
+      "max_alpha": 116,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "82a497cbcd5467039390bf455b730bdb0a07ff49f294265b38a2247a7ddb8752"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/NearSeaSpray/TideWeatherV76_NearSeaSpray_V03.png",
+      "size": [
+        256,
+        128
+      ],
+      "bbox_alpha_gt_2": [
+        84,
+        18,
+        230,
+        116
+      ],
+      "visible_pixels": 2337,
+      "coverage": 0.071319580078125,
+      "mean_alpha": 0.00999755859375,
+      "max_alpha": 117,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "e88a06ebc430e8176b735526710c7df2f6a35498964fa4ad4ca55331747f791d"
+    },
+    {
+      "path": "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/NearSeaSpray/TideWeatherV76_NearSeaSpray_V04.png",
+      "size": [
+        256,
+        128
+      ],
+      "bbox_alpha_gt_2": [
+        45,
+        19,
+        256,
+        116
+      ],
+      "visible_pixels": 2330,
+      "coverage": 0.07110595703125,
+      "mean_alpha": 0.00903775084252451,
+      "max_alpha": 110,
+      "corner_alpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "hidden_rgb_pixels": 0,
+      "visible_key_pixels": 0,
+      "sha256": "ed772dc9fe4e4064b7368f3c560e65e0aa2800dbf114cb13eb92d7277196db37"
+    }
+  ],
+  "scene_overlay_metrics": {
+    "16x9": {
+      "RainFront": {
+        "mean_alpha": 0.0002941503267973856,
+        "p99_alpha": 0.0,
+        "coverage_alpha_gt_16": 0.001676388888888889,
+        "objects": {
+          "House": {
+            "mean_alpha": 0.00021859990549767983,
+            "coverage_alpha_gt_64": 0.0
+          },
+          "Boat": {
+            "mean_alpha": 0.0,
+            "coverage_alpha_gt_64": 0.0
+          },
+          "Character": {
+            "mean_alpha": 0.0,
+            "coverage_alpha_gt_64": 0.0
+          }
+        }
+      },
+      "StormSurge": {
+        "mean_alpha": 0.0006460157952069717,
+        "p99_alpha": 0.0,
+        "coverage_alpha_gt_16": 0.003775,
+        "objects": {
+          "House": {
+            "mean_alpha": 0.0006990166434167439,
+            "coverage_alpha_gt_64": 0.00014577138049662227
+          },
+          "Boat": {
+            "mean_alpha": 0.0009526949204731145,
+            "coverage_alpha_gt_64": 0.0001912740766243951
+          },
+          "Character": {
+            "mean_alpha": 0.0,
+            "coverage_alpha_gt_64": 0.0
+          }
+        }
+      }
+    },
+    "4x3": {
+      "RainFront": {
+        "mean_alpha": 0.00034988312454611474,
+        "p99_alpha": 0.0,
+        "coverage_alpha_gt_16": 0.0018287037037037037,
+        "objects": {
+          "House": {
+            "mean_alpha": 0.0002584344413889553,
+            "coverage_alpha_gt_64": 0.0
+          },
+          "Boat": {
+            "mean_alpha": 0.0007789035260252277,
+            "coverage_alpha_gt_64": 0.0
+          },
+          "Character": {
+            "mean_alpha": 0.0,
+            "coverage_alpha_gt_64": 0.0
+          }
+        }
+      },
+      "StormSurge": {
+        "mean_alpha": 0.0008929227941176471,
+        "p99_alpha": 0.027450980392156862,
+        "coverage_alpha_gt_16": 0.005125868055555555,
+        "objects": {
+          "House": {
+            "mean_alpha": 0.0005295199060951553,
+            "coverage_alpha_gt_64": 0.00016904860851864114
+          },
+          "Boat": {
+            "mean_alpha": 0.0007528850095143107,
+            "coverage_alpha_gt_64": 0.0
+          },
+          "Character": {
+            "mean_alpha": 0.0,
+            "coverage_alpha_gt_64": 0.0
+          }
+        }
+      }
+    }
+  },
+  "summary": {
+    "runtime_png_disk_bytes": 91008,
+    "runtime_rgba32_bytes": 2293760,
+    "runtime_rgba32_with_full_mips_upper_bound_bytes": 3058347,
+    "max_object_mean_precipitation_alpha": 0.0009526949204731145,
+    "max_object_heavy_precipitation_coverage": 0.0001912740766243951,
+    "rain_front_mean_alpha": [
+      0.0002941503267973856,
+      0.00034988312454611474
+    ],
+    "storm_surge_mean_alpha": [
+      0.0006460157952069717,
+      0.0008929227941176471
+    ]
+  },
+  "gates": {
+    "sixteen_runtime_pngs": true,
+    "six_qa_boards_exact_4096x2160": true,
+    "all_runtime_assets_have_expected_canvas": true,
+    "all_runtime_assets_have_transparent_corners": true,
+    "hidden_rgb_and_key_pixels_zero": true,
+    "all_assets_sparse_without_opaque_rectangles": true,
+    "all_rain_variants_unique": true,
+    "storm_visibly_denser_than_rain_front": true,
+    "precipitation_does_not_blank_objects": true,
+    "runtime_rgba32_with_mips_at_most_3_1_mib": true,
+    "runtime_reference_count_zero": true,
+    "all_package_guids_unique": true,
+    "dependencies_unchanged_during_build": true,
+    "authoritative_runtime_manifest_unchanged_during_build": true
+  },
+  "runtime_reference_count": 0,
+  "guid_audit": {
+    "package_meta_count": 33,
+    "unique_within_package": true,
+    "collisions_with_repository": []
+  },
+  "dependency_sha256": {
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/runtime-contract.json": "eb2d60cb537bcedb79c694e20dcaa97ce55bc77e59f018dfd3416963b67b2bfb",
+    "Assets/Art/GeneratedAI/ProductionSeaWeatherLayersV43/production-audit.json": "23b116dd1c088b3157d437210e54c5a28fb6b6d0b3a21a4130a9a5c8373761c2",
+    "Assets/Art/GeneratedAI/ProductionContinuousOceanBaseV56/runtime-contract.json": "bf97d2f30a03aade475ef4141c462a1647dd9ad638ab05f935086c8d637bdd61",
+    "Assets/Art/GeneratedAI/ProductionContinuousOceanBaseV56/production-audit.json": "f7daace097e003369db0ee2a4806178d60b3bd78d8633267c2711e18ac589b9d",
+    "Assets/Art/GeneratedAI/ProductionHouseClarityRefinementV66/runtime-contract.json": "a1be3c13098768458f0730ef88a0248281a73d536a13999d4ecc63ba0a8339af",
+    "Assets/Art/GeneratedAI/ProductionHouseClarityRefinementV66/production-audit.json": "a7d54744399ae2c0452d2ded749319b80b3dfbe7135c6b25e31ac6e3ad3a9046",
+    "Assets/Art/GeneratedAI/ProductionBoatEdgeMatteRefinementV67/runtime-contract.json": "a1009c0a4b59072c2de7196db82a2d869f1a4fc21b0e05d9800810288f63af7c",
+    "Assets/Art/GeneratedAI/ProductionBoatEdgeMatteRefinementV67/production-audit.json": "6eafb6897b2f04f798c09d7346567ac06d666be6d99270c904298d228ce59a83",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/runtime-contract.json": "ef8d1ae0e9eafba6afd7d97e18bc342843b2894e752de28a08d8d7a4440c0672",
+    "Assets/Art/GeneratedAI/ProductionWorldLightingGradeV74/production-audit.json": "2842da6d1440769c03decbc75aa93ec3035130fda455330633cdf99bceb2dc5c",
+    "Assets/Art/GeneratedAI/ProductionRuntimeReadabilityGateV75/runtime-contract.json": "a4963c058a1dd257eede2f520ad7effad6fc5da7754ea0c9dcb9861f68f13b97",
+    "Assets/Art/GeneratedAI/ProductionRuntimeReadabilityGateV75/production-audit.json": "a4b49d74587a5907e4dfcb056c604efdc133f6952b64140ddef31725b374441a",
+    "Tools/build_v75_runtime_readability_gate.py": "5f6d649ad4777c93e5d1383894d65842237ec5e4b1319855410f64692821cd00",
+    "Docs/tide-current-runtime-resource-manifest-2026-07-14.md": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489"
+  },
+  "authoritative_runtime_manifest_sha256": "bb571094a8e41b4143f98d9278837ad4fc096397f621d6c8d756b90a3d934489",
+  "authoritative_runtime_manifest_unchanged_during_build": true,
+  "payload_sha256": "1084562c7cf6f980cd6a009b3c35e6240becdeac863f50cff70f2a0060340293",
+  "known_limits": [
+    "Offline composites use the declared runtime contract; they are not Unity Game View evidence.",
+    "Runtime must atomically retire the old MoonWashSprite rain and drive V76 from the existing continuous weather model.",
+    "Spray placement needs live V43 crest anchors; V76 does not create or move waves."
+  ]
+}

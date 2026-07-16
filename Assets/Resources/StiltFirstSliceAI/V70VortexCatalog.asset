@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1af87e747b2403949ab203841b437844, type: 3}
+  m_Name: V70VortexCatalog
+  m_EditorClassIdentifier: 
+  version: 70
+  profile: Balanced
+  throatDepressionFrames:
+  - {fileID: 21300000, guid: d3298f604121729470c25ad3dc76abb6, type: 3}
+  - {fileID: 21300000, guid: 2b41e60ddeca41283f2a733da462a421, type: 3}
+  - {fileID: 21300000, guid: d87364db1ca002045d4d022358de954c, type: 3}
+  - {fileID: 21300000, guid: be8c85b4e0029766e46add217aa5ace8, type: 3}
+  - {fileID: 21300000, guid: 9d41bb7ce662beb34ee4a59df054141f, type: 3}
+  - {fileID: 21300000, guid: 8bd8d1e28c3d483f792de86c7a797548, type: 3}
+  - {fileID: 21300000, guid: aae816d1db82b7943d97feba315dfd91, type: 3}
+  - {fileID: 21300000, guid: c9b682cf61b52d98d834c2f222816f3e, type: 3}
+  - {fileID: 21300000, guid: de470acc3a49c4596671de71e0e80650, type: 3}
+  - {fileID: 21300000, guid: fac68235f902560fe1032e701a214f49, type: 3}
+  - {fileID: 21300000, guid: f6b7acc08be972ffcb745b551c7e5949, type: 3}
+  - {fileID: 21300000, guid: e1c6b2a4f5711b763abb460b4feaf24b, type: 3}
+  underwaterReturnFlowFrames:
+  - {fileID: 21300000, guid: fe71c93b341d02f3241a40277a3f63f9, type: 3}
+  - {fileID: 21300000, guid: 7f172e1953287a7c6fa5ec9ae912258a, type: 3}
+  - {fileID: 21300000, guid: 4a6995570d08df066778405dc38fc521, type: 3}
+  - {fileID: 21300000, guid: a5bfaa6bc3f4cca7183d4711e9aeafc3, type: 3}
+  - {fileID: 21300000, guid: 34eb8ba30210b8295d796c3351c6bb7b, type: 3}
+  - {fileID: 21300000, guid: 70ad59e9e7d21a06e4ea746b0f362d90, type: 3}
+  - {fileID: 21300000, guid: 4a9dfd1dd5f5d6a8c933c17189065cd8, type: 3}
+  - {fileID: 21300000, guid: 779ec35eea9203f4e6d09d5fe14a0b5b, type: 3}
+  - {fileID: 21300000, guid: d120057de0f94edbf11c3759da2a1606, type: 3}
+  - {fileID: 21300000, guid: 4e68542555b236daf0bb7d4d3437eaa6, type: 3}
+  - {fileID: 21300000, guid: e9a82b859b3693f031d814190ef27e8d, type: 3}
+  - {fileID: 21300000, guid: 036a4af36279120edd835a9bbc6c461f, type: 3}
+  surfaceConvergenceFoamFrames:
+  - {fileID: 21300000, guid: e33cf2d3eaf902453139b592dbc560c4, type: 3}
+  - {fileID: 21300000, guid: 64d939a636f154d752489640cec36d48, type: 3}
+  - {fileID: 21300000, guid: 97e731937021b8c52a3457b6c6b4507c, type: 3}
+  - {fileID: 21300000, guid: 29d34e42d64b1de14472baa1e1094e68, type: 3}
+  - {fileID: 21300000, guid: 01e31f52a085b68c08426e67090f4449, type: 3}
+  - {fileID: 21300000, guid: b4ee4ad65e9aaf0be57799de48286e3b, type: 3}
+  - {fileID: 21300000, guid: e69e36e11a9543597fc719c8b9edb4a4, type: 3}
+  - {fileID: 21300000, guid: fd9aea68e98f85aaa240a2f76cc38d91, type: 3}
+  - {fileID: 21300000, guid: fa7fd8c49d23ee58c03977e131dd2ac2, type: 3}
+  - {fileID: 21300000, guid: 15932a21db97b477b7ca0b3931a8d262, type: 3}
+  - {fileID: 21300000, guid: 54ac04c68a06ca72a88a4149c6a8c16f, type: 3}
+  - {fileID: 21300000, guid: faabdab11526364807678f86cfa24cab, type: 3}
+  throatDepressionOffset: {x: 0.001953, y: -0.394531}
+  underwaterReturnFlowOffset: {x: 0, y: -0.388672}
+  surfaceConvergenceFoamOffset: {x: 0, y: 0.263672}

@@ -55,3 +55,21 @@ Desktop.ini
 .env.*
 !.env.example
 
+# Local playtest evidence generated from Unity Play
+/Docs/playtest-auto-evidence.md
+/TempEvidence/
+/Temp_*.png
+
+# Generated review output is local evidence, not runtime content.
+/Assets/Screenshots/
+/Docs/visual/
+/Assets/Art/GeneratedAI/**/QA/
+/Assets/Art/GeneratedAI/**/Runtime/UHD/
+/Assets/Art/GeneratedAI/**/*.gif
+
+# Local brainstorming visual companion output
+/.superpowers/
+
+# One-shot local generation caches are never project source.
+__pycache__/
+*.py[cod]

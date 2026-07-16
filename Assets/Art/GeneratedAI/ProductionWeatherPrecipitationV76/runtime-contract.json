@@ -1,0 +1,150 @@
+{
+  "version": "V76",
+  "request_id": "ART-P1-WEATHER-PRECIPITATION",
+  "status": "resource_ready_not_runtime_integrated",
+  "coordinate_system": "sprite-local top-left pixels; Unity pivot is normalized bottom-left",
+  "ownership": {
+    "V76": "visible falling rain and already-detached near-sea spray pixels only",
+    "runtime": "storm pressure, rain intensity, signed wind, movement, density, spawn, camera coverage, wetness and collision",
+    "V43": "cloud alpha, connected wave crest, lip and foam",
+    "V56": "continuous ocean body and waterline",
+    "V74": "world colour grade; V76 precipitation renders before the V74 full-screen grade"
+  },
+  "rain_bundles": {
+    "Far": {
+      "label_zh": "远层细雨",
+      "paths": [
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Far/TideWeatherV76_RainFar_V01.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Far/TideWeatherV76_RainFar_V02.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Far/TideWeatherV76_RainFar_V03.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Far/TideWeatherV76_RainFar_V04.png"
+      ],
+      "canvas": [
+        96,
+        384
+      ],
+      "pixels_per_unit": 512,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source_orientation": "vertical; rotate once from TideContinuousWeatherModel.EvaluateRainLeanDegrees",
+      "target_world_size_m": [
+        0.105,
+        0.42
+      ],
+      "speed_multiplier": 0.78,
+      "sorting_semantics": "behind house, boat and character; ahead of far cloud wall"
+    },
+    "Mid": {
+      "label_zh": "中层雨束",
+      "paths": [
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Mid/TideWeatherV76_RainMid_V01.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Mid/TideWeatherV76_RainMid_V02.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Mid/TideWeatherV76_RainMid_V03.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Mid/TideWeatherV76_RainMid_V04.png"
+      ],
+      "canvas": [
+        96,
+        384
+      ],
+      "pixels_per_unit": 512,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source_orientation": "vertical; rotate once from TideContinuousWeatherModel.EvaluateRainLeanDegrees",
+      "target_world_size_m": [
+        0.145,
+        0.65
+      ],
+      "speed_multiplier": 1.0,
+      "sorting_semantics": "in front of world geometry; behind near rain and UI"
+    },
+    "Near": {
+      "label_zh": "近层雨束",
+      "paths": [
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Near/TideWeatherV76_RainNear_V01.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Near/TideWeatherV76_RainNear_V02.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Near/TideWeatherV76_RainNear_V03.png",
+        "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/RainBundles/Near/TideWeatherV76_RainNear_V04.png"
+      ],
+      "canvas": [
+        96,
+        384
+      ],
+      "pixels_per_unit": 512,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "source_orientation": "vertical; rotate once from TideContinuousWeatherModel.EvaluateRainLeanDegrees",
+      "target_world_size_m": [
+        0.21,
+        0.98
+      ],
+      "speed_multiplier": 1.28,
+      "sorting_semantics": "foreground precipitation below UI; never used as a full-screen opaque sheet"
+    }
+  },
+  "near_sea_spray": {
+    "paths": [
+      "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/NearSeaSpray/TideWeatherV76_NearSeaSpray_V01.png",
+      "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/NearSeaSpray/TideWeatherV76_NearSeaSpray_V02.png",
+      "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/NearSeaSpray/TideWeatherV76_NearSeaSpray_V03.png",
+      "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/Runtime/NearSeaSpray/TideWeatherV76_NearSeaSpray_V04.png"
+    ],
+    "canvas": [
+      256,
+      128
+    ],
+    "pixels_per_unit": 512,
+    "pivot": [
+      0.5,
+      0.0
+    ],
+    "target_world_size_m": [
+      0.72,
+      0.34
+    ],
+    "placement": "within 0.08m above an active V43 WindWave or StormBreaker crest anchor only",
+    "activation": "off in calm water; sparse in rain front; limited bursts in storm surge",
+    "orientation": "flip by signed wind and allow at most 8 degrees extra rotation; do not draw a second crest"
+  },
+  "recommended_renderer_pool": {
+    "far": 24,
+    "mid": 16,
+    "near": 6,
+    "spray": 4,
+    "note": "particle-pool or instanced-quad upper bounds for storm; lower rain intensity disables entries. Replace the existing 18 MoonWashSprite streaks atomically and never allocate per frame"
+  },
+  "colour_pipeline": [
+    "sample V76 sRGB sprites with alpha preservation",
+    "apply runtime intensity and signed-wind transform",
+    "render into the world before V74",
+    "apply V74 time/weather grade once",
+    "composite warm emission and UI after V74"
+  ],
+  "qa": [
+    "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/QA/TideWeatherV76_Components_4K.png",
+    "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/QA/TideWeatherV76_16x9_RainFront_NativeCompare_4K.png",
+    "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/QA/TideWeatherV76_16x9_StormSurge_NativeCompare_4K.png",
+    "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/QA/TideWeatherV76_4x3_RainFront_NativeCompare_4K.png",
+    "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/QA/TideWeatherV76_4x3_StormSurge_NativeCompare_4K.png",
+    "Assets/Art/GeneratedAI/ProductionWeatherPrecipitationV76/QA/TideWeatherV76_LayerOwnership_4K.png"
+  ],
+  "runtime_cost": {
+    "png_disk_bytes": 91008,
+    "rgba32_bytes": 2293760,
+    "rgba32_with_full_mips_upper_bound_bytes": 3058347
+  },
+  "forbidden": [
+    "Do not stretch MoonWashSprite or GetNetLineSprite into rain after V76 is enabled.",
+    "Do not bake a fixed diagonal into V76 and rotate it again from the wind model.",
+    "Do not tile one bundle into an opaque rectangular rain curtain.",
+    "Do not place NearSeaSpray without an active V43 crest or above dry decks and roofs.",
+    "Do not let spray redraw the connected wave crest or V56 ocean body.",
+    "Do not render V76 after V74 or tint it independently from the world.",
+    "Do not update the authoritative runtime manifest before Unity Game View validation."
+  ]
+}

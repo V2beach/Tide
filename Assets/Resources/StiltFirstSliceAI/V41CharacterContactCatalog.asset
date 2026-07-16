@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 592e12d5d67d5554cb11c73a9aae153b, type: 3}
+  m_Name: V41CharacterContactCatalog
+  m_EditorClassIdentifier: 
+  version: 41
+  walkFrames:
+  - {fileID: 21300000, guid: 255aed33e9df59f38b029998dc5c002c, type: 3}
+  - {fileID: 21300000, guid: 435b37c3bd5858d88e5fef18a416093f, type: 3}
+  - {fileID: 21300000, guid: 2e73519c5ec352e7b29b494871a36444, type: 3}
+  - {fileID: 21300000, guid: f1f32df69d26524494d7b4dd0d757bdf, type: 3}
+  - {fileID: 21300000, guid: 5ed5fcb834f45032bdd4d4dd16788056, type: 3}
+  - {fileID: 21300000, guid: 3d7b1da13cab5aa58a5d17481a044fd3, type: 3}
+  - {fileID: 21300000, guid: 911030afb52150c29cd1303510de8237, type: 3}
+  - {fileID: 21300000, guid: 6638a6486d725124aed7f2e8a20d7942, type: 3}
+  carryNetWalkFrames:
+  - {fileID: 21300000, guid: 3fc54089dbc35acbba801f374b8d4823, type: 3}
+  - {fileID: 21300000, guid: 5ce96b0916b3540ca27dbb708df160a4, type: 3}
+  - {fileID: 21300000, guid: 8eda53c923205c81b66166a8948a7631, type: 3}
+  - {fileID: 21300000, guid: f549fa0f0ba75e8a91d913ced2c130c7, type: 3}
+  - {fileID: 21300000, guid: 562ab19c88f25d42a363357379c68698, type: 3}
+  - {fileID: 21300000, guid: 33830fd1e72c5d0fb782b35b3a48ee39, type: 3}
+  - {fileID: 21300000, guid: ddad04062d7c57119ec28362e4eb3360, type: 3}
+  - {fileID: 21300000, guid: 0dcfb75b69955c108000ec04fa192d3e, type: 3}
+  boardFrames:
+  - {fileID: 21300000, guid: 827a3ad2b4ef5d8ca65fb268a7accdde, type: 3}
+  - {fileID: 21300000, guid: 9502822867b058baad0892564329782d, type: 3}
+  - {fileID: 21300000, guid: 4c507383dfa65de28efee29ff1fa1029, type: 3}
+  - {fileID: 21300000, guid: a9db97051be85df19d30f41826ade9ea, type: 3}
+  - {fileID: 21300000, guid: 8d272e627f1a59bba62ac89dbaa52593, type: 3}
+  - {fileID: 21300000, guid: 9413208ef4875107ae85e73a2e4f1cf4, type: 3}
+  - {fileID: 21300000, guid: c2f13742d2685ff991373eca8f7f01da, type: 3}
+  - {fileID: 21300000, guid: be7faae6768e5230b8e467c31a1f6648, type: 3}
+  tieNetFrames:
+  - {fileID: 21300000, guid: 96e928c6a6535db7a43f94d4e43bda6c, type: 3}
+  - {fileID: 21300000, guid: d363720b0a485e0989fc757ae1a2e633, type: 3}
+  - {fileID: 21300000, guid: 79aad09915e153238f823df9c8e88132, type: 3}
+  - {fileID: 21300000, guid: 904050288af25f84b7ee528520e01e4d, type: 3}
+  - {fileID: 21300000, guid: b674e57a42cf5bd8a223c7e1f315b602, type: 3}
+  - {fileID: 21300000, guid: 0483d29caf7058cca41ef1679342ee44, type: 3}
+  doorEnterFrames:
+  - {fileID: 21300000, guid: 7eadfe4ffd655ceea299df92e0d27ba2, type: 3}
+  - {fileID: 21300000, guid: df5faf81e1415df98397b1aa2ec268e7, type: 3}
+  - {fileID: 21300000, guid: 78ca4580c3435b0e8034a082ef403d4f, type: 3}
+  - {fileID: 21300000, guid: ba3684e73c485c71af04da045d03acc7, type: 3}
+  - {fileID: 21300000, guid: c1c4ce94677959e89f35a6ef7f2ef779, type: 3}
+  - {fileID: 21300000, guid: abd08f4c252b5e518c77ae6f39ec7450, type: 3}
+  lowerSinklineFrames:
+  - {fileID: 21300000, guid: 97968e5e41af5cba99b0a8b5778d66d7, type: 3}
+  - {fileID: 21300000, guid: 33d0942ca50e5a67bbdedaee9e9a5b22, type: 3}
+  - {fileID: 21300000, guid: 00d79e0554e25241b85991b80c6e0b03, type: 3}
+  - {fileID: 21300000, guid: 8f962e1e59a0510cae972282e44f821c, type: 3}
+  - {fileID: 21300000, guid: dc2dfb77e61a52d5aad52ce851002dfc, type: 3}
+  - {fileID: 21300000, guid: 4f80427691085136afb9209a450d47ff, type: 3}
+  lookoutFrames:
+  - {fileID: 21300000, guid: 2b38db8df9945b81be31736e92c2724b, type: 3}
+  - {fileID: 21300000, guid: 082823a5231f537899d282d796a1d41c, type: 3}
+  - {fileID: 21300000, guid: 176b4545db745a05924042807708fa0b, type: 3}
+  - {fileID: 21300000, guid: 90ae4b15c98f53b0a54b073dc7339f62, type: 3}
+  - {fileID: 21300000, guid: a5d6d09474e95696a73eebaa56bbf413, type: 3}
+  - {fileID: 21300000, guid: 9abf01c814bc53d59e5b7f473e817d52, type: 3}

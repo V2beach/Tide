@@ -1,0 +1,16 @@
+{
+  "package": "ProductionWeatherPrecipitationV76",
+  "generation_mode": "deterministic_procedural_raster_no_model_generation",
+  "visual_intent": "clean salt-cold rain with controlled tapered strokes; sparse depth-separated bundles; no fuzzy noise",
+  "palette": [
+    "neutral rain grey",
+    "desaturated sea-glass grey",
+    "soft salt spray white"
+  ],
+  "constraints": [
+    "vertical source shapes",
+    "wind applied once at runtime",
+    "transparent RGBA with hidden RGB zero",
+    "no clouds, sea strip, wave crest, house, boat, character, text or UI in runtime sprites"
+  ]
+}

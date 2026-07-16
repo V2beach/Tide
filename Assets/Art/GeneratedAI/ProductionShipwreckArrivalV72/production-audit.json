@@ -1,0 +1,346 @@
+{
+  "package": "ProductionShipwreckArrivalV72",
+  "status": "pass_resource_candidate_not_integrated",
+  "runtime_files": {
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BowSection/TideShipwreckV72_BowSection.png": {
+      "size": [
+        440,
+        286
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        13,
+        14,
+        427,
+        272
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "b809df60a2b89edb5df848d20e99a69b43f850655eab9bebbecd9f545dba31a6"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/BrokenMast/TideShipwreckV72_BrokenMast.png": {
+      "size": [
+        257,
+        532
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        13,
+        14,
+        244,
+        519
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "49ad3ef30fbaf6553128d741de79809a5e69ba6cdfa1167f2ef5c3d73312aa45"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png": {
+      "size": [
+        550,
+        304
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        13,
+        13,
+        536,
+        290
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "42baa2bed719f7ade63a6aa8ecb76f7f89c38f1513baaf168c22acebcc95217e"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png": {
+      "size": [
+        510,
+        363
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        5,
+        4,
+        505,
+        359
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "1c147bddade3236ab20bc465edc0f4b623866bd80c16f58bb0734b6c46ce6410"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/ProvisionCask/TideShipwreckV72_ProvisionCask.png": {
+      "size": [
+        211,
+        98
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        5,
+        5,
+        206,
+        93
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "897de74d8d22ebe0b00ae71660b28ab46786db991fad32d426bc0bcc6c76559d"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/Balanced/SternHull/TideShipwreckV72_SternHull.png": {
+      "size": [
+        634,
+        284
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        13,
+        13,
+        621,
+        270
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "de153a4c39aa3062cc7678f9248c40ba6802017a3e13c349e48062c79ac73d09"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/BowSection/TideShipwreckV72_BowSection.png": {
+      "size": [
+        586,
+        382
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        18,
+        18,
+        568,
+        364
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "98d42056e3dbd22a4411eac23803fe08e5b890408603332911fd9780b8725558"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/BrokenMast/TideShipwreckV72_BrokenMast.png": {
+      "size": [
+        343,
+        710
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        18,
+        18,
+        325,
+        692
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "8d5e3c2f4da449ed747256d29c0bc95054999a8c46a00635097262e897e18e83"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png": {
+      "size": [
+        734,
+        406
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        18,
+        18,
+        716,
+        388
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "72b53a0a8594e55c5a1f4e1ef50dd7e7fef497520f9e5be05144fd4277926ad4"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png": {
+      "size": [
+        680,
+        484
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        6,
+        6,
+        673,
+        478
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "6bf817dd658269e5bef3ff4e389d301f06495de820a292eac735d3f4c0ff7e14"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/ProvisionCask/TideShipwreckV72_ProvisionCask.png": {
+      "size": [
+        281,
+        131
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        7,
+        6,
+        274,
+        124
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "e3b6770d5208098550473161ac44802a31c969cf6f8bb8b6ae6c7a74814ff012"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/High/SternHull/TideShipwreckV72_SternHull.png": {
+      "size": [
+        846,
+        378
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        18,
+        18,
+        828,
+        360
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "e7c0ef48129fed5288b82811db2e9df7b240541ebe6c7ef131e152b85a404c79"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/BowSection/TideShipwreckV72_BowSection.png": {
+      "size": [
+        1172,
+        764
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        35,
+        37,
+        1140,
+        728
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "28bc09022a60c3da0be906b0b952f128fe2e1541a1d61776a5137784483a42d9"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/BrokenMast/TideShipwreckV72_BrokenMast.png": {
+      "size": [
+        686,
+        1420
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        32,
+        37,
+        651,
+        1385
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "4d8b3ae4910db402d369420f3c678b8c093cd736d4d80b78bd717069d53baf42"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/CollapsedSailRig/TideShipwreckV72_CollapsedSailRig.png": {
+      "size": [
+        1468,
+        812
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        32,
+        35,
+        1431,
+        775
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "8a38327fc7ba5895dccfff8a9d45101bf31d80cdaf0bffbd2ce72ab151edc542"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/ExposedKeelRib/TideShipwreckV72_ExposedKeelRib.png": {
+      "size": [
+        1360,
+        967
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        13,
+        12,
+        1346,
+        955
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "72a18fb7f9f853ff23f47f08b72483c3f167dcc71acf37a5d902ddad8ba713ab"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/ProvisionCask/TideShipwreckV72_ProvisionCask.png": {
+      "size": [
+        562,
+        262
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        14,
+        13,
+        548,
+        248
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "1c3dd4c30532d6ffb8cbc7f5c5273abeb90f8da38da500bd1e8d5d3a511ea3c1"
+    },
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Runtime/UHD/SternHull/TideShipwreckV72_SternHull.png": {
+      "size": [
+        1692,
+        756
+      ],
+      "mode": "RGBA",
+      "alpha_bbox": [
+        32,
+        36,
+        1657,
+        719
+      ],
+      "hidden_rgb_pixel_count": 0,
+      "visible_magenta_pixel_count": 0,
+      "sha256": "152160e24ae26e045c21d4e1599f526cdbcf731f048106c6cfd405f2bf4b5ceb"
+    }
+  },
+  "runtime_png_count": 18,
+  "unity_meta_count": 54,
+  "unity_guid_unique_count": 54,
+  "source_partition": {
+    "overlap_pixel_count": 0,
+    "unassigned_visible_pixel_count": 0,
+    "reconstruction_difference_pixel_count": 0
+  },
+  "same_boat_identity_gates": {
+    "single_mast": true,
+    "clinker_plank_bands": true,
+    "right_stern_rudder": true,
+    "off_white_sail": true
+  },
+  "stage_gates": {
+    "hull_separation_m": [
+      0.0,
+      0.26,
+      0.5700000000000001
+    ],
+    "monotonic": true,
+    "whole_wreck_duplicate_frame_count": 0
+  },
+  "cross_profile_max_anchor_error_m": 0.0,
+  "memory_budget": {
+    "UHD": {
+      "rgba32_mib": 22.1369,
+      "rgba32_with_full_mips_mib": 29.5159
+    },
+    "High": {
+      "rgba32_mib": 5.5355,
+      "rgba32_with_full_mips_mib": 7.3807
+    },
+    "Balanced": {
+      "rgba32_mib": 3.1114,
+      "rgba32_with_full_mips_mib": 4.1485
+    }
+  },
+  "v55_donor_hashes_unchanged": {
+    "Assets/Art/GeneratedAI/ProductionShipwreckOriginStagingV55/staging-contract.json": "8a106c85cd8d1c52fb17394990e041bfbc7de28755046a1324f6c565e33e5b84",
+    "Assets/Art/GeneratedAI/ProductionShipwreckOriginStagingV55/production-audit.json": "a074ce03ab9140889abe1f3882168fb418c9f85efd5da1ab5558d5ca8f217376"
+  },
+  "runtime_manifest_sha256_before": "7cfd990fd3f85495e6b8a2647aae193dbcb9e0a4c3b6729b96daa24658920470",
+  "runtime_manifest_sha256_after": "7cfd990fd3f85495e6b8a2647aae193dbcb9e0a4c3b6729b96daa24658920470",
+  "runtime_manifest_updated": false,
+  "package_payload_sha256": "0262c8ec53146e12efeaa42378c09c35ee34df71eae94d86e5e1159a8d3df044",
+  "known_limits": [
+    "V72 is not connected to Unity Catalog, Renderer, scene, Prefab or Controller.",
+    "Character cling/release animation and runtime state transitions remain runtime-owned.",
+    "Ocean sorting, buoyancy, collision, weather, SpriteAtlas, platform compression and Profiler remain unverified in Unity Game View.",
+    "UHD is a 2x source-derived review convenience profile and contains no new generated detail beyond High."
+  ]
+}

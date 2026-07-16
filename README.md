@@ -1,54 +1,55 @@
 # Tide
 
-Tide 是一个 Unity 2D/URP 游戏项目。当前工程目标是先保证项目可以在 Windows 和 macOS 之间稳定同步开发，再逐步推进可玩的最小版本。
+Tide 是一个 Unity 2022.3 LTS / URP 2D 侧视原型。当前第一切片围绕：
 
-## 环境
+**岩礁海难起点 -> 拆取同一船骸的原物 -> 修临时归处或逃生船 -> 拉船靠岸 -> 借风浪短航 -> 暴潮中决定保住什么。**
 
-- Unity: `2022.3.62f3`
-- 渲染管线: Universal Render Pipeline `14.0.12`
-- 2D Feature Set: `com.unity.feature.2d`
-- 版本管理: Git + Git LFS
+## 打开项目
 
-## 仓库内容
+- 唯一开发场景：`Assets/Scenes/Tide_StiltHouse_FirstSlice.unity`
+- Build Settings 只包含这一场景。
+- 运行入口：`Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs`
+- 当前任务：`Docs/tide-task-tracking.md`
+- 5 分钟剧本：`Docs/prototype-playtest-walkthrough.md`
+- 代码地图：`Docs/code-reading-map.md`
 
-需要提交并同步：
+不要打开已删除的 `SampleScene`、`Prototype_01` 或 C 盘旧工作树。
 
-- `Assets/`
-- `Packages/`
-- `ProjectSettings/`
-- `.gitignore`
-- `.gitattributes`
-- `README.md`
-- `Docs/`
+## Windows / macOS 同步
 
-不要提交：
+项目源文件进入 Git；Unity 本地缓存不进入 Git。图片、音频、视频、字体和模型由 Git LFS 管理。
 
-- `Library/`
-- `Temp/`
-- `Obj/`
-- `Logs/`
-- `UserSettings/`
-- IDE 本地配置
+新电脑首次拉取：
 
-## 首次打开
+```bash
+git clone https://github.com/V2beach/Tide.git
+cd Tide
+git lfs install
+git lfs pull
+```
 
-1. 安装 Unity Hub。
-2. 安装 Unity Editor `2022.3.62f3`，macOS 也使用同一版本。
-3. 安装 Git LFS。
-4. 克隆仓库后执行 `git lfs install`。
-5. 在 Unity Hub 中选择项目根目录打开。
-6. 第一次打开会重新生成 `Library/`，等待导入完成即可。
+然后用 Unity Hub 的同一 `2022.3 LTS` 编辑器打开仓库根目录。详细步骤见 `Docs/macos-sync.md`。
 
-## 同步原则
+## 提交前检查
 
-- 只通过 Git 同步项目，不同步 Unity 自动生成目录。
-- 每次切换电脑前先提交并推送当前改动。
-- 每次在另一台电脑开始工作前先拉取最新改动。
-- 场景、Prefab、ScriptableObject、材质等 Unity 文本资源可以合并，但同一时间尽量不要在两台机器上改同一个场景文件。
+Windows：
 
-详细流程见 [macOS 同步开发说明](Docs/macos-sync.md)。
+```powershell
+pwsh Tools/check-tide-play-readiness.ps1
+```
 
-## 开发与项目研究
+macOS：
 
-- [开发流程](Docs/development-workflow.md)
-- [项目研究](Docs/project-study.md)
+```bash
+bash Tools/check-tide-play-readiness.sh
+```
+
+聚合门会检查源码结构、`.meta` 配对、Git LFS 路由，并用 Unity BatchMode 运行当前核心状态探针。它不能证明美术比例、碰撞和交互自然；这些只接受用户原始 Game View 或录像验收。
+
+## 仓库边界
+
+提交：`Assets/`、`Packages/`、`ProjectSettings/`、`Docs/`、`Tools/` 和根配置。
+
+不提交：`Library/`、`Temp/`、`Logs/`、`UserSettings/`、自动截图、QA 板、GIF、UHD 候选和一次性生成脚本。
+
+正式资源必须先满足 `Docs/tide-production-art-handoff.md` 的运行合同。资源存在不等于可以直接接入。

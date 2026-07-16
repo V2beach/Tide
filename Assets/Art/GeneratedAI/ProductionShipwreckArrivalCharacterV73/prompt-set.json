@@ -1,0 +1,28 @@
+{
+  "mode": "built_in_image_gen_then_local_chroma_removal",
+  "new_imagegen_calls": 2,
+  "references": [
+    "Assets/Art/GeneratedAI/ProductionCharacterWaterTransitionV64/Authoring/TideCharacterV64_WaterEntrySourceSheet_Alpha.png",
+    "Assets/Art/GeneratedAI/ProductionCharacterMaterialBaselineV61/Runtime/V20/Swim/TideCharacterV61_V20_Swim_F00.png",
+    "Assets/Art/GeneratedAI/ProductionShipwreckArrivalV72/Source/TideShipwreckV72_SelectedAlpha.png"
+  ],
+  "iteration_01": {
+    "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Source/TideCharacterV73_ClingReleaseSheet_Iteration01.png",
+    "prompt": "Use case: stylized-concept\nAsset type: production 2D side-view game character animation source sheet\nPrimary request: Create exactly one 4 columns x 2 rows sheet with eight chronological full-body poses of the same V61/V64 male survivor. He faces shore/right in every cell. Top row: cling load, wave load, recover, look toward shore. In all four top-row poses his rear/left hand grips one fixed invisible stern contact extending behind him to screen-left while his complete body is dragged to screen-right. Bottom row: release, push off, swim blend, and the approved right-facing horizontal swim endpoint. Preserve tied dark hair, salt-worn gray-beige hooded coat, wraps, trousers and both wrapped boots. Keep full legs and boots in every cell.\nComposition: equal cells, one complete isolated figure per cell, generous empty space, no overlap, no crop, no text or dividers.\nBackdrop: perfectly flat #ff00ff.\nForbidden: boat, wreck, water, foam, splash, rope, props, weapons, backpack, missing lower body, three-quarter view, 180-degree turn or colorful patches."
+  },
+  "selected_edit": {
+    "path": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Source/TideCharacterV73_ClingReleaseSheet_SelectedChroma.png",
+    "prompt": "Preserve the entire selected sheet and every pose except the top-row third pose. In that pose only, restore a clearly visible rear/left arm and hand extending backward to screen-left so it visibly holds the same invisible fixed stern contact as the other three top-row poses. Preserve strict right-facing profile, full legs and boots, exact identity, scale, spacing, flat #ff00ff backdrop, and all other pixels/composition as closely as possible. Add no boat, water, rope, prop, text or separator."
+  },
+  "selected_alpha": "Assets/Art/GeneratedAI/ProductionShipwreckArrivalCharacterV73/Source/TideCharacterV73_ClingReleaseSheet_SelectedAlpha.png",
+  "runtime_cells_used": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "runtime_endpoint_generated": false
+}
