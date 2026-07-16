@@ -494,7 +494,9 @@ public static class TideCoreLoopConvergenceProbe
 
     private static string ProbeSalvageMaterialCommit()
     {
-        TideMaterialBundle hullNeeds = new TideMaterialBundle(2, 1, 0, 0, 0);
+        TideMaterialBundle hullNeeds = TideRepairRecipeModel.GetMaterialNeeds(
+            TideRepairTarget.Hull,
+            0);
         int hullSelection = TideSalvageMaterialModel.SelectMinimumParts(
             TideSalvageMaterialModel.HullPlankBit |
             TideSalvageMaterialModel.SailclothBit |
@@ -510,13 +512,27 @@ public static class TideCoreLoopConvergenceProbe
             hullNeeds);
         Require(stockOnlySelection == 0, "库存已足时仍误吞可见船骸原物");
 
-        TideMaterialBundle cabinNeeds = new TideMaterialBundle(0, 0, 0, 2, 0);
+        Require(TideRepairRecipeModel.GetArrivalRepairTarget(
+                TideIslandSalvagePart.RivetedPlate,
+                TideIslandSalvageUse.Shelter) == TideRepairTarget.Cistern &&
+            TideRepairRecipeModel.GetArrivalRepairTarget(
+                TideIslandSalvagePart.RivetedPlate,
+                TideIslandSalvageUse.EscapeBoat) == TideRepairTarget.Cabin,
+            "铆接板的住所/逃生船首件去向没有由纯配方模型唯一决定");
+        TideMaterialBundle cabinNeeds = TideRepairRecipeModel.GetMaterialNeeds(
+            TideRepairTarget.Cabin,
+            0);
         int plateAlone = TideSalvageMaterialModel.SelectMinimumParts(
             TideSalvageMaterialModel.RivetedPlateBit,
             new TideMaterialBundle(),
             cabinNeeds);
         Require(plateAlone == TideSalvageMaterialModel.RivetedPlateBit,
             "开场铆接板放到船边仍不能独立完成金属舱盖与排水口第一阶段");
+        TideMaterialBundle reinforcedCabinNeeds = TideRepairRecipeModel.GetMaterialNeeds(
+            TideRepairTarget.Cabin,
+            1);
+        Require(reinforcedCabinNeeds.Timber == 1 && reinforcedCabinNeeds.Metal == 1,
+            "第二阶段船舱加固没有从纯金属舱盖过渡到木框加固");
 
         int curvedRibSelection = TideSalvageMaterialModel.SelectMinimumParts(
             TideSalvageMaterialModel.HeavyKeelRibPieceABit |

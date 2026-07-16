@@ -30,6 +30,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideWreckDismantleModel.cs",
     "Assets/Scripts/StiltHouse/TideRainCisternModel.cs",
     "Assets/Scripts/StiltHouse/TideRepairWorkPhaseModel.cs",
+    "Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs",
     "Assets/Scripts/StiltHouse/TideSalvageMaterialModel.cs",
     "Assets/Scripts/StiltHouse/TideHeavyWreckTidalLiftModel.cs",
     "Assets/Scripts/StiltHouse/TideHeavyWreckPieceOwnershipModel.cs",
@@ -63,6 +64,7 @@ foreach ($file in $required) {
 
 $controller = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
 $editorDiagnostics = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs"
+$repairRecipe = Read-ProjectText "Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
 Test-Gate ($controller.Contains("TickDismantleNearestPart") -and
     $controller.Contains("wreckOcean.Agitation01")) "wreck dismantling consumes continuous input and the authoritative ocean sample"
@@ -73,6 +75,10 @@ Test-Gate ($editorDiagnostics.Contains("#if UNITY_EDITOR") -and
 Test-Gate (-not $controller.Contains("SetEditorNetRigHoldPreviewPose")) "the contiguous editor preview block stays out of the runtime controller"
 Test-Gate ($controller.Contains("heavyWreckSalvage.IsCarryingPiece")) "heavy pieces impose a physical drag cost"
 Test-Gate ($controller.Contains("GetRepairStagedPartMask")) "heavy pieces only enter compatible final repairs"
+Test-Gate ($controller.Contains("TideRepairRecipeModel.GetMaterialNeeds") -and
+    $controller.Contains("TideRepairRecipeModel.GetStagingDestination")) "runtime controller consumes the canonical repair recipe model"
+Test-Gate ($repairRecipe.Contains("GetArrivalRepairTarget") -and
+    $repairRecipe.Contains("GetMaterialNeeds")) "repair targets, first salvage routes, and material needs share one pure model"
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
 Test-Gate ($controller.Contains("mooringRope.AdvanceEnvironment")) "mooring runtime orchestration is extracted"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"

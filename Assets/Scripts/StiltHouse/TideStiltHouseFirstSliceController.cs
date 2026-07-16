@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using RepairChoice = TideRepairTarget;
 
 /// <summary>
 /// Tide 新方向的独立第一版场景控制器。
@@ -151,23 +152,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         PlacedAtWork,
         Stored,
         Lost
-    }
-
-    private enum RepairChoice
-    {
-        None,
-        Stilt,
-        Cistern,
-        Sail,
-        Lamp,
-        Roof,
-        InteriorSeal,
-        Workbench,
-        Bed,
-        ChartRadio,
-        Hull,
-        Cabin,
-        Net
     }
 
     private enum NetRigStep
@@ -2626,7 +2610,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         bool nearCistern = barrenIsland.IsNearCistern(playerPosition);
-        bool carryingCisternPlate = barrenIsland.CarriedPart == TideIslandSalvagePart.RivetedPlate;
+        bool carryingCisternPlate = TideRepairRecipeModel.GetArrivalRepairTarget(
+            barrenIsland.CarriedPart,
+            TideIslandSalvageUse.Shelter) == RepairChoice.Cistern;
         bool nearShelterStaging = carryingCisternPlate
             ? nearCistern
             : Mathf.Abs(playerPosition.x - TideBarrenIslandController.ShelterDeliveryX) <= 0.52f;
@@ -8736,12 +8722,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private TideIslandSalvageDestination GetStagingDestinationForRepair(RepairChoice choice)
     {
-        bool repairsEscapeBoat = choice == RepairChoice.Hull ||
-            choice == RepairChoice.Sail ||
-            choice == RepairChoice.Cabin;
-        return repairsEscapeBoat
-            ? TideIslandSalvageDestination.EscapeBoatStaging
-            : TideIslandSalvageDestination.ShelterStaging;
+        return TideRepairRecipeModel.GetStagingDestination(choice);
     }
 
     private int GetRepairStagedPartMask(
@@ -8837,72 +8818,14 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         out int metalNeed,
         out int foodNeed)
     {
-        timberNeed = 0;
-        ropeNeed = 0;
-        clothNeed = 0;
-        metalNeed = 0;
-        foodNeed = 0;
-
-        if (choice == RepairChoice.Stilt || choice == RepairChoice.Hull)
-        {
-            timberNeed = 2;
-            ropeNeed = 1;
-        }
-        else if (choice == RepairChoice.Cistern)
-        {
-            // 一整块铆接板被剪成补片、压条和铆钉，正好吃掉船骸板的两份金属；
-            // 不把剩余半块藏进抽象库存，也不凭空要求海岛上不存在的木料。
-            metalNeed = 2;
-        }
-        else if (choice == RepairChoice.Net)
-        {
-            ropeNeed = 1;
-        }
-        else if (choice == RepairChoice.Roof)
-        {
-            timberNeed = 1;
-            ropeNeed = 1;
-        }
-        else if (choice == RepairChoice.InteriorSeal)
-        {
-            timberNeed = 1;
-            clothNeed = 1;
-        }
-        else if (choice == RepairChoice.Workbench)
-        {
-            timberNeed = 1;
-        }
-        else if (choice == RepairChoice.Bed)
-        {
-            clothNeed = 1;
-        }
-        else if (choice == RepairChoice.ChartRadio)
-        {
-            metalNeed = 1;
-        }
-        else if (choice == RepairChoice.Lamp)
-        {
-            foodNeed = 1;
-        }
-        else if (choice == RepairChoice.Sail)
-        {
-            clothNeed = 1;
-            ropeNeed = 1;
-        }
-        else if (choice == RepairChoice.Cabin)
-        {
-            if (boatCabinIntegrity <= 0)
-            {
-                // 第一阶段先把铆板做成舱盖、排水口护板和压舱隔片；后续结构
-                // 加固才需要木框。这样开场把板送到船边也是完整而非陷阱选择。
-                metalNeed = 2;
-            }
-            else
-            {
-                timberNeed = 1;
-                metalNeed = 1;
-            }
-        }
+        TideMaterialBundle needs = TideRepairRecipeModel.GetMaterialNeeds(
+            choice,
+            boatCabinIntegrity);
+        timberNeed = needs.Timber;
+        ropeNeed = needs.Rope;
+        clothNeed = needs.Cloth;
+        metalNeed = needs.Metal;
+        foodNeed = needs.Food;
     }
 
     private string GetMaterialStockText()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using RepairChoice = TideRepairTarget;
 
 #if UNITY_EDITOR
 /// <summary>
@@ -2699,6 +2700,15 @@ public partial class TideStiltHouseFirstSliceController
             RepairChoice.Cistern,
             RepairChoice.Cabin
         };
+        TideIslandSalvageUse[] uses =
+        {
+            TideIslandSalvageUse.Shelter,
+            TideIslandSalvageUse.EscapeBoat,
+            TideIslandSalvageUse.Shelter,
+            TideIslandSalvageUse.EscapeBoat,
+            TideIslandSalvageUse.Shelter,
+            TideIslandSalvageUse.EscapeBoat
+        };
         TideIslandSalvageDestination[] destinations =
         {
             TideIslandSalvageDestination.ShelterStaging,
@@ -2711,8 +2721,9 @@ public partial class TideStiltHouseFirstSliceController
         bool allSixStartFromOnePhysicalPart = true;
         for (int i = 0; i < choices.Length; i++)
         {
+            RepairChoice resolvedChoice = TideRepairRecipeModel.GetArrivalRepairTarget(parts[i], uses[i]);
             GetRepairMaterialNeeds(
-                choices[i],
+                resolvedChoice,
                 out int timberNeed,
                 out int ropeNeed,
                 out int clothNeed,
@@ -2728,8 +2739,9 @@ public partial class TideStiltHouseFirstSliceController
                 TideSalvageMaterialModel.GetPartBit(parts[i]),
                 new TideMaterialBundle(),
                 needs);
-            allSixStartFromOnePhysicalPart &= selected == TideSalvageMaterialModel.GetPartBit(parts[i]) &&
-                GetStagingDestinationForRepair(choices[i]) == destinations[i];
+            allSixStartFromOnePhysicalPart &= resolvedChoice == choices[i] &&
+                selected == TideSalvageMaterialModel.GetPartBit(parts[i]) &&
+                GetStagingDestinationForRepair(resolvedChoice) == destinations[i];
         }
 
         Vector2 plateAnchor = barrenIsland.GetPartWorldPosition(TideIslandSalvagePart.RivetedPlate);
