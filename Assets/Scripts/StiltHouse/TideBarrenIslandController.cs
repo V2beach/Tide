@@ -266,6 +266,18 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         return Mathf.Abs(playerPosition.x - CisternX) <= 0.52f;
     }
 
+    public bool IsVisibleWalkSupportAt(Vector2 feetPosition)
+    {
+        // 岩礁没有虚构的矩形碰撞台。这里验证的是同一个声明式岩面：脚点在
+        // 可见前景岩板的横向范围内，并且 Y 与表现更新时登记的 groundY 一致。
+        return visualRoot != null && visualRoot.gameObject.activeInHierarchy &&
+            rockFrontRenderer != null && rockFrontRenderer.enabled &&
+            feetPosition.x >= WalkableLeftX && feetPosition.x <= WalkableRightX &&
+            feetPosition.x >= rockFrontRenderer.bounds.min.x - 0.02f &&
+            feetPosition.x <= rockFrontRenderer.bounds.max.x + 0.02f &&
+            Mathf.Abs(feetPosition.y - groundY) <= 0.02f;
+    }
+
     public void UpdatePresentation(
         bool visible,
         float walkSurfaceY,

@@ -10122,6 +10122,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 openingPosition.x <= segment.bounds.max.x + 0.02f &&
                 Mathf.Abs(authoredSurfaceY - openingFeetY) <= 0.02f;
         }
+        bool supportedByVisibleRock = barrenIsland != null &&
+            barrenIsland.IsVisibleWalkSupportAt(new Vector2(openingPosition.x, openingFeetY));
+        bool supportedByVisibleSurface = supportedByVisiblePier || supportedByVisibleRock;
 
         bool startsIdle = !playerMoving && Mathf.Abs(playerHorizontalVelocity) <= 0.001f;
         bool noArrivalAutoplay = !arrivalVignetteActive;
@@ -10135,15 +10138,25 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         bool noHiddenDrift = Vector2.Distance(playerPosition, openingPosition) <= 0.001f;
         Camera camera = Camera.main != null ? Camera.main : FindFirstObjectByType<Camera>();
         float cameraX = camera != null ? camera.transform.position.x : 0f;
-        bool homeFraming = Mathf.Abs(cameraX) <= 0.08f;
+        float cameraAspect = camera != null && camera.targetTexture != null &&
+            camera.targetTexture.height > 0
+            ? (float)camera.targetTexture.width / camera.targetTexture.height
+            : camera != null ? camera.aspect : 1f;
+        float cameraHalfWidth = camera != null && camera.orthographic
+            ? camera.orthographicSize * cameraAspect
+            : 0f;
+        bool openingFraming = camera != null && camera.orthographic &&
+            Mathf.Abs(openingPosition.x - cameraX) <= cameraHalfWidth - 0.35f &&
+            cameraX <= 0f;
 
         string evidence =
             $"开场={openingPosition.x:F2},{openingPosition.y:F2}；脚面={openingFeetY:F2}；" +
-            $"可见木面承重={supportedByVisiblePier}；静止={startsIdle}；" +
-            $"无自动漂入={noArrivalAutoplay}/{noHiddenDrift}；人物配准={rendererRegistered}；镜头X={cameraX:F2}";
-        return supportedByVisiblePier && startsIdle && noArrivalAutoplay && noHiddenDrift &&
-               rendererRegistered && homeFraming
-            ? $"PASS：开场人物已经静止站在可见木面上，不再从画外、空中或海面自动走入。{evidence}"
+            $"可见承重(木/岩)={supportedByVisiblePier}/{supportedByVisibleRock}；静止={startsIdle}；" +
+            $"无自动漂入={noArrivalAutoplay}/{noHiddenDrift}；人物配准={rendererRegistered}；" +
+            $"镜头X/半宽={cameraX:F2}/{cameraHalfWidth:F2}";
+        return supportedByVisibleSurface && startsIdle && noArrivalAutoplay && noHiddenDrift &&
+               rendererRegistered && openingFraming
+            ? $"PASS：开场人物已经静止站在可见承重面上，不再从画外、空中或海面自动走入。{evidence}"
             : $"FAIL：开场人物仍存在无支撑、自动位移或镜头错位。{evidence}";
     }
 
@@ -18457,6 +18470,14 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         if (lane == WalkLane.TideFlat)
         {
+            if (barrenIsland != null)
+            {
+                // 岩礁岛把同一条潮间步行面真实延伸到左岸。旧 Scene 序列化的
+                // playerMinX=-5.15 只属于房屋原型；继续取 Max 会把开场和整座岛
+                // 悄悄夹回屋边，造成“画得到、走不到”的所见非所得。
+                return TideBarrenIslandController.WalkableLeftX + 0.02f;
+            }
+
             // 正式梯底比旧场景序列化的 tideFlatLaneMinX 更靠左。若继续取旧值，
             // 下梯后第一次移动会被 Clamp 瞬移 1.7m；正式资源存在时由可见路径接管。
             return HasCompleteV32ArtPresentation()

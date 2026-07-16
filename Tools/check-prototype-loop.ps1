@@ -38,6 +38,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideStormRescueModel.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
     "Assets/Editor/TideRepairSceneConvergenceProbe.cs",
+    "Assets/Editor/TideVisualSceneConvergenceProbe.cs",
     "Assets/Editor/TideV85HeavyWreckCatalogBuilder.cs",
     "Assets/Resources/StiltFirstSliceAI/V85HeavyWreckCatalog.asset",
     "Docs/ai-work-prompts.md",
@@ -56,6 +57,9 @@ Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring inp
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
 Test-Gate ($controller.Contains("TickStormRescue")) "storm rescue advances in the world tick"
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"
+$visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"
+Test-Gate ($visualProbe.Contains("RunEditorBoatPassengerScaleProbe")) "visual gate covers complete boat passenger"
+Test-Gate ($visualProbe.Contains("RunEditorWalkSurfacePathContinuityProbe")) "visual gate covers authored walk surfaces"
 
 $buildSettings = Read-ProjectText "ProjectSettings/EditorBuildSettings.asset"
 Test-Gate ($buildSettings.Contains("Assets/Scenes/Tide_StiltHouse_FirstSlice.unity")) "build settings contain the canonical scene"

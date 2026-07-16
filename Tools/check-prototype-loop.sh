@@ -31,6 +31,7 @@ required=(
   Assets/Scripts/StiltHouse/TideStormRescueModel.cs
   Assets/Editor/TideCoreLoopConvergenceProbe.cs
   Assets/Editor/TideRepairSceneConvergenceProbe.cs
+  Assets/Editor/TideVisualSceneConvergenceProbe.cs
   Assets/Editor/TideV85HeavyWreckCatalogBuilder.cs
   Assets/Resources/StiltFirstSliceAI/V85HeavyWreckCatalog.asset
   Docs/ai-work-prompts.md
@@ -42,6 +43,8 @@ controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.c
 for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput TideSailboatDynamicsModel.Advance TickStormRescue KeyCode.F3; do
   gate grep -q "$token" "$controller"
 done
+gate grep -q RunEditorBoatPassengerScaleProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
+gate grep -q RunEditorWalkSurfacePathContinuityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q 'Assets/Scenes/Tide_StiltHouse_FirstSlice.unity' "$root/ProjectSettings/EditorBuildSettings.asset"
 if grep -q 'SampleScene.unity' "$root/ProjectSettings/EditorBuildSettings.asset"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 gate grep -q 'filter=lfs' "$root/.gitattributes"

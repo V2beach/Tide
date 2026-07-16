@@ -30,16 +30,23 @@ $arguments = @(
     "-executeMethod", "TideCoreLoopConvergenceProbe.RunFromCommandLine",
     "-logFile", $logPath
 )
-$process = Start-Process -FilePath $UnityPath -ArgumentList $arguments -WindowStyle Hidden -Wait -PassThru
+$process = Start-Process -FilePath $UnityPath -ArgumentList $arguments -WindowStyle Hidden -PassThru
+if (-not $process.WaitForExit(180000)) {
+    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    throw "Unity convergence probes exceeded 180 seconds; see $logPath"
+}
+$process.WaitForExit()
 $log = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8
 if ($process.ExitCode -ne 0 -or
     $log -match "error CS\d+" -or
     $log -match "TIDE_CORE_LOOP_PROBE FAIL" -or
     $log -match "TIDE_REPAIR_SCENE_PROBE FAIL" -or
+    $log -match "TIDE_VISUAL_SCENE_PROBE FAIL" -or
     $log -notmatch "TIDE_CORE_LOOP_PROBE PASS" -or
-    $log -notmatch "TIDE_REPAIR_SCENE_PROBE PASS") {
+    $log -notmatch "TIDE_REPAIR_SCENE_PROBE PASS" -or
+    $log -notmatch "TIDE_VISUAL_SCENE_PROBE PASS") {
     $evidence = $log -split "`r?`n" |
-        Select-String -Pattern "error CS|TIDE_CORE_LOOP_PROBE|TIDE_REPAIR_SCENE_PROBE|executeMethod method" |
+        Select-String -Pattern "error CS|TIDE_CORE_LOOP_PROBE|TIDE_REPAIR_SCENE_PROBE|TIDE_VISUAL_SCENE_PROBE|executeMethod method" |
         Select-Object -Last 12
     $evidence | ForEach-Object { Write-Host $_.Line }
     throw "Unity core-loop probe failed; see $logPath"
@@ -48,5 +55,7 @@ if ($process.ExitCode -ne 0 -or
 ($log -split "`r?`n" | Select-String -Pattern "TIDE_CORE_LOOP_PROBE PASS" | Select-Object -Last 1).Line |
     Write-Host
 ($log -split "`r?`n" | Select-String -Pattern "TIDE_REPAIR_SCENE_PROBE PASS" | Select-Object -Last 1).Line |
+    Write-Host
+($log -split "`r?`n" | Select-String -Pattern "TIDE_VISUAL_SCENE_PROBE PASS" | Select-Object -Last 1).Line |
     Write-Host
 Write-Host "Tide play readiness passed. Visual acceptance still requires the user's original Game View/video."

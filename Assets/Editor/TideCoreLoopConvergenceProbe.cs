@@ -18,6 +18,7 @@ public static class TideCoreLoopConvergenceProbe
     {
         Debug.Log(RunAll());
         TideRepairSceneConvergenceProbe.RunFromCommandLine();
+        TideVisualSceneConvergenceProbe.RunFromCommandLine();
     }
 
     private static string RunAll()

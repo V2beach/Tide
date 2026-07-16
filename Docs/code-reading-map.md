@@ -93,7 +93,9 @@
 ## 验证
 
 - 聚焦探针：`Assets/Editor/TideCoreLoopConvergenceProbe.cs`
+- 正式 Scene 维修门：`Assets/Editor/TideRepairSceneConvergenceProbe.cs`
+- 正式 Scene 视觉几何门：`Assets/Editor/TideVisualSceneConvergenceProbe.cs`；每项重开权威 Scene，防止预览状态串扰，不执行自动截图
 - 静态门：`Tools/check-prototype-loop.ps1` / `.sh`
 - 同步门：`Tools/check-unity-sync.ps1` / `.sh`
 - 完整入口：`Tools/check-tide-play-readiness.ps1` / `.sh`
-- 完整入口同时要求 `TIDE_CORE_LOOP_PROBE PASS` 与 `TIDE_REPAIR_SCENE_PROBE PASS`。
+- 完整入口同时要求 `TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS` 与 `TIDE_VISUAL_SCENE_PROBE PASS`。
