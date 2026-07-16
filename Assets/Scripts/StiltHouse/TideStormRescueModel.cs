@@ -12,6 +12,7 @@ public enum TideStormRescueItemKind
 public struct TideStormRescueItemState
 {
     public TideStormRescueItemKind Kind;
+    public bool Present;
     public float Buoyancy01;
     public float SecuringProgress01;
     public float WashoutProgress01;
@@ -39,6 +40,7 @@ public static class TideStormRescueModel
         return new TideStormRescueItemState
         {
             Kind = kind,
+            Present = true,
             Buoyancy01 = kind == TideStormRescueItemKind.LighthouseChart ? 0.88f :
                 kind == TideStormRescueItemKind.StoveFuel ? 0.72f :
                 kind == TideStormRescueItemKind.BoatMaterial ? 0.34f : 0.18f
@@ -52,7 +54,7 @@ public static class TideStormRescueModel
         float currentSpeedMetersPerSecond,
         bool playerSecuring)
     {
-        if (state.Lost || state.Secured)
+        if (!state.Present || state.Lost || state.Secured)
         {
             return state;
         }

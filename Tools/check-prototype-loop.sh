@@ -40,14 +40,14 @@ required=(
 for file in "${required[@]}"; do gate test -f "$root/$file"; done
 
 controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
-for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput TideSailboatDynamicsModel.Advance TickStormRescue RunEditorStormWaterOwnershipProbe KeyCode.F3; do
+for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput TideSailboatDynamicsModel.Advance TickStormRescue RunEditorStormManifestOwnershipProbe KeyCode.F3; do
   gate grep -q "$token" "$controller"
 done
 gate grep -q RunEditorBoatPassengerScaleProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorWalkSurfacePathContinuityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorFirstDayAutonomyProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q TideStormRescueTradeoffConvergenceProbe.Run "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
-gate grep -q RunEditorStormWaterOwnershipProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
+gate grep -q RunEditorStormManifestOwnershipProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q 'Assets/Scenes/Tide_StiltHouse_FirstSlice.unity' "$root/ProjectSettings/EditorBuildSettings.asset"
 if grep -q 'SampleScene.unity' "$root/ProjectSettings/EditorBuildSettings.asset"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 gate grep -q 'filter=lfs' "$root/.gitattributes"

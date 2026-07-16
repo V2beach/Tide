@@ -425,6 +425,13 @@ public static class TideCoreLoopConvergenceProbe
         Require(chart.WashoutProgress01 > water.WashoutProgress01,
             "高浮力海图没有比低浮力水桶更快被带走");
 
+        TideStormRescueItemState absent = TideStormRescueModel.Create(TideStormRescueItemKind.BoatMaterial);
+        absent.Present = false;
+        TideStormRescueItemState absentAfterFlood = TideStormRescueModel.Advance(
+            absent, 12f, 0.7f, 0.65f, false);
+        Require(absentAfterFlood.WashoutProgress01 <= 0f && !absentAfterFlood.Lost,
+            "不存在的暴潮物资仍被水流推进或记成损失");
+
         TideStormRescueItemState secured = TideStormRescueModel.Create(TideStormRescueItemKind.BoatMaterial);
         for (int i = 0; i < 320 && !secured.Secured; i++)
         {

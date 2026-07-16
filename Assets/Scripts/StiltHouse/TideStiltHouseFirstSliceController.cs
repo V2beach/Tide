@@ -43,6 +43,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private const bool EnableSailingBuoyGameplay = false;
     private const float EbbCurrentBoost = 1.12f;
     private const float StormRescueWaterContainerLiters = 4f;
+    private const int StormRescueBoatTimberUnits = 2;
+    private const int StartingDryFuelBundles = 1;
     private const float DailyRestWaterNeedLiters = 2.4f;
     // 盐湿线记住的是一段潮汐的平均最高水位，不是某一朵随机浪尖。睡眠跳时
     // 用 0.5 秒小步补采样，足以捕捉 248.4 秒潮周期的平滑峰值，同时不把
@@ -706,7 +708,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TideStormRescueItemState[] stormRescueItems = Array.Empty<TideStormRescueItemState>();
     private int stormRescueHeldIndex = -1;
     private TidePortableWaterState stormRescueWater;
-    private bool stormRescueWaterPreparationAttempted;
+    private bool stormRescueManifestPrepared;
+    private int stormRescueReservedTimber;
+    private int stormRescueReservedFuelBundles;
+    private int stormRescueReservedChartClues;
+    private int dryFuelBundles;
     private float waterConsumedSinceLastRest;
     private float lastRestWaterShortfallLiters;
     private int repairStartStiltIntegrity;
@@ -11098,7 +11104,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         InitializeStormRescueItems();
         stormRescueHeldIndex = -1;
         stormRescueWater = default;
-        stormRescueWaterPreparationAttempted = false;
+        stormRescueManifestPrepared = false;
+        stormRescueReservedTimber = 0;
+        stormRescueReservedFuelBundles = 0;
+        stormRescueReservedChartClues = 0;
+        dryFuelBundles = StartingDryFuelBundles;
         waterConsumedSinceLastRest = 0f;
         lastRestWaterShortfallLiters = 0f;
         repairChoiceApplied = false;
@@ -12391,6 +12401,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         stormRescueItems[1] = TideStormRescueModel.Create(TideStormRescueItemKind.BoatMaterial);
         stormRescueItems[2] = TideStormRescueModel.Create(TideStormRescueItemKind.StoveFuel);
         stormRescueItems[3] = TideStormRescueModel.Create(TideStormRescueItemKind.LighthouseChart);
+        for (int i = 0; i < stormRescueItems.Length; i++)
+        {
+            TideStormRescueItemState item = stormRescueItems[i];
+            item.Present = false;
+            stormRescueItems[i] = item;
+        }
     }
 
     private bool HandleStormRescueInteraction()
@@ -12406,7 +12422,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         for (int i = 0; i < stormRescueItems.Length; i++)
         {
             TideStormRescueItemState item = stormRescueItems[i];
-            if (item.Lost || item.Secured)
+            if (!item.Present || item.Lost || item.Secured)
             {
                 continue;
             }
@@ -12437,10 +12453,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             InitializeStormRescueItems();
         }
 
-        if (!stormRescueWaterPreparationAttempted &&
+        if (!stormRescueManifestPrepared &&
             (GetStormPressure01() >= 0.34f || IsStormRescueActive()))
         {
-            PrepareStormRescueWaterContainer();
+            PrepareStormRescueManifest();
         }
 
         float rawDepth = Mathf.Max(
@@ -12463,6 +12479,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             TideStormRescueItemState after = stormRescueItems[i];
             if (!before.Secured && after.Secured)
             {
+                RestoreSecuredStormRescueCargo(after.Kind);
                 lastActionHint = "你把这件东西绑上了高处横梁。它离开水路，不会再被这一场潮带走。";
             }
             else if (!before.Lost && after.Lost)
@@ -12543,24 +12560,50 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         };
     }
 
-    public string RunEditorStormWaterOwnershipProbe()
+    public string RunEditorStormManifestOwnershipProbe()
     {
         EnsureScene();
         ResetSlice();
+        int defaultTimber = timberStock;
+        int defaultFuel = dryFuelBundles;
+        int defaultClues = lighthouseClues;
+        PrepareStormRescueManifest();
+        int defaultPresentMask = GetStormRescuePresentMask();
+        bool defaultHasNoFakeCargo = defaultPresentMask ==
+            ((1 << (int)TideStormRescueItemKind.DrinkingWater) |
+             (1 << (int)TideStormRescueItemKind.StoveFuel));
+        bool defaultReservationsGrounded = defaultTimber == 0 && defaultFuel == 1 && defaultClues == 0 &&
+            stormRescueReservedTimber == 0 && stormRescueReservedFuelBundles == 1 &&
+            stormRescueReservedChartClues == 0;
+
+        ResetSlice();
+        timberStock = 3;
+        lighthouseClues = 1;
         float initialCisternLiters = barrenIsland.Cistern.StoredLiters;
-        PrepareStormRescueWaterContainer();
+        PrepareStormRescueManifest();
         float filledCisternLiters = barrenIsland.Cistern.StoredLiters;
         float filledReserveLiters = stormRescueWater.Liters;
         bool fillConservesWater = Mathf.Abs(
             initialCisternLiters - filledCisternLiters - filledReserveLiters) <= 0.001f;
         bool exactContainerFilled = Mathf.Abs(filledReserveLiters - StormRescueWaterContainerLiters) <= 0.001f;
+        bool allRealCargoReserved = GetStormRescuePresentMask() == 0b1111 &&
+            timberStock == 1 && stormRescueReservedTimber == 2 &&
+            dryFuelBundles == 0 && stormRescueReservedFuelBundles == 1 &&
+            lighthouseClues == 0 && stormRescueReservedChartClues == 1;
+
+        RestoreSecuredStormRescueCargo(TideStormRescueItemKind.BoatMaterial);
+        RestoreSecuredStormRescueCargo(TideStormRescueItemKind.StoveFuel);
+        RestoreSecuredStormRescueCargo(TideStormRescueItemKind.LighthouseChart);
+        bool securedCargoReturnsToStorage = timberStock == 3 && dryFuelBundles == 1 &&
+            lighthouseClues == 1 && stormRescueReservedTimber == 0 &&
+            stormRescueReservedFuelBundles == 0 && stormRescueReservedChartClues == 0;
 
         ApplyStormRescueLoss(TideStormRescueItemKind.DrinkingWater);
         bool lossRemovesOnlyContainer = stormRescueWater.Liters <= 0.001f &&
             Mathf.Abs(barrenIsland.Cistern.StoredLiters - filledCisternLiters) <= 0.001f;
 
         ResetSlice();
-        PrepareStormRescueWaterContainer();
+        PrepareStormRescueManifest();
         float cisternBeforeRest = barrenIsland.Cistern.StoredLiters;
         float consumed = ConsumeRestWater(DailyRestWaterNeedLiters);
         bool restUsesSecuredContainerFirst = Mathf.Abs(consumed - DailyRestWaterNeedLiters) <= 0.001f &&
@@ -12568,37 +12611,150 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             Mathf.Abs(
                 stormRescueWater.Liters -
                 (StormRescueWaterContainerLiters - DailyRestWaterNeedLiters)) <= 0.001f;
+
+        ResetSlice();
+        stoveCondition = 1;
+        bodyWarmth01 = 0.2f;
+        AdvanceMoonPhase();
+        float warmthWithFuel = bodyWarmth01;
+        bool oneFuelBundleBurnsOnce = dryFuelBundles == 0 && warmthWithFuel >= 0.89f;
+
+        ResetSlice();
+        stoveCondition = 1;
+        dryFuelBundles = 0;
+        bodyWarmth01 = 0.2f;
+        AdvanceMoonPhase();
+        float warmthWithoutFuel = bodyWarmth01;
+        bool missingFuelCannotCreateWarmth = warmthWithoutFuel <= 0.49f &&
+            warmthWithFuel - warmthWithoutFuel >= 0.39f;
         ResetSlice();
 
-        bool passed = fillConservesWater && exactContainerFilled &&
-            lossRemovesOnlyContainer && restUsesSecuredContainerFirst;
+        bool passed = defaultHasNoFakeCargo && defaultReservationsGrounded &&
+            fillConservesWater && exactContainerFilled && allRealCargoReserved &&
+            securedCargoReturnsToStorage && lossRemovesOnlyContainer &&
+            restUsesSecuredContainerFirst && oneFuelBundleBurnsOnce &&
+            missingFuelCannotCreateWarmth;
         return passed
-            ? $"PASS 应急水罐{filledReserveLiters:F1}L；冲失后总量-{filledReserveLiters:F1}L；保住后夜间先用{consumed:F1}L"
-            : $"FAIL 守恒={fillConservesWater} 装罐={exactContainerFilled} 冲失={lossRemovesOnlyContainer} 夜用={restUsesSecuredContainerFirst}";
+            ? $"PASS 默认实物掩码={defaultPresentMask:X}；满清单预留=4/4；水罐{filledReserveLiters:F1}L；保住归库；冲失不重扣；夜间先用{consumed:F1}L；干柴恢复{warmthWithoutFuel:F2}->{warmthWithFuel:F2}"
+            : $"FAIL 默认无假物={defaultHasNoFakeCargo}/{defaultReservationsGrounded} 守恒={fillConservesWater} 装罐={exactContainerFilled} 满清单={allRealCargoReserved} 归库={securedCargoReturnsToStorage} 冲失={lossRemovesOnlyContainer} 夜用={restUsesSecuredContainerFirst} 干柴={oneFuelBundleBurnsOnce}/{missingFuelCannotCreateWarmth}";
     }
 
-    private void PrepareStormRescueWaterContainer()
+    private void PrepareStormRescueManifest()
     {
-        if (stormRescueWaterPreparationAttempted)
+        if (stormRescueManifestPrepared)
         {
             return;
         }
 
-        stormRescueWaterPreparationAttempted = true;
+        stormRescueManifestPrepared = true;
+        if (stormRescueItems == null || stormRescueItems.Length != 4)
+        {
+            InitializeStormRescueItems();
+        }
+
         bool filled = barrenIsland != null && barrenIsland.TryFillPortableWaterContainer(
             StormRescueWaterContainerLiters,
             out stormRescueWater);
-        if (filled || stormRescueItems == null || stormRescueItems.Length == 0)
+        SetStormRescueItemPresent(TideStormRescueItemKind.DrinkingWater, filled);
+
+        bool hasBoatTimber = timberStock >= StormRescueBoatTimberUnits;
+        if (hasBoatTimber)
+        {
+            timberStock -= StormRescueBoatTimberUnits;
+            stormRescueReservedTimber = StormRescueBoatTimberUnits;
+        }
+        SetStormRescueItemPresent(TideStormRescueItemKind.BoatMaterial, hasBoatTimber);
+
+        bool hasDryFuel = dryFuelBundles > 0;
+        if (hasDryFuel)
+        {
+            dryFuelBundles--;
+            stormRescueReservedFuelBundles = 1;
+        }
+        SetStormRescueItemPresent(TideStormRescueItemKind.StoveFuel, hasDryFuel);
+
+        bool hasChart = lighthouseClues > 0;
+        if (hasChart)
+        {
+            lighthouseClues--;
+            stormRescueReservedChartClues = 1;
+        }
+        SetStormRescueItemPresent(TideStormRescueItemKind.LighthouseChart, hasChart);
+    }
+
+    private void SetStormRescueItemPresent(TideStormRescueItemKind kind, bool present)
+    {
+        int index = (int)kind;
+        TideStormRescueItemState item = stormRescueItems[index];
+        item.Present = present;
+        item.Lost = false;
+        item.Secured = false;
+        item.SecuringProgress01 = 0f;
+        item.WashoutProgress01 = 0f;
+        stormRescueItems[index] = item;
+    }
+
+    private int GetStormRescuePresentMask()
+    {
+        int mask = 0;
+        if (stormRescueItems == null)
+        {
+            return mask;
+        }
+
+        for (int i = 0; i < stormRescueItems.Length; i++)
+        {
+            if (stormRescueItems[i].Present)
+            {
+                mask |= 1 << i;
+            }
+        }
+        return mask;
+    }
+
+    private void RestoreSecuredStormRescueCargo(TideStormRescueItemKind kind)
+    {
+        if (kind == TideStormRescueItemKind.BoatMaterial && stormRescueReservedTimber > 0)
+        {
+            timberStock += stormRescueReservedTimber;
+            stormRescueReservedTimber = 0;
+        }
+        else if (kind == TideStormRescueItemKind.StoveFuel && stormRescueReservedFuelBundles > 0)
+        {
+            dryFuelBundles += stormRescueReservedFuelBundles;
+            stormRescueReservedFuelBundles = 0;
+        }
+        else if (kind == TideStormRescueItemKind.LighthouseChart && stormRescueReservedChartClues > 0)
+        {
+            lighthouseClues += stormRescueReservedChartClues;
+            stormRescueReservedChartClues = 0;
+        }
+    }
+
+    private void RecoverSurvivingStormCargoAtRest()
+    {
+        if (!stormRescueManifestPrepared || stormRescueItems == null)
         {
             return;
         }
 
-        // No potable water means there is no filled water can in the flooded room.
-        // Marking it absent here avoids displaying or washing away an empty prop and
-        // then charging the player for water that never existed.
-        TideStormRescueItemState unavailableWater = stormRescueItems[0];
-        unavailableWater.Lost = true;
-        stormRescueItems[0] = unavailableWater;
+        // Sleeping advances through the whole remaining night. Any cargo that was
+        // still physically present after the water receded can be put back into dry
+        // storage during that interval; lost cargo is never recreated here.
+        for (int i = 0; i < stormRescueItems.Length; i++)
+        {
+            TideStormRescueItemState item = stormRescueItems[i];
+            if (!item.Present || item.Lost || item.Secured)
+            {
+                continue;
+            }
+
+            item.Secured = true;
+            item.SecuringProgress01 = 1f;
+            item.WashoutProgress01 = 0f;
+            stormRescueItems[i] = item;
+            RestoreSecuredStormRescueCargo(item.Kind);
+        }
     }
 
     private float ConsumeRestWater(float requestedLiters)
@@ -12644,15 +12800,15 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
         else if (kind == TideStormRescueItemKind.BoatMaterial)
         {
-            timberStock = Mathf.Max(0, timberStock - 2);
+            stormRescueReservedTimber = 0;
         }
         else if (kind == TideStormRescueItemKind.StoveFuel)
         {
-            houseWarmth = Mathf.Max(0, houseWarmth - 1);
+            stormRescueReservedFuelBundles = 0;
         }
         else if (kind == TideStormRescueItemKind.LighthouseChart)
         {
-            lighthouseClues = Mathf.Max(0, lighthouseClues - 1);
+            stormRescueReservedChartClues = 0;
         }
 
         lastActionHint = "水把一件没有固定的东西从低层带走了；这一场不可能什么都保住。";
@@ -18351,6 +18507,17 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 : $"你睡着时高潮压过屋底：支撑 {stiltBeforeSleep}->{stiltIntegrity}。";
         }
 
+        RecoverSurvivingStormCargoAtRest();
+        bool burnedDryFuel = stoveCondition > 0 && dryFuelBundles > 0;
+        if (burnedDryFuel)
+        {
+            dryFuelBundles--;
+            string fuelText = "你把留下的干柴添进修好的灶，火一直撑到黎明。";
+            overnightShelterText = string.IsNullOrEmpty(overnightShelterText)
+                ? fuelText
+                : $"{overnightShelterText} {fuelText}";
+        }
+
         float remainingWaterNeed = Mathf.Max(
             0f,
             DailyRestWaterNeedLiters - waterConsumedSinceLastRest);
@@ -18387,6 +18554,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         // the same skipped night into a meaningful recovery. Missing drinking water
         // limits that recovery but does not become an unrelated instant damage tick.
         float restedWarmthFloor = bedCondition > 0 ? 0.82f : 0.48f;
+        if (burnedDryFuel)
+        {
+            restedWarmthFloor = Mathf.Max(restedWarmthFloor, 0.9f);
+        }
         float waterLimitedWarmthFloor = Mathf.Lerp(0.38f, restedWarmthFloor, restWaterFulfillment01);
         bodyWarmth01 = Mathf.Max(bodyWarmth01, waterLimitedWarmthFloor);
         if (chartRadioCondition > 0)
@@ -22493,7 +22664,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             TideStormRescueItemState item = stormRescueItems[i];
             SpriteRenderer renderer = stormRescueRenderers[i];
             SpriteRenderer ropeRenderer = stormRescueRopeRenderers[i];
-            bool visible = (pressureVisible || item.Secured || item.WashoutProgress01 > 0.001f) && !item.Lost;
+            bool visible = item.Present &&
+                (pressureVisible || item.Secured || item.WashoutProgress01 > 0.001f) &&
+                !item.Lost;
             renderer.enabled = visible;
             bool ropeVisible = visible && (item.SecuringProgress01 > 0.001f || item.Secured);
             ropeRenderer.enabled = ropeVisible;
@@ -27707,6 +27880,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             ? $"饮水 池{barrenIsland.Cistern.StoredLiters:F1}L/盐{barrenIsland.Cistern.SaltFraction01:P2} · " +
               $"应急罐{stormRescueWater.Liters:F1}L · 今日已饮{waterConsumedSinceLastRest:F1}L · 昨夜缺{lastRestWaterShortfallLiters:F1}L"
             : "饮水 未接入";
+        string rescueManifestText = $"暴潮清单 在场0x{GetStormRescuePresentMask():X} · " +
+            $"预留木{stormRescueReservedTimber}/柴{stormRescueReservedFuelBundles}/图{stormRescueReservedChartClues} · 干柴库存{dryFuelBundles}";
         return $"{BuildPlayerHudSummary(phase, storm01)}\n" +
             $"距天黑 {FormatDebugDuration(secondsToDark)} · 距天亮 {FormatDebugDuration(secondsToDawn)} · " +
             $"离家 {distanceFromHome:0.0}m · 画面 {outdoorScreen} · F3 隐藏\n" +
@@ -27714,6 +27889,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             $"潮源 #{tideSourceBatchId} {GetTideDriftProvenanceName(currentTideDriftField.NearshoreBatch.Provenance)}/{GetHarvestName(tideSourceHarvest)} " +
             $"路程{incomingHarvestTravel01:0.00} · 盐木 #{extraSaltWoodBatchId} {extraSaltWoodOwner} 路程{outerWreckTravel01:0.00}\n" +
             $"{waterText}\n" +
+            $"{rescueManifestText}\n" +
             $"{heavyWreckText}\n" +
             $"开发循环：看潮 -> 布网 -> 回收实物 -> 修屋/修船 -> 短航 · 当前：{lastActionHint}";
     }
