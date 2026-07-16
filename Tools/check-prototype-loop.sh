@@ -23,6 +23,7 @@ required=(
   Assets/Scripts/StiltHouse/TideWreckDismantleModel.cs
   Assets/Scripts/StiltHouse/TideRainCisternModel.cs
   Assets/Scripts/StiltHouse/TideRepairWorkPhaseModel.cs
+  Assets/Scripts/StiltHouse/TideRepairWorkController.cs
   Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs
   Assets/Scripts/StiltHouse/TideSalvageMaterialModel.cs
   Assets/Scripts/StiltHouse/TideHeavyWreckTidalLiftModel.cs
@@ -56,6 +57,7 @@ for file in "${required[@]}"; do gate test -f "$root/$file"; done
 controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
 editor_diagnostics="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs"
 repair_recipe="$root/Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs"
+repair_work="$root/Assets/Scripts/StiltHouse/TideRepairWorkController.cs"
 barren_island="$root/Assets/Scripts/StiltHouse/TideBarrenIslandController.cs"
 for token in TickBarrenIslandNaturalState TickDismantleNearestPart wreckOcean.Agitation01 heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance stormRescue.Advance KeyCode.F3 forecastTideNotches.UpdatePresentation TideForecastSnapshotModel.Capture TideNetEncounterModel.Advance tideDriftFieldCycleOrdinal wrackLine.TrySettle; do
   gate grep -q "$token" "$controller"
@@ -67,6 +69,12 @@ gate grep -q TideRepairRecipeModel.GetMaterialNeeds "$controller"
 gate grep -q TideRepairRecipeModel.GetStagingDestination "$controller"
 gate grep -q GetArrivalRepairTarget "$repair_recipe"
 gate grep -q GetMaterialNeeds "$repair_recipe"
+gate grep -q TideRepairWorkController "$controller"
+gate grep -q repairWork.Advance "$controller"
+gate grep -q repairWork.Complete "$controller"
+gate grep -q 'public void Begin' "$repair_work"
+gate grep -q 'public bool Advance' "$repair_work"
+gate grep -q 'public void Complete' "$repair_work"
 gate grep -q CisternWaterSurface "$barren_island"
 gate grep -q CisternSaltLine "$barren_island"
 gate grep -q CisternLeakStream "$barren_island"
@@ -77,6 +85,7 @@ if grep -q SetEditorNetRigHoldPreviewPose "$controller"; then failures=$((failur
 if grep -qE 'RunEditor|GetEditor' "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 gate grep -q ProbeForecastSnapshot "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeWreckDismantle "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
+gate grep -q ProbeRepairWorkSession "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeNetEncounter "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeWrackDeposit "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 if grep -q TickFreeSailingSalvage "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi

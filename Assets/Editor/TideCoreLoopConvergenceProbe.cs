@@ -29,6 +29,7 @@ public static class TideCoreLoopConvergenceProbe
         string context = ProbeIslandContextPriority();
         string salvage = ProbeSalvageMaterialCommit();
         string repairPhases = ProbeRepairWorkPhases();
+        string repairSession = ProbeRepairWorkSession();
         string heavyWreck = ProbeHeavyWreckTidalLift();
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
@@ -40,7 +41,7 @@ public static class TideCoreLoopConvergenceProbe
         string forecast = ProbeForecastSnapshot();
         string netEncounter = ProbeNetEncounter();
         string wrack = ProbeWrackDeposit();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
     }
 
     private static string ProbeWreckDismantle()
@@ -557,6 +558,44 @@ public static class TideCoreLoopConvergenceProbe
         Require(TideRepairWorkPhaseModel.Evaluate(0.9f) == TideRepairWorkPhase.Seal,
             "最终提交前没有密封与复核");
         return "施工=检查>清理>试装>固定>密封";
+    }
+
+    private static string ProbeRepairWorkSession()
+    {
+        TideRepairWorkController work = new TideRepairWorkController();
+        work.Begin(TideRepairTarget.Stilt);
+        Require(work.PendingChoice == TideRepairTarget.Stilt &&
+            work.Step == (int)TideRepairWorkPhase.Inspect &&
+            !work.Active && !work.ChoiceApplied,
+            "维修会话开工时没有原子进入目标和检查阶段");
+
+        bool earlyFinished = work.Advance(1f, 4f);
+        float pausedProgress = work.Progress01;
+        work.Pause();
+        Require(!earlyFinished && !work.Active &&
+            Mathf.Abs(pausedProgress - 0.25f) <= 0.001f,
+            "维修会话松手后没有保留已完成的现实工时");
+
+        work.Advance(1f, 4f);
+        Require(work.Step == (int)TideRepairWorkPhase.TestFit &&
+            Mathf.Abs(work.Progress01 - 0.5f) <= 0.001f,
+            "维修会话恢复后没有从原进度继续进入试装");
+
+        work.Begin(TideRepairTarget.Hull);
+        Require(work.PendingChoice == TideRepairTarget.Hull &&
+            work.Progress01 <= 0.001f &&
+            work.Step == (int)TideRepairWorkPhase.Inspect,
+            "明确切换真实施工点后仍串用了上一个部位的半成品进度");
+
+        bool workFinished = work.Advance(4f, 4f);
+        Require(workFinished && !work.ChoiceApplied,
+            "工序刚完成就绕过材料与世界 owner 提前生成维修收益");
+        work.Complete();
+        Require(work.ChoiceApplied && !work.Active &&
+            work.Progress01 >= 0.999f &&
+            work.Step == (int)TideRepairWorkPhase.Seal,
+            "材料提交后维修会话没有封账到密封阶段");
+        return $"施工会话=暂停{pausedProgress:P0}/换点重开/提交后封账";
     }
 
     private static string ProbeHeavyWreckTidalLift()

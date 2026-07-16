@@ -81,6 +81,7 @@
 
 - 目标与配方：`TideRepairRecipeModel` 唯一拥有维修目标枚举、海难首件六路映射、分阶段材料需求和住所/船施工位归属；不读取场景、输入、潮位或库存
 - 工序节拍：`TideRepairWorkPhaseModel`，统一为检查 -> 清理 -> 试装 -> 固定 -> 密封
+- 施工会话：`TideRepairWorkController` 唯一拥有当前目标、连续进度、阶段、暂停和已提交状态；`Advance` 只完成现实工时，材料守恒与世界 owner 成功提交后才允许 `Complete`
 - 船骸材料选择：`TideSalvageMaterialModel`，最终固定时才选择能满足需求的最少原物组合
 - 实物归属：轻件由 `TideBarrenIslandController.TryIntegrateStagedPart` 管理，重型弯肋由 `TideHeavyWreckPieceOwnershipModel` 管理
 - 首件材料工位：`TideRepairRecipeModel.GetArrivalRepairTarget` 把木板映射到地基/船壳、帆布映射到收纳网/船帆；铆接板投住所时必须搬到裂蓄水池，`ApplyCisternPlatePatch` 同帧提交漏率与唯一补片，投船时先完成纯金属舱盖/排水口，第二阶段才需要木框

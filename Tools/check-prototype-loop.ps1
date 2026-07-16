@@ -30,6 +30,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideWreckDismantleModel.cs",
     "Assets/Scripts/StiltHouse/TideRainCisternModel.cs",
     "Assets/Scripts/StiltHouse/TideRepairWorkPhaseModel.cs",
+    "Assets/Scripts/StiltHouse/TideRepairWorkController.cs",
     "Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs",
     "Assets/Scripts/StiltHouse/TideSalvageMaterialModel.cs",
     "Assets/Scripts/StiltHouse/TideHeavyWreckTidalLiftModel.cs",
@@ -65,6 +66,7 @@ foreach ($file in $required) {
 $controller = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
 $editorDiagnostics = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs"
 $repairRecipe = Read-ProjectText "Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs"
+$repairWork = Read-ProjectText "Assets/Scripts/StiltHouse/TideRepairWorkController.cs"
 $barrenIsland = Read-ProjectText "Assets/Scripts/StiltHouse/TideBarrenIslandController.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
 Test-Gate ($controller.Contains("TickDismantleNearestPart") -and
@@ -80,6 +82,12 @@ Test-Gate ($controller.Contains("TideRepairRecipeModel.GetMaterialNeeds") -and
     $controller.Contains("TideRepairRecipeModel.GetStagingDestination")) "runtime controller consumes the canonical repair recipe model"
 Test-Gate ($repairRecipe.Contains("GetArrivalRepairTarget") -and
     $repairRecipe.Contains("GetMaterialNeeds")) "repair targets, first salvage routes, and material needs share one pure model"
+Test-Gate ($controller.Contains("TideRepairWorkController repairWork") -and
+    $controller.Contains("repairWork.Advance") -and
+    $controller.Contains("repairWork.Complete")) "repair session has one runtime state owner"
+Test-Gate ($repairWork.Contains("public void Begin") -and
+    $repairWork.Contains("public bool Advance") -and
+    $repairWork.Contains("public void Complete")) "repair runtime owns begin, pause, progress, and commit transitions"
 Test-Gate ($barrenIsland.Contains("CisternWaterSurface") -and
     $barrenIsland.Contains("CisternSaltLine") -and
     $barrenIsland.Contains("CisternLeakStream")) "cistern current water, historical salt, and active leak stay separate"
@@ -106,6 +114,7 @@ Test-Gate ($controller.Contains("wrackLine.TrySettle")) "missed tide batches can
 $coreProbe = Read-ProjectText "Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 Test-Gate ($coreProbe.Contains("ProbeForecastSnapshot")) "core gate covers forecast snapshot lifetime"
 Test-Gate ($coreProbe.Contains("ProbeWreckDismantle")) "core gate covers persistent work, footing, wave load, and part-specific durations"
+Test-Gate ($coreProbe.Contains("ProbeRepairWorkSession")) "core gate covers repair pause, retarget, and commit semantics"
 Test-Gate ($coreProbe.Contains("ProbeNetEncounter")) "core gate rejects preload, overtopping, stale contact, and skipped windows"
 Test-Gate ($coreProbe.Contains("ProbeWrackDeposit")) "core gate covers ebb deposit and refloat lifecycle"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"

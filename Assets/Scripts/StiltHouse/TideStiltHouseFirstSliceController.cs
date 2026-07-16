@@ -661,11 +661,32 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     private bool routingWorkActive;
     private float routingWorkDirection;
     private bool routingDecisionLocked;
-    private bool repairChoiceApplied;
-    private RepairChoice pendingRepairChoice = RepairChoice.None;
-    private int repairWorkStep;
-    private float repairWorkProgress;
-    private bool repairWorkActive;
+    private readonly TideRepairWorkController repairWork = new TideRepairWorkController();
+    private bool repairChoiceApplied
+    {
+        get => repairWork.ChoiceApplied;
+        set => repairWork.ChoiceApplied = value;
+    }
+    private RepairChoice pendingRepairChoice
+    {
+        get => repairWork.PendingChoice;
+        set => repairWork.PendingChoice = value;
+    }
+    private int repairWorkStep
+    {
+        get => repairWork.Step;
+        set => repairWork.Step = value;
+    }
+    private float repairWorkProgress
+    {
+        get => repairWork.Progress01;
+        set => repairWork.Progress01 = value;
+    }
+    private bool repairWorkActive
+    {
+        get => repairWork.Active;
+        set => repairWork.Active = value;
+    }
     private float harvestCarryTransition01;
     private float harvestPlacementTransition01;
     private Vector2 harvestCarryStartPosition;
@@ -1353,11 +1374,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         dryFuelBundles = StartingDryFuelBundles;
         waterConsumedSinceLastRest = 0f;
         lastRestWaterShortfallLiters = 0f;
-        repairChoiceApplied = false;
-        pendingRepairChoice = RepairChoice.None;
-        repairWorkStep = 0;
-        repairWorkProgress = 0f;
-        repairWorkActive = false;
+        repairWork.Reset();
         harvestCarryTransition01 = 0f;
         harvestPlacementTransition01 = 0f;
         harvestCarryStartPosition = Vector2.zero;
@@ -2209,7 +2226,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         // future callers from consuming the same physical materials twice.
         if (repairChoiceApplied)
         {
-            repairWorkActive = false;
+            repairWork.Pause();
             repairWorkProgress = 1f;
             return false;
         }
@@ -2217,7 +2234,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         RepairChoice choice;
         if (!TryGetClosestRepairChoice(out choice))
         {
-            repairWorkActive = false;
+            repairWork.Pause();
             if (IsPlayerNearRestPoint())
             {
                 return false;
@@ -2233,7 +2250,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
         if (!CanStartRepairAtCurrentTime(choice))
         {
-            repairWorkActive = false;
+            repairWork.Pause();
             if (pressedThisFrame)
             {
                 lastActionHint = $"夜里无法安全开始{GetRepairChoiceName(choice)}：看不清受力点，也容易把工具掉进海里。已经开工的外修可以继续；屋面、内室和灶台可在屋内处理。";
@@ -2246,7 +2263,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         bool hasMaterials = HasRepairMaterials(choice, out missingMaterials);
         if (!hasMaterials && choice == RepairChoice.Bed && IsPlayerNearRestPoint())
         {
-            repairWorkActive = false;
+            repairWork.Pause();
             return false;
         }
 
@@ -2254,7 +2271,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             harvestPlacedRepairChoice != RepairChoice.None &&
             harvestPlacedRepairChoice != choice)
         {
-            repairWorkActive = false;
+            repairWork.Pause();
             if (pressedThisFrame)
             {
                 lastActionHint = $"这束材料还实际放在{GetRepairChoiceName(harvestPlacedRepairChoice)}旁，不能隔空跳到{GetRepairChoiceName(choice)}。先回原处完成这项修补。";
@@ -2270,10 +2287,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 return true;
             }
 
-            pendingRepairChoice = choice;
-            repairWorkProgress = 0f;
-            repairWorkStep = (int)TideRepairWorkPhase.Inspect;
-            repairWorkActive = false;
+            repairWork.Begin(choice);
             if (!currentHarvestBanked && currentHarvest != HarvestKind.None)
             {
                 harvestPhysicalState = HarvestPhysicalState.PlacedAtWork;
@@ -2290,7 +2304,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
         if (pendingRepairChoice != choice)
         {
-            repairWorkActive = false;
+            repairWork.Pause();
             return pressedThisFrame;
         }
 
@@ -2301,38 +2315,33 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 int pausedPercent = Mathf.RoundToInt(repairWorkProgress * 100f);
                 lastActionHint = $"{GetRepairChoiceName(choice)}停在 {pausedPercent}%；材料和部件都留在原位，靠近后继续按住 F。";
             }
-            repairWorkActive = false;
+            repairWork.Pause();
             return false;
         }
 
         if (!hasMaterials)
         {
-            repairWorkActive = false;
+            repairWork.Pause();
             lastActionHint = $"{GetRepairChoiceName(choice)}缺料：{missingMaterials}。现有 {GetMaterialStockText()}；可回床边休息，不会被这一项卡住。";
             return true;
         }
 
-        repairWorkActive = true;
-        repairWorkProgress = Mathf.Clamp01(repairWorkProgress + deltaTime / GetRepairWorkDuration(choice));
-        repairWorkStep = (int)TideRepairWorkPhaseModel.Evaluate(repairWorkProgress);
+        bool workFinished = repairWork.Advance(deltaTime, GetRepairWorkDuration(choice));
         int percent = Mathf.RoundToInt(repairWorkProgress * 100f);
         lastActionHint = $"{GetRepairChoiceName(choice)} {percent}%：{GetRepairWorkInstruction(choice, repairWorkStep)}";
-        if (repairWorkProgress < 0.999f)
+        if (!workFinished)
         {
             return true;
         }
 
         if (!TryConsumeRepairMaterials(choice, out missingMaterials))
         {
-            repairWorkActive = false;
+            repairWork.Pause();
             lastActionHint = $"刚要固定时发现材料不足：{missingMaterials}。进度保留，补足后继续。";
             return true;
         }
 
-        repairWorkActive = false;
-        repairWorkStep = (int)TideRepairWorkPhase.Seal;
-        repairWorkProgress = 1f;
-        repairChoiceApplied = true;
+        repairWork.Complete();
         harvestPhysicalState = currentHarvestBanked
             ? HarvestPhysicalState.Stored
             : HarvestPhysicalState.None;
@@ -2750,10 +2759,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         harvestCarryTransition01 = 0f;
         harvestPlacementTransition01 = 0f;
         harvestPlacedRepairChoice = RepairChoice.None;
-        repairChoiceApplied = false;
-        pendingRepairChoice = RepairChoice.None;
-        repairWorkProgress = 0f;
-        repairWorkActive = false;
+        repairWork.Reset();
         state = SliceState.RepairMoment;
         stateTimer = 0f;
         lastActionHint = $"你从退潮后的岩缝拾起一件{GetHarvestName()}。它只是漏过网口的同一批实物，数量少，但仍可带回储物架或施工位。";
@@ -6970,7 +6976,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         playerCurrentDriftVelocity = 0f;
         netRigActionHeld = false;
         netDepthAdjustmentActive = false;
-        repairWorkActive = false;
+        repairWork.Pause();
         tidePrepWorkActive = false;
         routingWorkActive = false;
         sailingBailing = false;
@@ -7217,10 +7223,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         netDepthAdjustmentActive = false;
         netDepthAdjustmentDirection = 0f;
         netSecuredEarly = false;
-        pendingRepairChoice = RepairChoice.None;
-        repairWorkStep = 0;
-        repairWorkProgress = 0f;
-        repairWorkActive = false;
+        repairWork.Reset(repairChoiceApplied);
 
         sailTripActive = false;
         sailingWaterIngress01 = 0f;
@@ -8047,11 +8050,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         editorNetHaulPreviewActive = false;
         // A dry, untouched net has nothing to spend. Mark the repair choice as
         // resolved so the player can simply put it away and sleep into the next tide.
-        repairChoiceApplied = !hadHarvest;
-        pendingRepairChoice = RepairChoice.None;
-        repairWorkStep = 0;
-        repairWorkProgress = 0f;
-        repairWorkActive = false;
+        repairWork.Reset(!hadHarvest);
         // 夜间准备只服务一张网。潮获落袋后工具需要重新整理，避免一次选择永久生效。
         if (HasActiveTidePrep())
         {
@@ -8921,11 +8920,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         shelterResolvedStressThisTide = 0;
         shelterBreachThisTide = false;
         shelterImpactTimer = 0f;
-        repairChoiceApplied = false;
-        pendingRepairChoice = RepairChoice.None;
-        repairWorkStep = 0;
-        repairWorkProgress = 0f;
-        repairWorkActive = false;
+        repairWork.Reset();
         string morningPrepText = HasPreparedTidePrep()
             ? $"昨夜备好的{GetPrepChoiceName(selectedPrepChoice)}还在手边；{GetPrepEffectText(selectedPrepChoice)}"
             : "昨夜没有额外准备，这一潮只靠网深和现场判断。";
