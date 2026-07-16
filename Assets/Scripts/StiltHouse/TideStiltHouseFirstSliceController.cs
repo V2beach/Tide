@@ -10160,6 +10160,13 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         heavyWreckSalvage.UpdatePresentation(
             true,
             GetPlayerStandingFeetY(WalkLane.TideFlat),
+            playerPosition,
+            new Vector2(
+                TideBarrenIslandController.ShelterDeliveryX,
+                GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.02f),
+            new Vector2(
+                EscapeBoatStagingX,
+                GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.02f),
             ocean,
             0f);
         return heavyWreckSalvage.RunEditorIntegrationProbe();
@@ -12959,6 +12966,14 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private bool TryStartExteriorLaneTransition(bool wantsUp, bool wantsDown)
     {
+        // A full curved hull rib is dragged along the ground, not carried upright.
+        // Keeping it on the flat work lane prevents a long sprite from clipping through
+        // the gangway while also making the transport cost physically legible.
+        if (heavyWreckSalvage != null && heavyWreckSalvage.IsCarryingPiece)
+        {
+            return false;
+        }
+
         const float stairUseDistance = 0.52f;
         if (wantsDown &&
             playerLane == WalkLane.Deck &&
@@ -12981,7 +12996,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void TickPlayerHorizontalLocomotion(float inputDirection, float deltaTime)
     {
-        float maxSpeed = playerMoveSpeed * (playerSwimming ? 0.58f : 1f);
+        float heavyDragFactor = heavyWreckSalvage != null && heavyWreckSalvage.IsCarryingPiece
+            ? 0.48f
+            : 1f;
+        float maxSpeed = playerMoveSpeed * (playerSwimming ? 0.58f : 1f) * heavyDragFactor;
         float targetVelocity = inputDirection * maxSpeed;
         bool reversing = Mathf.Abs(inputDirection) > 0.01f &&
             Mathf.Abs(playerHorizontalVelocity) > 0.05f &&
@@ -17649,9 +17667,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             foodNeed);
         TideMaterialBundle secured = GetSecuredMaterialBundle();
         TideIslandSalvageDestination stagingDestination = GetStagingDestinationForRepair(choice);
-        int stagedMask = barrenIsland != null
-            ? barrenIsland.GetStagedPartMask(stagingDestination)
-            : 0;
+        int stagedMask = GetRepairStagedPartMask(choice, stagingDestination);
         int selectedMask = TideSalvageMaterialModel.SelectMinimumParts(stagedMask, secured, needs);
         if (selectedMask < 0 || !TryIntegrateSelectedSalvageParts(selectedMask, stagingDestination))
         {
@@ -17711,9 +17727,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             metalNeed,
             foodNeed);
         TideIslandSalvageDestination stagingDestination = GetStagingDestinationForRepair(choice);
-        int stagedMask = barrenIsland != null
-            ? barrenIsland.GetStagedPartMask(stagingDestination)
-            : 0;
+        int stagedMask = GetRepairStagedPartMask(choice, stagingDestination);
         bool available = TideSalvageMaterialModel.SelectMinimumParts(
             stagedMask,
             availableMaterials,
@@ -17739,6 +17753,25 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             : TideIslandSalvageDestination.ShelterStaging;
     }
 
+    private int GetRepairStagedPartMask(
+        RepairChoice choice,
+        TideIslandSalvageDestination stagingDestination)
+    {
+        int mask = barrenIsland != null
+            ? barrenIsland.GetStagedPartMask(stagingDestination)
+            : 0;
+
+        // Curved keel ribs remain purpose-shaped objects. They may become a shelter
+        // diagonal brace or a boat hull rib, but cannot silently turn into net cord,
+        // sail cloth, a stove, furniture, or food through the generic material selector.
+        bool acceptsCurvedRib = choice == RepairChoice.Stilt || choice == RepairChoice.Hull;
+        if (acceptsCurvedRib && heavyWreckSalvage != null)
+        {
+            mask |= heavyWreckSalvage.GetStagedPartMask(stagingDestination);
+        }
+        return mask;
+    }
+
     private bool TryIntegrateSelectedSalvageParts(
         int selectedMask,
         TideIslandSalvageDestination stagingDestination)
@@ -17748,8 +17781,13 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             return true;
         }
 
-        if (barrenIsland == null ||
-            (barrenIsland.GetStagedPartMask(stagingDestination) & selectedMask) != selectedMask)
+        int islandMask = barrenIsland != null
+            ? barrenIsland.GetStagedPartMask(stagingDestination)
+            : 0;
+        int heavyMask = heavyWreckSalvage != null
+            ? heavyWreckSalvage.GetStagedPartMask(stagingDestination)
+            : 0;
+        if (((islandMask | heavyMask) & selectedMask) != selectedMask)
         {
             return false;
         }
@@ -17768,6 +17806,28 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             }
 
             TideMaterialBundle materialYield = TideSalvageMaterialModel.GetYield(part);
+            timberStock += materialYield.Timber;
+            ropeStock += materialYield.Rope;
+            clothStock += materialYield.Cloth;
+            metalStock += materialYield.Metal;
+            foodStock += materialYield.Food;
+        }
+
+        for (int pieceIndex = 1; pieceIndex <= 2; pieceIndex++)
+        {
+            TideHeavyWreckPiece piece = (TideHeavyWreckPiece)pieceIndex;
+            if ((selectedMask & TideSalvageMaterialModel.GetHeavyPieceBit(piece)) == 0)
+            {
+                continue;
+            }
+
+            if (heavyWreckSalvage == null ||
+                !heavyWreckSalvage.TryIntegrateStagedPiece(piece, stagingDestination))
+            {
+                return false;
+            }
+
+            TideMaterialBundle materialYield = TideSalvageMaterialModel.GetYield(piece);
             timberStock += materialYield.Timber;
             ropeStock += materialYield.Rope;
             clothStock += materialYield.Cloth;
@@ -19179,6 +19239,13 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             heavyWreckSalvage.UpdatePresentation(
                 viewMode == SliceViewMode.Shelter && state != SliceState.FinalDeparture,
                 GetPlayerStandingFeetY(WalkLane.TideFlat),
+                playerPosition,
+                new Vector2(
+                    TideBarrenIslandController.ShelterDeliveryX,
+                    GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.02f),
+                new Vector2(
+                    EscapeBoatStagingX,
+                    GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.02f),
                 heavyOcean,
                 time);
         }

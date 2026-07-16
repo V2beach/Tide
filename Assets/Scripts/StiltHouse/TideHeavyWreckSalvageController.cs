@@ -19,6 +19,7 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
     private static Sprite lineSprite;
 
     [SerializeField] private TideHeavyWreckState state;
+    [SerializeField] private TideHeavyWreckPieceOwnershipState pieceOwnership;
 
     private Transform visualRoot;
     private SpriteRenderer intactRenderer;
@@ -32,11 +33,15 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
     private SpriteRenderer rightStakeRenderer;
     private float walkSurfaceY;
     private float cachedWaterDepthMeters;
+    private Vector2 cachedPlayerPosition;
+    private Vector2 cachedShelterStagingAnchor;
+    private Vector2 cachedBoatStagingAnchor;
     private bool reelHeldThisFrame;
     private bool workHeldThisFrame;
 
     public TideHeavyWreckState State => state;
     public float SampleWorldX => Mathf.Lerp(StartWorldX, RecoveryWorldX, state.TowProgress01) + state.DriftMeters;
+    public bool IsCarryingPiece => pieceOwnership.CarriedPiece != TideHeavyWreckPiece.None;
 
     private void OnEnable()
     {
@@ -51,6 +56,7 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
     public void ResetFeature()
     {
         state = TideHeavyWreckTidalLiftModel.CreateInitial();
+        pieceOwnership = TideHeavyWreckPieceOwnershipModel.CreateUnavailable();
         cachedWaterDepthMeters = 0f;
         reelHeldThisFrame = false;
         workHeldThisFrame = false;
@@ -73,10 +79,16 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
             signedAstronomicalCurrentMetersPerSecond,
             ocean.HorizontalVelocity,
             reelHeldThisFrame);
+        TideHeavyWreckPhase phaseBeforeWork = state.Phase;
         state = TideHeavyWreckTidalLiftModel.AdvanceWork(
             state,
             deltaSeconds,
             workHeldThisFrame);
+        if (phaseBeforeWork != TideHeavyWreckPhase.Separated &&
+            state.Phase == TideHeavyWreckPhase.Separated)
+        {
+            pieceOwnership = TideHeavyWreckPieceOwnershipModel.CreateSeparated();
+        }
         reelHeldThisFrame = false;
         workHeldThisFrame = false;
     }
@@ -88,10 +100,13 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
         out string feedback)
     {
         feedback = string.Empty;
-        if (state.Phase == TideHeavyWreckPhase.Lost ||
-            state.Phase == TideHeavyWreckPhase.Separated)
+        if (state.Phase == TideHeavyWreckPhase.Lost)
         {
             return false;
+        }
+        if (state.Phase == TideHeavyWreckPhase.Separated)
+        {
+            return TryHandleSeparatedPieceInteraction(playerPosition, pressed, out feedback);
         }
 
         Vector2 sourceCenter = GetSourceCenter(new TideOceanSample(0f, 0f, 0f, 0f));
@@ -167,11 +182,17 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
     public void UpdatePresentation(
         bool visible,
         float currentWalkSurfaceY,
+        Vector2 playerPosition,
+        Vector2 shelterStagingAnchor,
+        Vector2 boatStagingAnchor,
         TideOceanSample ocean,
         float time)
     {
         EnsureVisuals();
         walkSurfaceY = currentWalkSurfaceY;
+        cachedPlayerPosition = playerPosition;
+        cachedShelterStagingAnchor = shelterStagingAnchor;
+        cachedBoatStagingAnchor = boatStagingAnchor;
         bool physicallyVisible = visible && state.Phase != TideHeavyWreckPhase.Lost;
         UpdateVisibility(physicallyVisible);
         if (!physicallyVisible)
@@ -198,8 +219,8 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
         if (separated)
         {
             SetOwnerPose(remainderRenderer, sourceCenter, TideV85HeavyWreckCatalog.RemainderOffset, rotation);
-            SetOwnerPose(pieceARenderer, sourceCenter, TideV85HeavyWreckCatalog.PieceAOffset, rotation);
-            SetOwnerPose(pieceBRenderer, sourceCenter, TideV85HeavyWreckCatalog.PieceBOffset, rotation);
+            UpdateSeparatedPiecePose(TideHeavyWreckPiece.PieceA, pieceARenderer, sourceCenter);
+            UpdateSeparatedPiecePose(TideHeavyWreckPiece.PieceB, pieceBRenderer, sourceCenter);
         }
 
         UpdateRopes(sourceCenter, rotation, time);
@@ -208,8 +229,28 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
 
     public string GetDebugSummary()
     {
+        string pieceText = state.Phase == TideHeavyWreckPhase.Separated
+            ? $" / A {pieceOwnership.PieceAOwner} / B {pieceOwnership.PieceBOwner}"
+            : string.Empty;
         return $"重物 {state.Phase} / 系缆 {CountBits(state.SecuredPointMask)}/2 / " +
-            $"浮力 {state.Lift01:P0} / 拖运 {state.TowProgress01:P0} / 张力 {state.Tension01:P0}";
+            $"浮力 {state.Lift01:P0} / 拖运 {state.TowProgress01:P0} / 张力 {state.Tension01:P0}{pieceText}";
+    }
+
+    public int GetStagedPartMask(TideIslandSalvageDestination destination)
+    {
+        return TideHeavyWreckPieceOwnershipModel.GetStagedMask(pieceOwnership, destination);
+    }
+
+    public bool TryIntegrateStagedPiece(
+        TideHeavyWreckPiece piece,
+        TideIslandSalvageDestination stagingDestination)
+    {
+        pieceOwnership = TideHeavyWreckPieceOwnershipModel.TryIntegrate(
+            pieceOwnership,
+            piece,
+            stagingDestination,
+            out bool integrated);
+        return integrated;
     }
 
     public string RunEditorIntegrationProbe()
@@ -225,6 +266,139 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
         return catalogReady && renderersReady && exactSourceScale
             ? $"PASS V85五owner/原尺寸{intactRenderer.sprite.bounds.size.x:F2}x{intactRenderer.sprite.bounds.size.y:F2}m"
             : $"FAIL catalog={catalogReady}({catalogReason})/renderers={renderersReady}/scale={exactSourceScale}";
+    }
+
+    private bool TryHandleSeparatedPieceInteraction(
+        Vector2 playerPosition,
+        bool pressed,
+        out string feedback)
+    {
+        feedback = string.Empty;
+        if (!pressed)
+        {
+            return false;
+        }
+
+        if (pieceOwnership.CarriedPiece != TideHeavyWreckPiece.None)
+        {
+            bool nearShelter = Mathf.Abs(playerPosition.x - cachedShelterStagingAnchor.x) <= 0.58f;
+            bool nearBoat = Mathf.Abs(playerPosition.x - cachedBoatStagingAnchor.x) <= 0.58f;
+            if (!nearShelter && !nearBoat)
+            {
+                feedback = "弯肋很长，不能塞进背包。把它拖到屋侧承重施工位，或船边检修位。";
+                return true;
+            }
+
+            TideIslandSalvageDestination destination = nearShelter
+                ? TideIslandSalvageDestination.ShelterStaging
+                : TideIslandSalvageDestination.EscapeBoatStaging;
+            pieceOwnership = TideHeavyWreckPieceOwnershipModel.TryStageCarried(
+                pieceOwnership,
+                destination,
+                out TideHeavyWreckPiece stagedPiece);
+            if (stagedPiece == TideHeavyWreckPiece.None)
+            {
+                return false;
+            }
+
+            feedback = destination == TideIslandSalvageDestination.ShelterStaging
+                ? $"{stagedPiece} 靠在屋侧干燥施工位；最终校正柱脚时才会固定成斜撑。"
+                : $"{stagedPiece} 放到船边检修位；最终校正船壳曲线时才会固定成肋骨。";
+            return true;
+        }
+
+        Vector2 sourceCenter = GetSourceCenter(new TideOceanSample(0f, 0f, 0f, 0f));
+        TideHeavyWreckPiece nearest = TideHeavyWreckPiece.None;
+        float nearestDistance = 0.62f;
+        for (int i = 1; i <= 2; i++)
+        {
+            TideHeavyWreckPiece piece = (TideHeavyWreckPiece)i;
+            if (TideHeavyWreckPieceOwnershipModel.GetOwner(pieceOwnership, piece) !=
+                TideHeavyWreckPieceOwner.Worksite)
+            {
+                continue;
+            }
+
+            float distance = Mathf.Abs(playerPosition.x - GetWorksitePiecePosition(piece, sourceCenter).x);
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = piece;
+            }
+        }
+
+        if (nearest == TideHeavyWreckPiece.None)
+        {
+            return false;
+        }
+
+        pieceOwnership = TideHeavyWreckPieceOwnershipModel.TryPickUp(
+            pieceOwnership,
+            nearest,
+            out bool pickedUp);
+        if (!pickedUp)
+        {
+            return false;
+        }
+
+        feedback = "你没有把整根弯肋举起来，而是让下端贴着岩板拖行；移动会明显变慢。";
+        return true;
+    }
+
+    private void UpdateSeparatedPiecePose(
+        TideHeavyWreckPiece piece,
+        SpriteRenderer renderer,
+        Vector2 sourceCenter)
+    {
+        TideHeavyWreckPieceOwner owner = TideHeavyWreckPieceOwnershipModel.GetOwner(pieceOwnership, piece);
+        bool visible = owner == TideHeavyWreckPieceOwner.Worksite ||
+            owner == TideHeavyWreckPieceOwner.Carried ||
+            owner == TideHeavyWreckPieceOwner.ShelterStaging ||
+            owner == TideHeavyWreckPieceOwner.BoatStaging;
+        renderer.enabled = visible;
+        if (!visible)
+        {
+            return;
+        }
+
+        if (owner == TideHeavyWreckPieceOwner.Worksite)
+        {
+            SetPose(renderer, GetWorksitePiecePosition(piece, sourceCenter), 0f);
+            return;
+        }
+
+        if (owner == TideHeavyWreckPieceOwner.Carried)
+        {
+            float rotation = piece == TideHeavyWreckPiece.PieceA ? -22f : 18f;
+            float xOffset = piece == TideHeavyWreckPiece.PieceA ? -0.38f : 0.36f;
+            SetBottomOnSurface(
+                renderer,
+                cachedPlayerPosition.x + xOffset,
+                walkSurfaceY,
+                rotation);
+            return;
+        }
+
+        Vector2 stagingAnchor = owner == TideHeavyWreckPieceOwner.ShelterStaging
+            ? cachedShelterStagingAnchor
+            : cachedBoatStagingAnchor;
+        float stagedXOffset = piece == TideHeavyWreckPiece.PieceA ? -0.28f : 0.3f;
+        float stagedRotation = piece == TideHeavyWreckPiece.PieceA ? -14f : 12f;
+        SetBottomOnSurface(
+            renderer,
+            stagingAnchor.x + stagedXOffset,
+            stagingAnchor.y,
+            stagedRotation);
+    }
+
+    private static Vector2 GetWorksitePiecePosition(
+        TideHeavyWreckPiece piece,
+        Vector2 sourceCenter)
+    {
+        Vector2 offset = piece == TideHeavyWreckPiece.PieceA
+            ? TideV85HeavyWreckCatalog.PieceAOffset
+            : TideV85HeavyWreckCatalog.PieceBOffset;
+        return sourceCenter + offset;
     }
 
     private void EnsureVisuals()
@@ -396,6 +570,42 @@ public sealed class TideHeavyWreckSalvageController : MonoBehaviour
     {
         Vector2 rotatedOffset = Quaternion.Euler(0f, 0f, rotationDegrees) * offset;
         SetPose(renderer, sourceCenter + rotatedOffset, rotationDegrees);
+    }
+
+    private static void SetBottomOnSurface(
+        SpriteRenderer renderer,
+        float desiredPivotX,
+        float surfaceY,
+        float rotationDegrees)
+    {
+        if (renderer == null || renderer.sprite == null)
+        {
+            return;
+        }
+
+        // The V85 pieces keep their original transparent canvas and pivot so they can
+        // reconstruct the source image exactly. Derive the rotated lower bound from the
+        // sprite bounds instead of tuning a visual-only Y offset; the visible wood then
+        // rests on the same walk surface used by locomotion and collision.
+        Bounds bounds = renderer.sprite.bounds;
+        Quaternion rotation = Quaternion.Euler(0f, 0f, rotationDegrees);
+        Vector2[] corners =
+        {
+            new Vector2(bounds.min.x, bounds.min.y),
+            new Vector2(bounds.min.x, bounds.max.y),
+            new Vector2(bounds.max.x, bounds.min.y),
+            new Vector2(bounds.max.x, bounds.max.y)
+        };
+        float rotatedMinY = float.PositiveInfinity;
+        for (int i = 0; i < corners.Length; i++)
+        {
+            Vector2 rotatedCorner = rotation * corners[i];
+            rotatedMinY = Mathf.Min(rotatedMinY, rotatedCorner.y);
+        }
+
+        renderer.transform.position = new Vector3(desiredPivotX, surfaceY - rotatedMinY, 0f);
+        renderer.transform.rotation = rotation;
+        renderer.transform.localScale = Vector3.one;
     }
 
     private static void SetSegment(

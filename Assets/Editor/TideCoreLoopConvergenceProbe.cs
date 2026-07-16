@@ -231,7 +231,15 @@ public static class TideCoreLoopConvergenceProbe
             cabinNeeds);
         Require(plateWithStoredWood == TideSalvageMaterialModel.RivetedPlateBit,
             "已有木料时铆接板仍不能进入船舱维修");
-        return "原物最终固定=最少组合/库存足不误吞/铆板不生木";
+
+        int curvedRibSelection = TideSalvageMaterialModel.SelectMinimumParts(
+            TideSalvageMaterialModel.HeavyKeelRibPieceABit |
+            TideSalvageMaterialModel.HeavyKeelRibPieceBBit,
+            new TideMaterialBundle(),
+            hullNeeds);
+        Require(curvedRibSelection == TideSalvageMaterialModel.HeavyKeelRibPieceABit,
+            "成形弯肋不能作为一处柱脚斜撑或船体肋骨的最小原物提交");
+        return "原物最终固定=最少组合/库存足不误吞/铆板不生木/弯肋保形";
     }
 
     private static string ProbeRepairWorkPhases()
@@ -306,7 +314,38 @@ public static class TideCoreLoopConvergenceProbe
             slackCurrent, TideHeavyWreckTidalLiftModel.SeparateSeconds + 0.1f, true);
         Require(separating && slackCurrent.Phase == TideHeavyWreckPhase.Separated,
             "显缝后没有原子切换为三件拆解 owner");
-        return $"借潮=双系>浮起>平流拖{peakCurrent.TowProgress01:P0}/{slackCurrent.TowProgress01:P0}>退潮落架>可见拆解";
+
+        TideHeavyWreckPieceOwnershipState pieces =
+            TideHeavyWreckPieceOwnershipModel.CreateSeparated();
+        pieces = TideHeavyWreckPieceOwnershipModel.TryPickUp(
+            pieces,
+            TideHeavyWreckPiece.PieceA,
+            out bool pickedA);
+        Require(pickedA && pieces.CarriedPiece == TideHeavyWreckPiece.PieceA &&
+            pieces.PieceBOwner == TideHeavyWreckPieceOwner.Worksite,
+            "拖走左弯肋时右弯肋没有继续留在原作业位");
+        pieces = TideHeavyWreckPieceOwnershipModel.TryStageCarried(
+            pieces,
+            TideIslandSalvageDestination.ShelterStaging,
+            out TideHeavyWreckPiece stagedA);
+        Require(stagedA == TideHeavyWreckPiece.PieceA &&
+            TideHeavyWreckPieceOwnershipModel.GetStagedMask(
+                pieces,
+                TideIslandSalvageDestination.ShelterStaging) ==
+            TideSalvageMaterialModel.HeavyKeelRibPieceABit,
+            "左弯肋没有从拖行 owner 转移到住所施工位");
+        pieces = TideHeavyWreckPieceOwnershipModel.TryIntegrate(
+            pieces,
+            TideHeavyWreckPiece.PieceA,
+            TideIslandSalvageDestination.ShelterStaging,
+            out bool integratedA);
+        Require(integratedA &&
+            pieces.PieceAOwner == TideHeavyWreckPieceOwner.IntegratedIntoShelter &&
+            TideHeavyWreckPieceOwnershipModel.GetStagedMask(
+                pieces,
+                TideIslandSalvageDestination.ShelterStaging) == 0,
+            "最终固定后左弯肋仍重复留在施工位");
+        return $"借潮=双系>浮起>平流拖{peakCurrent.TowProgress01:P0}/{slackCurrent.TowProgress01:P0}>退潮落架>拆件拖运>最终固定";
     }
 
     private static string ProbeMooringRope()

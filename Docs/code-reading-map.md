@@ -30,11 +30,12 @@
 ### 借潮牵引重物
 
 - 纯规则：`TideHeavyWreckTidalLiftModel`
+- 拆件 owner 账本：`TideHeavyWreckPieceOwnershipModel`
 - 场景 owner：`TideHeavyWreckSalvageController`
 - 资源索引：`TideV85HeavyWreckCatalog`，首轮只引用外露龙骨肋的完整态、显缝层和三件拆解 owner
 - 编排入口：`TryHandleBarrenIslandInteraction`、`TickBarrenIslandNaturalState`
-- 状态：低潮双系 -> 涨潮浮起 -> 平流收绳 -> 架边待退潮 -> 落底显缝 -> 可见拆解
-- 关键约束：小吊机不能整块起吊；强流不是更快，而是更高张力；拆件到分类位前不得生成 V59 或库存数字
+- 状态：低潮双系 -> 涨潮浮起 -> 平流收绳 -> 架边待退潮 -> 落底显缝 -> 可见拆解 -> 逐根拖行 -> 施工位 -> 最终结构
+- 关键约束：小吊机不能整块起吊；强流不是更快，而是更高张力；长肋贴地拖行、不能上梯；屋边只能成为斜撑、船边只能成为船体肋骨，最终固定前不得生成库存数字
 
 ### 短航
 
@@ -56,7 +57,7 @@
 
 - 工序节拍：`TideRepairWorkPhaseModel`，统一为检查 -> 清理 -> 试装 -> 固定 -> 密封
 - 船骸材料选择：`TideSalvageMaterialModel`，最终固定时才选择能满足需求的最少原物组合
-- 实物归属：`TideBarrenIslandController.TryIntegrateStagedPart`
+- 实物归属：轻件由 `TideBarrenIslandController.TryIntegrateStagedPart` 管理，重型弯肋由 `TideHeavyWreckPieceOwnershipModel` 管理
 - 表现投影：`TideV52BoatRepairPresentationModel`、`TideV69HouseRepairPresentationModel`
 - 正式 Scene 门：`TideRepairSceneConvergenceProbe`
 

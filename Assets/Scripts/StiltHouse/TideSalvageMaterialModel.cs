@@ -47,6 +47,8 @@ public static class TideSalvageMaterialModel
     public const int HullPlankBit = 1 << 0;
     public const int SailclothBit = 1 << 1;
     public const int RivetedPlateBit = 1 << 2;
+    public const int HeavyKeelRibPieceABit = 1 << 3;
+    public const int HeavyKeelRibPieceBBit = 1 << 4;
 
     public static int GetPartBit(TideIslandSalvagePart part)
     {
@@ -68,6 +70,24 @@ public static class TideSalvageMaterialModel
                     : new TideMaterialBundle();
     }
 
+    public static int GetHeavyPieceBit(TideHeavyWreckPiece piece)
+    {
+        return piece == TideHeavyWreckPiece.PieceA
+            ? HeavyKeelRibPieceABit
+            : piece == TideHeavyWreckPiece.PieceB
+                ? HeavyKeelRibPieceBBit
+                : 0;
+    }
+
+    public static TideMaterialBundle GetYield(TideHeavyWreckPiece piece)
+    {
+        // 两根弯肋都保留成形木、铜钉和旧绑绳，正好可作为一处柱脚斜撑或
+        // 一段船体肋骨；用途由摆放位置决定，不能拆去补网或室内家具。
+        return piece == TideHeavyWreckPiece.PieceA || piece == TideHeavyWreckPiece.PieceB
+            ? new TideMaterialBundle(2, 1, 0, 0, 0)
+            : new TideMaterialBundle();
+    }
+
     /// <summary>
     /// 返回应在最终固定时消耗的部件掩码。-1 表示即使使用所有可见暂存物也不足；
     /// 0 表示现有库存/手持收获已经满足，不应误吞任何船骸原物。
@@ -85,7 +105,7 @@ public static class TideSalvageMaterialModel
         int bestMask = -1;
         int bestPartCount = int.MaxValue;
         int bestWaste = int.MaxValue;
-        for (int candidateMask = 1; candidateMask < 8; candidateMask++)
+        for (int candidateMask = 1; candidateMask < 32; candidateMask++)
         {
             if ((candidateMask & availablePartMask) != candidateMask)
             {
@@ -131,6 +151,14 @@ public static class TideSalvageMaterialModel
         if ((partMask & RivetedPlateBit) != 0)
         {
             result += GetYield(TideIslandSalvagePart.RivetedPlate);
+        }
+        if ((partMask & HeavyKeelRibPieceABit) != 0)
+        {
+            result += GetYield(TideHeavyWreckPiece.PieceA);
+        }
+        if ((partMask & HeavyKeelRibPieceBBit) != 0)
+        {
+            result += GetYield(TideHeavyWreckPiece.PieceB);
         }
         return result;
     }
