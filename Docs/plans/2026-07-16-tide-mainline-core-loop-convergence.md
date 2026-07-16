@@ -11,7 +11,7 @@
 1. 迁移 C 盘工作树全部项目源文件到 D 盘主仓库，并核对目录差异和根文件哈希。
 2. 删除 C 盘工作树，只保留 `main` 一个工作树。
 3. 以 Scene/Prefab/Resources/Catalog 的 GUID 依赖闭包保留当前运行资源。
-4. 额外保留 V72-V86 中已批准但尚未接入的 `Runtime/Balanced`、运行契约和审计；删除 High、QA、GIF、历史风格候选和一次性中间图。
+4. 只保留 Scene、Prefab、Resources、Catalog 或代码直接引用的运行闭包；尚未接入的候选包留在资源会话工作目录，不提前进入 Git。
 5. 删除本地截图、旧原型视觉证据、一次性 Python 生成器与重复设计文档。
 6. 二进制运行资源走 Git LFS；Library、Temp、Logs、UserSettings、自动截图和资源 QA 输出不入库。
 

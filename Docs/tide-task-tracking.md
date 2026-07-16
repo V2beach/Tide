@@ -11,6 +11,8 @@
   - [x] 修正 Git LFS/ignore：V59 `Runtime/High` 仍可跟踪，QA/GIF/UHD 不入库
   - [x] Windows/macOS 同步检查从逐文件 Git 进程收敛为批量检查；Windows 约 `6.4s`
   - [x] 审核暂存清单、850 个 LFS 指针和最大对象；核心提交 `5f99071` 已推送 `origin/main`
+  - [x] 2026-07-17 再按 GUID 闭包删除 12 个零运行引用候选包与 V28 回退副本，共 `648` 文件、约 `55.22MiB`；候选资源以后在接入决策前不进入 Git
+  - [x] 删除指向已不存在 V5/V8 的两个编辑器菜单脚本，以及被任务树/合同覆盖的旧项目摘要和过期资源审计
 
 - 贫瘠外海岩礁岛
   - [x] 新增左侧连续区域；人物开场直接站在可见岩板，不再从虚空补位
@@ -109,4 +111,4 @@
 
 - 连续天文潮、相邻高潮不等高、实际米制潮流、潮源批次守恒、网深/张力/收网、短航打捞与船体维修已有纯模型和回归。
 - V34 外景、V35 室内、V41 接触动作、V42 生存动作、V39 船体、V43 海况、V44 瞭望、V59 潮带实物为当前运行基线；详见运行资源清册。
-- 当前聚焦门：Windows 静态、macOS shell 静态、跨平台同步 `2599` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确静态项数以脚本当次输出为准。
+- 当前聚焦门：Windows 静态、macOS shell 静态、跨平台同步 `1943` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确静态项数以脚本当次输出为准。
