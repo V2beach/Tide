@@ -44,6 +44,8 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideStormRescueController.cs",
     "Assets/Scripts/StiltHouse/TideForecastTideNotchController.cs",
     "Assets/Scripts/StiltHouse/TideForecastSnapshotModel.cs",
+    "Assets/Scripts/StiltHouse/TideWrackDepositModel.cs",
+    "Assets/Scripts/StiltHouse/TideWrackLineController.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
     "Assets/Editor/TideRepairSceneConvergenceProbe.cs",
     "Assets/Editor/TideVisualSceneConvergenceProbe.cs",
@@ -75,8 +77,11 @@ Test-Gate ($controller.Contains("RunEditorStormManifestOwnershipProbe")) "storm 
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"
 Test-Gate ($controller.Contains("forecastTideNotches.UpdatePresentation")) "forecast is projected onto physical stilt notches"
 Test-Gate ($controller.Contains("TideForecastSnapshotModel.Capture")) "forecast observations are immutable astronomical-cycle snapshots"
+Test-Gate ($controller.Contains("tideDriftFieldCycleOrdinal")) "drift batches use astronomical cycles instead of story rounds"
+Test-Gate ($controller.Contains("wrackLine.TrySettle")) "missed tide batches can leave a physical ebb deposit"
 $coreProbe = Read-ProjectText "Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 Test-Gate ($coreProbe.Contains("ProbeForecastSnapshot")) "core gate covers forecast snapshot lifetime"
+Test-Gate ($coreProbe.Contains("ProbeWrackDeposit")) "core gate covers ebb deposit and refloat lifecycle"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 Test-Gate ($visualProbe.Contains("RunEditorBoatPassengerScaleProbe")) "visual gate covers complete boat passenger"
 Test-Gate ($visualProbe.Contains("RunEditorWalkSurfacePathContinuityProbe")) "visual gate covers authored walk surfaces"
@@ -86,6 +91,7 @@ Test-Gate ($visualProbe.Contains("RunEditorStormManifestOwnershipProbe")) "visua
 Test-Gate ($visualProbe.Contains("RunEditorSailingTideContinuityProbe")) "visual gate covers authoritative sailing tide"
 Test-Gate ($visualProbe.Contains("RunEditorFirstSailingTideDecisionProbe")) "visual gate covers the first sailing tide decision"
 Test-Gate ($visualProbe.Contains("RunEditorTideForecastAutonomyProbe")) "visual gate covers tide-forecast autonomy and physical geometry"
+Test-Gate ($visualProbe.Contains("RunEditorWrackLineLifecycleProbe")) "visual gate covers the physical wrack-line lifecycle"
 
 $buildSettings = Read-ProjectText "ProjectSettings/EditorBuildSettings.asset"
 Test-Gate ($buildSettings.Contains("Assets/Scenes/Tide_StiltHouse_FirstSlice.unity")) "build settings contain the canonical scene"

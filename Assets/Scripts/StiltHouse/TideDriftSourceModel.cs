@@ -101,20 +101,20 @@ public static class TideDriftSourceModel
     public const float OuterOpenRouteExitTravel01 = 0.84f;
 
     public static TideDriftField BuildField(
-        int tideRound,
+        int astronomicalCycleOrdinal,
         float moonAgeDays,
         float tideStrength01,
         float stormPressure01,
         bool outerWreckRouteKnown)
     {
         TideDriftBatch nearshore = BuildNearshoreBatch(
-            tideRound,
+            astronomicalCycleOrdinal,
             moonAgeDays,
             tideStrength01,
             stormPressure01,
             outerWreckRouteKnown);
         TideDriftBatch wreck = new TideDriftBatch(
-            BuildStableId(tideRound, TideDriftLane.OuterWreckFork, TideDriftMaterial.SaltWood),
+            BuildStableId(astronomicalCycleOrdinal, TideDriftLane.OuterWreckFork, TideDriftMaterial.SaltWood),
             TideDriftMaterial.SaltWood,
             TideDriftProvenance.OuterWreckWrack,
             TideDriftLane.OuterWreckFork,
@@ -125,7 +125,7 @@ public static class TideDriftSourceModel
     }
 
     public static TideDriftBatch BuildNearshoreBatch(
-        int tideRound,
+        int astronomicalCycleOrdinal,
         float moonAgeDays,
         float tideStrength01,
         float stormPressure01,
@@ -139,7 +139,7 @@ public static class TideDriftSourceModel
 
         // 第一潮必须稳定教会“潮滩鱼群进入旧网路”，不能因启动时刻的微小
         // 月龄差或天气插值变成另一份教程。后续来源才由实际海况决定。
-        if (tideRound <= 0)
+        if (astronomicalCycleOrdinal <= 0)
         {
             material = TideDriftMaterial.Fish;
             provenance = TideDriftProvenance.TidalFlatSchool;
@@ -175,7 +175,7 @@ public static class TideDriftSourceModel
         }
 
         return new TideDriftBatch(
-            BuildStableId(tideRound, TideDriftLane.NearshoreMain, material),
+            BuildStableId(astronomicalCycleOrdinal, TideDriftLane.NearshoreMain, material),
             material,
             provenance,
             TideDriftLane.NearshoreMain,
@@ -296,9 +296,12 @@ public static class TideDriftSourceModel
         return travel01 >= OuterOpenRouteExitTravel01 - 0.001f;
     }
 
-    private static int BuildStableId(int tideRound, TideDriftLane lane, TideDriftMaterial material)
+    private static int BuildStableId(
+        int astronomicalCycleOrdinal,
+        TideDriftLane lane,
+        TideDriftMaterial material)
     {
-        int round = Mathf.Max(0, tideRound) + 1;
-        return round * 100 + ((int)lane + 1) * 10 + (int)material + 1;
+        int cycle = Mathf.Max(0, astronomicalCycleOrdinal) + 1;
+        return cycle * 100 + ((int)lane + 1) * 10 + (int)material + 1;
     }
 }

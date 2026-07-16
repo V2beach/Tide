@@ -37,7 +37,79 @@ public static class TideCoreLoopConvergenceProbe
         string storm = ProbeStormRescue();
         string stormRuntime = ProbeStormRescueRuntime();
         string forecast = ProbeForecastSnapshot();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast}";
+        string wrack = ProbeWrackDeposit();
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {wrack}";
+    }
+
+    private static string ProbeWrackDeposit()
+    {
+        const int cycle = 4;
+        const float groundY = -1.98f;
+        TideDriftField field = TideDriftSourceModel.BuildField(
+            cycle,
+            8.2f,
+            0.58f,
+            0.2f,
+            false);
+        TideDriftField sameCycle = TideDriftSourceModel.BuildField(
+            cycle,
+            8.2f,
+            0.58f,
+            0.2f,
+            false);
+        TideDriftField nextCycle = TideDriftSourceModel.BuildField(
+            cycle + 1,
+            8.2f,
+            0.58f,
+            0.2f,
+            false);
+        Require(field.NearshoreBatch.StableId == sameCycle.NearshoreBatch.StableId,
+            "同一天文潮次重建漂流场时批次身份变化");
+        Require(field.NearshoreBatch.StableId != nextCycle.NearshoreBatch.StableId,
+            "跨过真实潮次后仍沿用旧漂流批次");
+
+        TideWrackDepositState captured = TideWrackDepositModel.TrySettle(
+            default,
+            field.NearshoreBatch,
+            cycle,
+            groundY + 0.72f,
+            groundY,
+            TideWrackLineController.SeawardWorldX,
+            TideWrackLineController.InlandWorldX,
+            true,
+            true);
+        Require(!captured.IsPresent, "已经入网的实物又在岸上复制一份");
+
+        TideWrackDepositState stranded = TideWrackDepositModel.TrySettle(
+            default,
+            field.NearshoreBatch,
+            cycle,
+            groundY + 0.72f,
+            groundY,
+            TideWrackLineController.SeawardWorldX,
+            TideWrackLineController.InlandWorldX,
+            false,
+            true);
+        Require(stranded.IsPresent &&
+            stranded.BatchId == field.NearshoreBatch.StableId &&
+            stranded.WorldX <= TideWrackLineController.SeawardWorldX &&
+            stranded.WorldX >= TideWrackLineController.InlandWorldX,
+            "漏过网口的近岸实物没有在可见右岸高潮线搁浅");
+        Require(!TideWrackDepositModel.ShouldRefloat(
+                stranded,
+                cycle,
+                groundY + 0.2f) &&
+            !TideWrackDepositModel.ShouldRefloat(
+                stranded,
+                cycle + 1,
+                groundY - 0.2f),
+            "同潮或尚未淹到岩面的下一潮提前卷走漂积物");
+        Require(TideWrackDepositModel.ShouldRefloat(
+                stranded,
+                cycle + 1,
+                groundY),
+            "下一次够高的潮没有重新卷走漂积物");
+        return $"漂积=天文潮{cycle}->{cycle + 1}/批次{stranded.BatchId}/岸位{stranded.WorldX:F2}m/再浸卷走";
     }
 
     private static string ProbeForecastSnapshot()

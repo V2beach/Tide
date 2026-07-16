@@ -523,7 +523,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     // 主流批次和外海残骸批次各有独立 ID，混装进同一张网时也不能相互覆盖。
     private TideDriftField currentTideDriftField;
     private bool tideDriftFieldInitialized;
-    private int tideDriftFieldRound = -1;
+    private int tideDriftFieldCycleOrdinal = -1;
     private int tideSourceBatchId;
     private int currentHarvestBatchId;
     private int securedPostHarvestBatchId;
@@ -567,6 +567,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private int metalStock;
     private int foodStock;
     private bool currentHarvestBanked;
+    private bool currentHarvestFromWrack;
     private bool hasSalvageBag;
     private int lighthouseClues;
     private bool lighthouseSeen;
@@ -711,6 +712,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TideSailingSalvageController sailingSalvage;
     private TideStormRescueController stormRescue;
     private TideForecastTideNotchController forecastTideNotches;
+    private TideWrackLineController wrackLine;
 
     // 旧的 Scene 预览和几何探针仍使用这些语义名称。实际存储已集中到
     // TideSailingSalvageController；这些属性只是过渡期的单源投影，不保留副本。
@@ -4167,6 +4169,119 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             : $"FAIL：潮源仍可能依赖隐藏开奖、混淆批次身份或按帧率移动。{evidence}";
         ResetSlice();
         return report;
+    }
+
+    public string RunEditorWrackLineLifecycleProbe()
+    {
+        EnsureScene();
+        ResetSlice();
+        float groundY = GetPlayerStandingFeetY(WalkLane.TideFlat);
+
+        InitializeCurrentTideDriftField(true);
+        int firstCycle = tideDriftFieldCycleOrdinal;
+        int firstBatchId = currentTideDriftField.NearshoreBatch.StableId;
+        weatherClockSeconds += Mathf.Max(8f, tideCycleSeconds);
+        tideClockSeconds = Mathf.Repeat(
+            tideClockSeconds + tideCycleSeconds,
+            Mathf.Max(8f, tideCycleSeconds));
+        EnsureCurrentTideDriftField();
+        int secondCycle = tideDriftFieldCycleOrdinal;
+        TideDriftBatch batch = currentTideDriftField.NearshoreBatch;
+        int refreshedCycle = secondCycle;
+        int refreshedBatchId = batch.StableId;
+        bool realCycleRefreshesBatch = secondCycle == firstCycle + 1 &&
+            batch.StableId != firstBatchId;
+
+        // Re-enter the opening tide and let the real tide state machine perform the
+        // ebb transition. This guards the integration point, not only the component API.
+        ResetSlice();
+        groundY = GetPlayerStandingFeetY(WalkLane.TideFlat);
+        state = SliceState.TideRising;
+        netDeployed = false;
+        netSecuredEarly = false;
+        StartCurrentTideDrift();
+        batch = currentTideDriftField.NearshoreBatch;
+        secondCycle = tideDriftFieldCycleOrdinal;
+        incomingHarvestTravel01 = 0.56f;
+        harvestPhysicalState = HarvestPhysicalState.Drifting;
+        wrackLine.ResetFeature();
+        bool capturedDoesNotDuplicate = !wrackLine.TrySettle(
+            batch,
+            secondCycle,
+            groundY + 0.72f,
+            groundY,
+            true,
+            true) &&
+            !wrackLine.HasDeposit;
+        float ebbTargetClock = tideCycleSeconds * 0.92f;
+        float elapsedToEbb = Mathf.Max(0f, ebbTargetClock - tideClockSeconds);
+        AdvanceContinuousWeather(elapsedToEbb);
+        TickNaturalTide(elapsedToEbb);
+        bool naturalEbbSettled = state == SliceState.LowTidePlanning && wrackLine.HasDeposit;
+        wrackLine.UpdatePresentation(true);
+        bool groundedVisual = naturalEbbSettled && wrackLine.IsVisible &&
+            !wrackLine.HasCollider &&
+            Mathf.Abs(wrackLine.VisualCenter.x - wrackLine.Deposit.WorldX) <= 0.01f &&
+            wrackLine.VisualCenter.y > groundY;
+
+        bool sameTideCannotWashIt = !wrackLine.TickNaturalState(
+            secondCycle,
+            groundY + 0.3f) && wrackLine.HasDeposit;
+        bool nextLowWaterKeepsIt = !wrackLine.TickNaturalState(
+            secondCycle + 1,
+            groundY - 0.2f) && wrackLine.HasDeposit;
+        bool nextWetRockRefloatsIt = wrackLine.TickNaturalState(
+            secondCycle + 1,
+            groundY) && !wrackLine.HasDeposit;
+
+        wrackLine.TrySettle(
+            batch,
+            secondCycle + 2,
+            groundY + 0.72f,
+            groundY,
+            false,
+            true);
+        TideWrackDepositState depositBeforePickup = wrackLine.Deposit;
+        playerPosition = new Vector2(
+            depositBeforePickup.WorldX,
+            GetPlayerLaneY(WalkLane.TideFlat));
+        bool pickedUp = wrackLine.TryCollect(
+            new Vector2(playerPosition.x, groundY),
+            groundY - 0.2f,
+            out TideWrackDepositState collected);
+        if (pickedUp)
+        {
+            BeginCarryingWrackDeposit(collected);
+        }
+
+        GetCurrentHarvestMaterialYield(
+            out int timberYield,
+            out int ropeYield,
+            out int clothYield,
+            out int metalYield,
+            out int foodYield);
+        int totalSingleYield = timberYield + ropeYield + clothYield + metalYield + foodYield;
+        bool pickupKeepsOnePhysicalBatch = pickedUp &&
+            !wrackLine.HasDeposit &&
+            currentHarvestBatchId == batch.StableId &&
+            harvestPhysicalState == HarvestPhysicalState.Carried &&
+            currentHarvestFromWrack &&
+            totalSingleYield == 1;
+
+        string evidence =
+            $"潮次/批次={firstCycle}->{refreshedCycle}/{firstBatchId}->{refreshedBatchId}；" +
+            $"岸位={depositBeforePickup.WorldX:F2}/{groundY:F2}；" +
+            $"入网不复制={capturedDoesNotDuplicate}；自然退潮/贴岩={naturalEbbSettled}/{groundedVisual}；" +
+            $"同潮/次潮低水/再浸={sameTideCannotWashIt}/{nextLowWaterKeepsIt}/{nextWetRockRefloatsIt}；" +
+            $"拾取/单件产出={pickupKeepsOnePhysicalBatch}/{totalSingleYield}";
+        bool passed = realCycleRefreshesBatch && capturedDoesNotDuplicate &&
+            naturalEbbSettled && groundedVisual &&
+            sameTideCannotWashIt && nextLowWaterKeepsIt && nextWetRockRefloatsIt &&
+            pickupKeepsOnePhysicalBatch;
+        ResetSlice();
+        return passed
+            ? $"PASS：漂物按真实天文潮次换批；漏网近岸实物退潮贴岩搁浅，再浸才卷走，拾取仍是同一单件。{evidence}"
+            : $"FAIL：漂积物存在故事轮次复用、岸上复制、悬浮、提前消失或拾取增殖。{evidence}";
     }
 
     public string RunEditorTideDriftPhysicalCurrentCouplingProbe()
@@ -11232,7 +11347,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         securedPostVisualPieceCount = 0;
         currentTideDriftField = default;
         tideDriftFieldInitialized = false;
-        tideDriftFieldRound = -1;
+        tideDriftFieldCycleOrdinal = -1;
         tideSourceBatchId = 0;
         currentHarvestBatchId = 0;
         securedPostHarvestBatchId = 0;
@@ -11275,6 +11390,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         metalStock = 0;
         foodStock = 0;
         currentHarvestBanked = false;
+        currentHarvestFromWrack = false;
         hasSalvageBag = false;
         lighthouseClues = 0;
         lighthouseSeen = false;
@@ -11435,6 +11551,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             barrenIsland.ResetIsland();
         }
+        wrackLine?.ResetFeature();
         if (heavyWreckSalvage != null)
         {
             heavyWreckSalvage.ResetFeature();
@@ -12140,6 +12257,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         currentHarvest = HarvestKind.None;
         currentHarvestBatchId = 0;
         currentHarvestBanked = false;
+        currentHarvestFromWrack = false;
         harvestPhysicalState = HarvestPhysicalState.None;
         netLoweringProgress = 0f;
         netHaulProgress = 0f;
@@ -12163,6 +12281,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         currentHarvest = securedPostHarvest;
         currentHarvestBatchId = securedPostHarvestBatchId;
         currentHarvestBanked = false;
+        currentHarvestFromWrack = false;
         netCatchBundleTier = Mathf.Clamp(securedPostBundleTier, 1, 3);
         netCatchVisualPieceCount = Mathf.Clamp(securedPostVisualPieceCount, 1, 3);
         harvestPhysicalState = HarvestPhysicalState.SecuredAtPost;
@@ -12568,7 +12687,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void TickBarrenIslandNaturalState(float deltaTime)
     {
-        if (barrenIsland == null && heavyWreckSalvage == null)
+        if (barrenIsland == null && heavyWreckSalvage == null && wrackLine == null)
         {
             return;
         }
@@ -12599,11 +12718,19 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 heavyOcean,
                 EvaluateNaturalCurrentSpeed(tideClockSeconds));
         }
+
+        if (wrackLine != null)
+        {
+            float localWaterY = GetOceanSample(wrackLine.SampleWorldX).SurfaceY;
+            wrackLine.TickNaturalState(
+                GetAstronomicalCycleOrdinal(weatherClockSeconds),
+                localWaterY);
+        }
     }
 
     private bool TryHandleBarrenIslandInteraction()
     {
-        if ((barrenIsland == null && heavyWreckSalvage == null) ||
+        if ((barrenIsland == null && heavyWreckSalvage == null && wrackLine == null) ||
             viewMode != SliceViewMode.Shelter || playerLane != WalkLane.TideFlat)
         {
             return false;
@@ -12611,6 +12738,19 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         bool interactionPressed = Input.GetKeyDown(KeyCode.F);
         bool interactionHeld = Input.GetKey(KeyCode.F);
+        bool handsFreeForWrack = AreHarvestHandsFree() &&
+            (barrenIsland == null || barrenIsland.CarriedPart == TideIslandSalvagePart.None) &&
+            (heavyWreckSalvage == null || !heavyWreckSalvage.IsCarryingPiece);
+        if (interactionPressed && handsFreeForWrack && wrackLine != null &&
+            wrackLine.TryCollect(
+                new Vector2(playerPosition.x, GetPlayerStandingFeetY(WalkLane.TideFlat)),
+                GetOceanSample(wrackLine.SampleWorldX).SurfaceY,
+                out TideWrackDepositState collectedWrack))
+        {
+            BeginCarryingWrackDeposit(collectedWrack);
+            return true;
+        }
+
         if (heavyWreckSalvage != null &&
             heavyWreckSalvage.TryHandleInteraction(
                 playerPosition,
@@ -12690,6 +12830,30 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private void BeginCarryingWrackDeposit(TideWrackDepositState collected)
+    {
+        currentHarvest = ToHarvestKind(collected.Material);
+        currentHarvestBatchId = collected.BatchId;
+        currentHarvestBanked = false;
+        currentHarvestFromWrack = true;
+        netCatchBundleTier = 1;
+        netCatchVisualPieceCount = 1;
+        harvestPhysicalState = HarvestPhysicalState.Carried;
+        harvestCarryStartPosition = new Vector2(
+            collected.WorldX,
+            collected.GroundY + 0.12f);
+        harvestCarryTransition01 = 0f;
+        harvestPlacementTransition01 = 0f;
+        harvestPlacedRepairChoice = RepairChoice.None;
+        repairChoiceApplied = false;
+        pendingRepairChoice = RepairChoice.None;
+        repairWorkProgress = 0f;
+        repairWorkActive = false;
+        state = SliceState.RepairMoment;
+        stateTimer = 0f;
+        lastActionHint = $"你从退潮后的岩缝拾起一件{GetHarvestName()}。它只是漏过网口的同一批实物，数量少，但仍可带回储物架或施工位。";
     }
 
     private bool HandleStormRescueInteraction()
@@ -16151,6 +16315,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         if (!tideCurrentlyRising && currentWaterY <= lowWaterY + 0.24f)
         {
+            // The tide may leave one real object on the exposed rock only when that
+            // same batch missed the net and has not already exited the nearshore route.
+            // This is a weak fallback and a readable tide trace, not a second reward roll.
+            TrySettleCurrentTideWrack();
+
             if (!netDeployed && !netSecuredEarly)
             {
                 ReleaseNearshoreSaltWoodAfterTide();
@@ -16400,6 +16569,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         netCatchResolved = true;
+        currentHarvestFromWrack = false;
         netPostCatchExposureSeconds = 0f;
         bool catchesExtraSaltWood = extraSaltWoodOwner == ExtraSaltWoodOwner.RoutedToNet &&
             TideDriftSourceModel.IsInsideNetCaptureWindow(outerWreckTravel01);
@@ -17791,14 +17961,15 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private void InitializeCurrentTideDriftField(bool resetTravel)
     {
         bool routeKnown = sailingWreckClueClaimed || lighthouseClues > 0 || routeClueReturnRound >= 0;
+        int astronomicalCycleOrdinal = GetAstronomicalCycleOrdinal(weatherClockSeconds);
         currentTideDriftField = TideDriftSourceModel.BuildField(
-            tideRound,
+            astronomicalCycleOrdinal,
             moonAgeDays,
             tideStrength,
             GetStormPressure01(),
             routeKnown);
         tideDriftFieldInitialized = currentTideDriftField.IsValid;
-        tideDriftFieldRound = tideRound;
+        tideDriftFieldCycleOrdinal = astronomicalCycleOrdinal;
         tideSourceHarvest = ToHarvestKind(currentTideDriftField.NearshoreBatch.Material);
         tideSourceBatchId = currentTideDriftField.NearshoreBatch.StableId;
         if (extraSaltWoodBatchId <= 0)
@@ -17821,10 +17992,36 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void EnsureCurrentTideDriftField()
     {
-        if (!tideDriftFieldInitialized || tideDriftFieldRound != tideRound)
+        int astronomicalCycleOrdinal = GetAstronomicalCycleOrdinal(weatherClockSeconds);
+        if (!tideDriftFieldInitialized ||
+            tideDriftFieldCycleOrdinal != astronomicalCycleOrdinal)
         {
             InitializeCurrentTideDriftField(true);
         }
+    }
+
+    private bool TrySettleCurrentTideWrack()
+    {
+        if (wrackLine == null)
+        {
+            return false;
+        }
+
+        EnsureCurrentTideDriftField();
+        bool captured = netCatchResolved ||
+            currentHarvest != HarvestKind.None ||
+            harvestPhysicalState == HarvestPhysicalState.CaughtInNet ||
+            harvestPhysicalState == HarvestPhysicalState.SecuredAtPost;
+        bool stillNearshore = !primarySourcePassedNearshore &&
+            harvestPhysicalState == HarvestPhysicalState.Drifting &&
+            !TideDriftSourceModel.HasExitedNearshore(incomingHarvestTravel01);
+        return wrackLine.TrySettle(
+            currentTideDriftField.NearshoreBatch,
+            tideDriftFieldCycleOrdinal,
+            highWaterMemory.CurrentCyclePeakY,
+            GetPlayerStandingFeetY(WalkLane.TideFlat),
+            captured,
+            stillNearshore);
     }
 
     private void StartCurrentTideDrift()
@@ -18189,6 +18386,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             extraSaltWoodBundledWithNetHarvest = false;
             SetExtraSaltWoodOwner(ExtraSaltWoodOwner.Claimed);
         }
+        currentHarvestFromWrack = false;
     }
 
     private void GetCurrentHarvestMaterialYield(
@@ -18207,14 +18405,16 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         bool includesExtraSaltWood = IsExtraSaltWoodInCurrentHarvest();
         bool saltWoodIsTheWholeCargo = includesExtraSaltWood &&
             !extraSaltWoodBundledWithNetHarvest;
-        int tier = Mathf.Clamp(
-            netCatchBundleTier - (extraSaltWoodBundledWithNetHarvest && includesExtraSaltWood ? 1 : 0),
-            1,
-            3);
+        int tier = currentHarvestFromWrack
+            ? 0
+            : Mathf.Clamp(
+                netCatchBundleTier - (extraSaltWoodBundledWithNetHarvest && includesExtraSaltWood ? 1 : 0),
+                1,
+                3);
         if (!saltWoodIsTheWholeCargo && currentHarvest == HarvestKind.Wood)
         {
             timberYield = 1 + tier;
-            ropeYield = 1;
+            ropeYield = tier > 0 ? 1 : 0;
         }
         else if (!saltWoodIsTheWholeCargo && currentHarvest == HarvestKind.Fish)
         {
@@ -18223,7 +18423,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         else if (!saltWoodIsTheWholeCargo && currentHarvest == HarvestKind.Relic)
         {
             clothYield = 1 + Mathf.CeilToInt(tier * 0.5f);
-            ropeYield = 1;
+            ropeYield = tier > 0 ? 1 : 0;
             metalYield = tier >= 2 ? 1 : 0;
         }
         else if (!saltWoodIsTheWholeCargo && currentHarvest == HarvestKind.Trash)
@@ -19528,6 +19728,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             forecastTideNotches = gameObject.AddComponent<TideForecastTideNotchController>();
         }
+        wrackLine = GetComponent<TideWrackLineController>();
+        if (wrackLine == null)
+        {
+            wrackLine = gameObject.AddComponent<TideWrackLineController>();
+        }
         backdropRenderer = EnsureRenderer("GeneratedStiltFirstBackdrop", GetBackdropSprite(), -100);
         daySeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalDaySeaSky", GetFormalDaySeaSkySprite(), -99);
         nightSeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalNightSeaSky", GetFormalNightSeaSkySprite(), -98);
@@ -20102,6 +20307,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 GetOceanSample(TideBarrenIslandController.CisternX).SurfaceY,
                 time);
         }
+        wrackLine?.UpdatePresentation(
+            viewMode == SliceViewMode.Shelter && state != SliceState.FinalDeparture);
         if (heavyWreckSalvage != null)
         {
             TideOceanSample heavyOcean = GetOceanSample(heavyWreckSalvage.SampleWorldX);

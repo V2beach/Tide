@@ -86,7 +86,7 @@
 - 天文水位/潮流：`TideMixedSemidiurnalModel`、`TideAstronomicalCurrentModel`
 - 连续海况：`TideOceanFieldModel`、`TideWaveEventFieldModel`
 - 天气：`TideContinuousWeatherModel`
-- 潮源/实物：`TideDriftSourceModel`、`TideV59FindPresentationModel`
+- 潮源/实物：`TideDriftSourceModel` 使用连续天文潮次生成不可变批次；不能再使用睡眠/故事轮次 `tideRound`。`TideWrackDepositModel` 与 `TideWrackLineController` 让未捕获且仍在近岸的同一批次在退潮后贴岩搁浅、再浸卷走，拾取不重新开奖；单件外观继续复用 `TideV59FindPresentationModel` 与 V59 Catalog。
 - 网具：`TideNetForecastModel`、`TideNetLoadLedgerModel`、`TideNetHaulModel`、`TideV54NetPresentationModel`
 - 航海打捞公式：`TideContinuousSalvageModel`；连续运行状态见 `TideSailingSalvageController`
 - 房屋维修：V34/V35/V69 Catalog 与 Presentation Model

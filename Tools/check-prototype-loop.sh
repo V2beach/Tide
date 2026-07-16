@@ -37,6 +37,8 @@ required=(
   Assets/Scripts/StiltHouse/TideStormRescueController.cs
   Assets/Scripts/StiltHouse/TideForecastTideNotchController.cs
   Assets/Scripts/StiltHouse/TideForecastSnapshotModel.cs
+  Assets/Scripts/StiltHouse/TideWrackDepositModel.cs
+  Assets/Scripts/StiltHouse/TideWrackLineController.cs
   Assets/Editor/TideCoreLoopConvergenceProbe.cs
   Assets/Editor/TideRepairSceneConvergenceProbe.cs
   Assets/Editor/TideVisualSceneConvergenceProbe.cs
@@ -48,10 +50,11 @@ required=(
 for file in "${required[@]}"; do gate test -f "$root/$file"; done
 
 controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
-for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance stormRescue.Advance RunEditorStormManifestOwnershipProbe KeyCode.F3 forecastTideNotches.UpdatePresentation TideForecastSnapshotModel.Capture; do
+for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance stormRescue.Advance RunEditorStormManifestOwnershipProbe KeyCode.F3 forecastTideNotches.UpdatePresentation TideForecastSnapshotModel.Capture tideDriftFieldCycleOrdinal wrackLine.TrySettle; do
   gate grep -q "$token" "$controller"
 done
 gate grep -q ProbeForecastSnapshot "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
+gate grep -q ProbeWrackDeposit "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 if grep -q TickFreeSailingSalvage "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 if grep -q TideStormRescueModel.Advance "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 if grep -q stormRescueItems "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
@@ -63,6 +66,7 @@ gate grep -q RunEditorStormManifestOwnershipProbe "$root/Assets/Editor/TideVisua
 gate grep -q RunEditorSailingTideContinuityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorFirstSailingTideDecisionProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorTideForecastAutonomyProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
+gate grep -q RunEditorWrackLineLifecycleProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q 'Assets/Scenes/Tide_StiltHouse_FirstSlice.unity' "$root/ProjectSettings/EditorBuildSettings.asset"
 if grep -q 'SampleScene.unity' "$root/ProjectSettings/EditorBuildSettings.asset"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 gate grep -q 'filter=lfs' "$root/.gitattributes"
