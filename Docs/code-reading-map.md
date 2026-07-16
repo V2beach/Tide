@@ -15,12 +15,13 @@
 ### 岩礁岛与淡水
 
 - 表现/实物所有权：`TideBarrenIslandController`
+- 船骸连续拆卸：`TideWreckDismantleModel`；木板、帆布和铆接板使用不同现实秒工时，松手保留原物进度，脚下水深超过 `0.42m` 或权威海况的局部浪载过大时暂停。`TideBarrenIslandController` 只插值同一原件的位置/转角，完成帧才切换到手持 owner
 - 流量规则：`TideRainCisternModel`
 - `F` 交互优先级：`TideIslandInteractionModel`；携带原物时只允许在明确施工位暂存，不能同时饮水或触发泊船绳
 - 编排入口：`TickBarrenIslandNaturalState`、`TryHandleBarrenIslandInteraction`
 - 核心单位：雨 `mm/h`、屋顶 `m²`、水量 `L`、现实秒
 - 水量唯一 owner：`TideRainCisternModel` 负责盐度、蒸发/渗漏和容器转移；`TideBarrenIslandController` 拥有裂池，主控制器只拥有从裂池实际转出的暴潮应急罐。睡眠先用罐水再用池水，冲失时不能二次扣池水
-- 首日契约：`RunEditorFirstDayAutonomyProbe` 推进真实世界时钟，验证玩家无需先检查残骸即可拆船、布网或回屋；左岛存在时旧 `arrivalWreckX` 只作镜头参考，不再拥有交互
+- 首日契约：`RunEditorFirstDayAutonomyProbe` 推进真实世界时钟，验证玩家无需先检查残骸即可拆船、布网或回屋；`RunEditorWreckDismantleTideWindowProbe` 验证单按不瞬取、松手保留、进水/破浪停工和完成时唯一 owner；左岛存在时旧 `arrivalWreckX` 只作镜头参考，不再拥有交互
 
 ### 泊位绳
 

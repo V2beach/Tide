@@ -2546,13 +2546,12 @@ public partial class TideStiltHouseFirstSliceController
         bool invisibleLegacyWreckRetired = !IsPlayerNearArrivalWreck();
 
         UpdateVisuals(0f);
-        TideIslandSalvagePart firstPart = TideIslandSalvagePart.None;
-        bool leftWreckIsPhysical = barrenIsland != null &&
-            barrenIsland.TryTakeNearestPart(
-                new Vector2(
-                    TideBarrenIslandController.OpeningPlayerX,
-                    GetPlayerLaneY(WalkLane.TideFlat)),
-                out firstPart) &&
+        Vector2 openingWreckWorkPosition = new Vector2(
+            TideBarrenIslandController.OpeningPlayerX,
+            GetPlayerLaneY(WalkLane.TideFlat));
+        bool leftWreckIsPhysical = CompleteEditorWreckDismantle(
+                openingWreckWorkPosition,
+                out TideIslandSalvagePart firstPart) &&
             firstPart != TideIslandSalvagePart.None;
 
         string evidence =
@@ -2564,6 +2563,149 @@ public partial class TideStiltHouseFirstSliceController
             actionsDoNotWaitForInspection && invisibleLegacyWreckRetired && leftWreckIsPhysical
             ? $"PASS：首日时钟不等待叙事，玩家可先拆船、先布网或直接回屋，潮水按自己的时间到来。{evidence}"
             : $"FAIL：首日存在隐藏交互、强制叙事门或不足以完成一次真实布网的时间窗。{evidence}";
+    }
+
+    public string RunEditorWreckDismantleTideWindowProbe()
+    {
+        EnsureScene();
+        ResetSlice();
+        UpdateVisuals(0f);
+        if (barrenIsland == null)
+        {
+            return "FAIL：正式 Scene 缺少贫瘠岩礁岛控制器。";
+        }
+
+        Vector2 partAnchor = barrenIsland.GetPartWorldPosition(TideIslandSalvagePart.HullPlank);
+        Vector2 workPosition = new Vector2(partAnchor.x, GetPlayerLaneY(WalkLane.TideFlat));
+        float feetY = GetPlayerStandingFeetY(WalkLane.TideFlat);
+        Transform source = barrenIsland.transform.Find(
+            "GeneratedBarrenIslandRoot/SalvageHullPlank");
+        Transform carried = barrenIsland.transform.Find(
+            "GeneratedBarrenIslandRoot/CarriedWreckPart");
+        if (source == null || carried == null)
+        {
+            return "FAIL：船骸原件或手持 owner 节点不存在。";
+        }
+
+        Vector3 sourceStart = source.position;
+        Quaternion sourceStartRotation = source.rotation;
+        bool started = barrenIsland.TickDismantleNearestPart(
+            workPosition,
+            0.1f,
+            true,
+            true,
+            true,
+            feetY - 0.18f,
+            0.08f,
+            out TideIslandDismantleFeedback firstStep);
+        UpdateVisuals(0.1f);
+        bool firstPressIsNotInstant = started && firstStep.Worked && !firstStep.Completed &&
+            firstStep.Progress01 > 0f && firstStep.Progress01 < 0.05f;
+        bool partialWorkMovesOriginal = Vector3.Distance(sourceStart, source.position) > 0.0002f ||
+            Quaternion.Angle(sourceStartRotation, source.rotation) > 0.05f;
+
+        barrenIsland.TickDismantleNearestPart(
+            workPosition,
+            0.5f,
+            false,
+            false,
+            true,
+            feetY - 0.18f,
+            0.08f,
+            out TideIslandDismantleFeedback released);
+        float preservedProgress = released.Progress01;
+        bool releasePreservesWork = Mathf.Abs(preservedProgress - firstStep.Progress01) <= 0.0001f;
+
+        barrenIsland.TickDismantleNearestPart(
+            workPosition,
+            0.8f,
+            true,
+            true,
+            false,
+            feetY + 0.62f,
+            0.12f,
+            out TideIslandDismantleFeedback flooded);
+        barrenIsland.TickDismantleNearestPart(
+            workPosition,
+            0.8f,
+            false,
+            true,
+            true,
+            feetY - 0.18f,
+            0.94f,
+            out TideIslandDismantleFeedback breakingWave);
+        bool tideAndWavePauseSameOriginal =
+            Mathf.Abs(flooded.Progress01 - preservedProgress) <= 0.0001f &&
+            flooded.BlockReason == TideWreckDismantleBlockReason.NoStableFooting &&
+            Mathf.Abs(breakingWave.Progress01 - preservedProgress) <= 0.0001f &&
+            breakingWave.BlockReason == TideWreckDismantleBlockReason.BreakingWave;
+
+        TideIslandDismantleFeedback completed = breakingWave;
+        for (int i = 0; i < 80 && !completed.Completed; i++)
+        {
+            barrenIsland.TickDismantleNearestPart(
+                workPosition,
+                0.1f,
+                false,
+                true,
+                true,
+                feetY - 0.18f,
+                0.08f,
+                out completed);
+        }
+
+        UpdateVisuals(1f);
+        SpriteRenderer sourceRenderer = source.GetComponent<SpriteRenderer>();
+        SpriteRenderer carriedRenderer = carried.GetComponent<SpriteRenderer>();
+        bool ownershipCommitsOnce = completed.Completed &&
+            barrenIsland.CarriedPart == TideIslandSalvagePart.HullPlank &&
+            sourceRenderer != null && !sourceRenderer.enabled &&
+            carriedRenderer != null && carriedRenderer.enabled;
+        string evidence =
+            $"首按={firstStep.Progress01:P1}/松手={released.Progress01:P1}/" +
+            $"进水={flooded.BlockReason}/破浪={breakingWave.BlockReason}/" +
+            $"原件松动={partialWorkMovesOriginal}/完成owner={ownershipCommitsOnce}";
+        return firstPressIsNotInstant && partialWorkMovesOriginal && releasePreservesWork &&
+            tideAndWavePauseSameOriginal && ownershipCommitsOnce
+            ? $"PASS：船骸拆卸使用真实潮窗、持续工时和同一原物反馈。{evidence}"
+            : $"FAIL：船骸仍可瞬取、无潮浪约束或完成时出现重复 owner。{evidence}";
+    }
+
+    private bool CompleteEditorWreckDismantle(
+        Vector2 workPosition,
+        out TideIslandSalvagePart completedPart)
+    {
+        completedPart = TideIslandSalvagePart.None;
+        if (barrenIsland == null)
+        {
+            return false;
+        }
+
+        float dryWaterY = GetPlayerStandingFeetY(WalkLane.TideFlat) - 0.18f;
+        for (int i = 0; i < 100; i++)
+        {
+            bool consumed = barrenIsland.TickDismantleNearestPart(
+                workPosition,
+                0.1f,
+                i == 0,
+                true,
+                true,
+                dryWaterY,
+                0.08f,
+                out TideIslandDismantleFeedback feedback);
+            if (!consumed)
+            {
+                return false;
+            }
+
+            if (feedback.Completed)
+            {
+                completedPart = feedback.Part;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public string RunEditorTidePrepTradeoffProbe()

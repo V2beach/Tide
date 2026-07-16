@@ -24,6 +24,16 @@ public enum TideIslandSalvageDestination
     IntegratedIntoEscapeBoat
 }
 
+public struct TideIslandDismantleFeedback
+{
+    public TideIslandSalvagePart Part;
+    public float Progress01;
+    public float WorkRate01;
+    public bool Worked;
+    public bool Completed;
+    public TideWreckDismantleBlockReason BlockReason;
+}
+
 /// <summary>
 /// 外海岩礁岛的独立表现与实物所有权。它只拥有岛、船骸可拆件和蓄水池；
 /// 玩家移动、海况、库存和维修仍由第一切片编排器拥有。
@@ -65,6 +75,11 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     [SerializeField] private TideIslandSalvageDestination hullPlankDestination;
     [SerializeField] private TideIslandSalvageDestination sailclothDestination;
     [SerializeField] private TideIslandSalvageDestination rivetedPlateDestination;
+    [SerializeField] private TideIslandSalvagePart activeDismantlePart;
+    [SerializeField, Range(0f, 1f)] private float hullPlankDismantleProgress01;
+    [SerializeField, Range(0f, 1f)] private float sailclothDismantleProgress01;
+    [SerializeField, Range(0f, 1f)] private float rivetedPlateDismantleProgress01;
+    [SerializeField] private bool dismantleWorkActive;
 
     private Transform visualRoot;
     private SpriteRenderer rockBackRenderer;
@@ -85,6 +100,8 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     public TideIslandSalvagePart CarriedPart => carriedPart;
     public int ShelterStagedParts => shelterStagedParts;
     public int BoatStagedParts => boatStagedParts;
+    public bool IsDismantling => dismantleWorkActive;
+    public TideIslandSalvagePart ActiveDismantlePart => activeDismantlePart;
 
     public TideIslandSalvageDestination GetDestination(TideIslandSalvagePart part)
     {
@@ -162,6 +179,11 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         hullPlankDestination = TideIslandSalvageDestination.None;
         sailclothDestination = TideIslandSalvageDestination.None;
         rivetedPlateDestination = TideIslandSalvageDestination.None;
+        activeDismantlePart = TideIslandSalvagePart.None;
+        hullPlankDismantleProgress01 = 0f;
+        sailclothDismantleProgress01 = 0f;
+        rivetedPlateDismantleProgress01 = 0f;
+        dismantleWorkActive = false;
         UpdateVisibility(true);
     }
 
@@ -179,17 +201,104 @@ public sealed class TideBarrenIslandController : MonoBehaviour
             stormOvertopping01);
     }
 
-    public bool TryTakeNearestPart(Vector2 playerPosition, out TideIslandSalvagePart part)
+    /// <summary>
+    /// 持续拆卸玩家身边的同一件船骸原物。开始必须有按键边沿，之后只有持续按住、
+    /// 站在可见岩面且局部海况允许时才推进；松手和坏浪都保留已经松开的结构。
+    /// </summary>
+    public bool TickDismantleNearestPart(
+        Vector2 playerPosition,
+        float deltaSeconds,
+        bool interactionPressed,
+        bool interactionHeld,
+        bool hasStableFooting,
+        float waterSurfaceY,
+        float localWaveLoad01,
+        out TideIslandDismantleFeedback feedback)
     {
-        part = TideIslandSalvagePart.None;
+        feedback = default;
+        dismantleWorkActive = false;
         if (carriedPart != TideIslandSalvagePart.None)
         {
+            activeDismantlePart = TideIslandSalvagePart.None;
             return false;
         }
 
-        Vector2 wreckCenter = GetWreckCenter();
-        float bestDistance = 0.62f;
-        int bestIndex = -1;
+        if (activeDismantlePart == TideIslandSalvagePart.None)
+        {
+            if (!interactionPressed ||
+                !TryGetNearestAvailablePart(playerPosition, out activeDismantlePart))
+            {
+                activeDismantlePart = TideIslandSalvagePart.None;
+                return false;
+            }
+        }
+
+        TideIslandSalvagePart part = activeDismantlePart;
+        if (IsRemoved(part) ||
+            Vector2.Distance(playerPosition, GetPartWorldPosition(part)) > 0.68f)
+        {
+            activeDismantlePart = TideIslandSalvagePart.None;
+            return false;
+        }
+
+        TideWreckDismantleStep step = TideWreckDismantleModel.Advance(
+            part,
+            GetDismantleProgress01(part),
+            deltaSeconds,
+            interactionHeld,
+            hasStableFooting,
+            waterSurfaceY - groundY,
+            localWaveLoad01);
+        SetDismantleProgress01(part, step.Progress01);
+        dismantleWorkActive = step.Worked;
+        feedback = new TideIslandDismantleFeedback
+        {
+            Part = part,
+            Progress01 = step.Progress01,
+            WorkRate01 = step.WorkRate01,
+            Worked = step.Worked,
+            Completed = step.Completed,
+            BlockReason = step.BlockReason
+        };
+
+        if (step.Completed)
+        {
+            SetRemoved(part, true);
+            carriedPart = part;
+            activeDismantlePart = TideIslandSalvagePart.None;
+            dismantleWorkActive = false;
+            UpdateVisibility(true);
+        }
+        else if (!interactionHeld)
+        {
+            // 目标选择属于这次按住动作；进度属于原物。重新靠近按 F 会从原位置继续。
+            activeDismantlePart = TideIslandSalvagePart.None;
+        }
+
+        return true;
+    }
+
+    public float GetDismantleProgress01(TideIslandSalvagePart part)
+    {
+        return part == TideIslandSalvagePart.HullPlank ? hullPlankDismantleProgress01 :
+            part == TideIslandSalvagePart.Sailcloth ? sailclothDismantleProgress01 :
+            part == TideIslandSalvagePart.RivetedPlate ? rivetedPlateDismantleProgress01 : 0f;
+    }
+
+    public Vector2 GetPartWorldPosition(TideIslandSalvagePart part)
+    {
+        int index = (int)part - 1;
+        return index >= 0 && index < SalvageOffsets.Length
+            ? GetWreckCenter() + SalvageOffsets[index]
+            : GetWreckCenter();
+    }
+
+    private bool TryGetNearestAvailablePart(
+        Vector2 playerPosition,
+        out TideIslandSalvagePart part)
+    {
+        part = TideIslandSalvagePart.None;
+        float bestDistance = 0.68f;
         for (int i = 0; i < SalvageOffsets.Length; i++)
         {
             TideIslandSalvagePart candidate = (TideIslandSalvagePart)(i + 1);
@@ -198,24 +307,32 @@ public sealed class TideBarrenIslandController : MonoBehaviour
                 continue;
             }
 
-            float distance = Vector2.Distance(playerPosition, wreckCenter + SalvageOffsets[i]);
-            if (distance < bestDistance)
+            float distance = Vector2.Distance(playerPosition, GetPartWorldPosition(candidate));
+            if (distance <= bestDistance)
             {
                 bestDistance = distance;
-                bestIndex = i;
+                part = candidate;
             }
         }
 
-        if (bestIndex < 0)
-        {
-            return false;
-        }
+        return part != TideIslandSalvagePart.None;
+    }
 
-        part = (TideIslandSalvagePart)(bestIndex + 1);
-        SetRemoved(part, true);
-        carriedPart = part;
-        UpdateVisibility(true);
-        return true;
+    private void SetDismantleProgress01(TideIslandSalvagePart part, float progress01)
+    {
+        float clamped = Mathf.Clamp01(progress01);
+        if (part == TideIslandSalvagePart.HullPlank)
+        {
+            hullPlankDismantleProgress01 = clamped;
+        }
+        else if (part == TideIslandSalvagePart.Sailcloth)
+        {
+            sailclothDismantleProgress01 = clamped;
+        }
+        else if (part == TideIslandSalvagePart.RivetedPlate)
+        {
+            rivetedPlateDismantleProgress01 = clamped;
+        }
     }
 
     public bool TryStageCarriedPart(TideIslandSalvageUse use, out TideIslandSalvagePart part)
@@ -332,10 +449,23 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         for (int i = 0; i < salvageRenderers.Length; i++)
         {
             SpriteRenderer renderer = salvageRenderers[i];
+            TideIslandSalvagePart part = (TideIslandSalvagePart)(i + 1);
             Vector2 size = i == 0 ? new Vector2(1.45f, 0.22f) :
                 i == 1 ? new Vector2(0.98f, 0.72f) : new Vector2(0.64f, 0.38f);
-            float rotation = i == 0 ? -8f : i == 1 ? -14f : 7f;
-            SetWorldSize(renderer, wreckCenter + SalvageOffsets[i], size, rotation);
+            float baseRotation = i == 0 ? -8f : i == 1 ? -14f : 7f;
+            float loosen01 = GetDismantleProgress01(part);
+            Vector2 loosenOffset = part == TideIslandSalvagePart.HullPlank
+                ? new Vector2(0.05f, -0.08f) * loosen01
+                : part == TideIslandSalvagePart.Sailcloth
+                    ? new Vector2(0.1f, -0.16f) * loosen01
+                    : new Vector2(-0.04f, -0.07f) * loosen01;
+            float loosenRotation = part == TideIslandSalvagePart.HullPlank ? 11f :
+                part == TideIslandSalvagePart.Sailcloth ? -9f : 14f;
+            SetWorldSize(
+                renderer,
+                wreckCenter + SalvageOffsets[i] + loosenOffset,
+                size,
+                baseRotation + loosenRotation * loosen01);
         }
 
         SetWorldSize(cisternRenderer, new Vector2(CisternX, groundY + 0.52f), new Vector2(1.18f, 1.06f), 0f);

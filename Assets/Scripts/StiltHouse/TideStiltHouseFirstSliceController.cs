@@ -1529,7 +1529,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return;
         }
 
-        if (TryHandleBarrenIslandInteraction())
+        if (TryHandleBarrenIslandInteraction(deltaTime))
         {
             return;
         }
@@ -2565,7 +2565,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         }
     }
 
-    private bool TryHandleBarrenIslandInteraction()
+    private bool TryHandleBarrenIslandInteraction(float deltaTime)
     {
         if ((barrenIsland == null && heavyWreckSalvage == null && wrackLine == null) ||
             viewMode != SliceViewMode.Shelter || playerLane != WalkLane.TideFlat)
@@ -2602,7 +2602,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return true;
         }
 
-        if (barrenIsland == null || !interactionPressed)
+        if (barrenIsland == null)
         {
             return false;
         }
@@ -2617,8 +2617,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             barrenIsland.IsNearWreck(playerPosition),
             barrenIsland.IsNearCistern(playerPosition));
 
-        if (action == TideIslandContextAction.StageAtShelter ||
-            action == TideIslandContextAction.StageAtEscapeBoat)
+        if (interactionPressed &&
+            (action == TideIslandContextAction.StageAtShelter ||
+             action == TideIslandContextAction.StageAtEscapeBoat))
         {
             TideIslandSalvageUse use = action == TideIslandContextAction.StageAtShelter
                 ? TideIslandSalvageUse.Shelter
@@ -2634,19 +2635,65 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return true;
         }
 
-        if (action == TideIslandContextAction.TakeWreckPart &&
-            barrenIsland.TryTakeNearestPart(playerPosition, out TideIslandSalvagePart part))
+        bool continuingDismantle = barrenIsland.ActiveDismantlePart != TideIslandSalvagePart.None;
+        if ((interactionPressed && action == TideIslandContextAction.TakeWreckPart) ||
+            continuingDismantle)
         {
-            arrivalInspected = true;
-            lastActionHint = part == TideIslandSalvagePart.HullPlank
-                ? "你从船骸卸下一块仍能承重的外板。"
-                : part == TideIslandSalvagePart.Sailcloth
-                    ? "你割下没有完全糟烂的帆布。"
-                    : "你撬下一块带运输编号的铆接板。";
-            return true;
+            TideOceanSample wreckOcean = GetOceanSample(playerPosition.x);
+            float localHorizontalWaterSpeed =
+                GetNaturalCurrentSpeed() + wreckOcean.HorizontalVelocity;
+            float localWaveLoad01 = Mathf.Clamp01(
+                wreckOcean.Agitation01 * 0.64f +
+                Mathf.Abs(localHorizontalWaterSpeed) / 1.2f * 0.36f);
+            Vector2 visibleFeet = new Vector2(
+                playerPosition.x,
+                GetPlayerStandingFeetY(WalkLane.TideFlat));
+            bool hasStableFooting = !playerSwimming &&
+                barrenIsland.IsVisibleWalkSupportAt(visibleFeet);
+            bool consumed = barrenIsland.TickDismantleNearestPart(
+                playerPosition,
+                deltaTime,
+                interactionPressed,
+                interactionHeld,
+                hasStableFooting,
+                wreckOcean.SurfaceY,
+                localWaveLoad01,
+                out TideIslandDismantleFeedback dismantle);
+            if (consumed)
+            {
+                arrivalInspected = true;
+                Vector2 partPosition = barrenIsland.GetPartWorldPosition(dismantle.Part);
+                if (Mathf.Abs(partPosition.x - playerPosition.x) > 0.02f)
+                {
+                    playerFacing = partPosition.x > playerPosition.x ? 1 : -1;
+                }
+                int percent = Mathf.RoundToInt(dismantle.Progress01 * 100f);
+                if (dismantle.Completed)
+                {
+                    lastActionHint = dismantle.Part == TideIslandSalvagePart.HullPlank
+                        ? "最后一枚旧钉松开；外板离开船骸，缺口和手中是同一件原物。"
+                        : dismantle.Part == TideIslandSalvagePart.Sailcloth
+                            ? "残存边绳割断；帆布离开母体，没有变成库存数字。"
+                            : "铆边终于撬开；运输编号随原板一起留在手中。";
+                }
+                else if (dismantle.BlockReason == TideWreckDismantleBlockReason.NoStableFooting)
+                {
+                    lastActionHint = $"{dismantle.Part} 松动 {percent}%：水已经让脚下失去支撑，回到岩面露出的潮窗再继续。";
+                }
+                else if (dismantle.BlockReason == TideWreckDismantleBlockReason.BreakingWave)
+                {
+                    lastActionHint = $"{dismantle.Part} 松动 {percent}%：这道浪正在压船骸，等浪肩过去再用力。";
+                }
+                else if (dismantle.Worked)
+                {
+                    lastActionHint = $"正在拆 {dismantle.Part}：{percent}%。松手后它仍保持现在的松动位置。";
+                }
+
+                return true;
+            }
         }
 
-        if (action == TideIslandContextAction.DrinkFromCistern)
+        if (interactionPressed && action == TideIslandContextAction.DrinkFromCistern)
         {
             float remainingNeed = Mathf.Max(0f, DailyRestWaterNeedLiters - waterConsumedSinceLastRest);
             if (remainingNeed <= 0.001f)
@@ -3835,7 +3882,8 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
         // Pulling a wet net is a planted, two-handed action. Keeping the player at the
         // post prevents the rope from stretching across the whole shore while A/D is held.
-        if (IsActivelyHaulingNet() || IsActivelyRiggingNet() || IsActivelyRepairing())
+        if (IsActivelyHaulingNet() || IsActivelyRiggingNet() ||
+            IsActivelyRepairing() || IsActivelyDismantlingWreck())
         {
             playerHorizontalVelocity = 0f;
             return;
@@ -4059,6 +4107,11 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             !repairChoiceApplied &&
             repairWorkActive &&
             Input.GetKey(KeyCode.F);
+    }
+
+    private bool IsActivelyDismantlingWreck()
+    {
+        return barrenIsland != null && barrenIsland.IsDismantling;
     }
 
     private void StartLaneTransition(WalkLane targetLane)
@@ -10655,7 +10708,8 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             (state == SliceState.LowTidePlanning && !netDeployed && netLoweringProgress > 0.01f) ||
             haulingNetPoseActive ||
             routingHaulActive;
-        bool repairActionActive = repairWorkActive;
+        bool repairActionActive = repairWorkActive ||
+            (barrenIsland != null && barrenIsland.IsDismantling);
         bool prepActionActive = tidePrepActionTimer > 0f || tidePrepWorkActive;
         bool workActionActive = repairActionActive || prepActionActive || routingReleaseActive;
         bool v42SurvivalFrameVisible = TryGetV42SurvivalWorldFrame(

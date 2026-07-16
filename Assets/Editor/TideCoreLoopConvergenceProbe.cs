@@ -24,6 +24,7 @@ public static class TideCoreLoopConvergenceProbe
     private static string RunAll()
     {
         string cistern = ProbeCistern();
+        string wreckWork = ProbeWreckDismantle();
         string island = ProbeIslandOwnership();
         string context = ProbeIslandContextPriority();
         string salvage = ProbeSalvageMaterialCommit();
@@ -39,7 +40,79 @@ public static class TideCoreLoopConvergenceProbe
         string forecast = ProbeForecastSnapshot();
         string netEncounter = ProbeNetEncounter();
         string wrack = ProbeWrackDeposit();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
+    }
+
+    private static string ProbeWreckDismantle()
+    {
+        TideWreckDismantleStep firstPress = TideWreckDismantleModel.Advance(
+            TideIslandSalvagePart.HullPlank,
+            0f,
+            0.02f,
+            true,
+            true,
+            0f,
+            0.08f);
+        Require(firstPress.Worked && !firstPress.Completed && firstPress.Progress01 < 0.01f,
+            "船骸原物仍可被单次按键瞬间拆走");
+
+        TideWreckDismantleStep released = TideWreckDismantleModel.Advance(
+            TideIslandSalvagePart.HullPlank,
+            firstPress.Progress01,
+            1f,
+            false,
+            true,
+            0f,
+            0.08f);
+        Require(Mathf.Abs(released.Progress01 - firstPress.Progress01) <= 0.0001f &&
+            released.BlockReason == TideWreckDismantleBlockReason.Released,
+            "松手后船骸拆卸进度没有留在原物上");
+
+        TideWreckDismantleStep flooded = TideWreckDismantleModel.Advance(
+            TideIslandSalvagePart.HullPlank,
+            firstPress.Progress01,
+            1f,
+            true,
+            false,
+            0.62f,
+            0.12f);
+        TideWreckDismantleStep breaker = TideWreckDismantleModel.Advance(
+            TideIslandSalvagePart.HullPlank,
+            firstPress.Progress01,
+            1f,
+            true,
+            true,
+            0.08f,
+            0.92f);
+        Require(!flooded.Worked &&
+            flooded.BlockReason == TideWreckDismantleBlockReason.NoStableFooting &&
+            !breaker.Worked && breaker.BlockReason == TideWreckDismantleBlockReason.BreakingWave,
+            "失去岩面支撑或破浪压住船骸时仍能隔水推进拆卸");
+
+        TideWreckDismantleStep dry = TideWreckDismantleModel.Advance(
+            TideIslandSalvagePart.HullPlank,
+            firstPress.Progress01,
+            1f,
+            true,
+            true,
+            0f,
+            0.08f);
+        TideWreckDismantleStep wet = TideWreckDismantleModel.Advance(
+            TideIslandSalvagePart.HullPlank,
+            firstPress.Progress01,
+            1f,
+            true,
+            true,
+            0.36f,
+            0.55f);
+        Require(dry.Progress01 > wet.Progress01 + 0.05f,
+            "脚边进水和浪载没有降低实际拆卸效率");
+        Require(TideWreckDismantleModel.GetRequiredWorkSeconds(TideIslandSalvagePart.Sailcloth) <
+            TideWreckDismantleModel.GetRequiredWorkSeconds(TideIslandSalvagePart.HullPlank) &&
+            TideWreckDismantleModel.GetRequiredWorkSeconds(TideIslandSalvagePart.HullPlank) <
+            TideWreckDismantleModel.GetRequiredWorkSeconds(TideIslandSalvagePart.RivetedPlate),
+            "割帆布、撬木板和拆铆板仍使用同一虚假工时");
+        return $"船骸拆卸=按压{firstPress.Progress01:P1}/松手保留/水深{TideWreckDismantleModel.MaximumWorkableWaterDepthMeters:F2}m停工/破浪停工/干湿速率{dry.WorkRate01:F2}->{wet.WorkRate01:F2}";
     }
 
     private static string ProbeNetEncounter()
@@ -240,7 +313,8 @@ public static class TideCoreLoopConvergenceProbe
                 -0.3f,
                 -1.5f,
                 1f);
-            bool took = island.TryTakeNearestPart(
+            bool took = CompleteIslandDismantle(
+                island,
                 new Vector2(-12.73f, -0.42f),
                 out TideIslandSalvagePart part);
             bool stagedAtShelter = island.TryStageCarriedPart(
@@ -271,7 +345,8 @@ public static class TideCoreLoopConvergenceProbe
                 "最终固定后原物没有归入住所正式 owner");
             RequireNoLooseOwner(root.transform, part);
 
-            bool tookCloth = island.TryTakeNearestPart(
+            bool tookCloth = CompleteIslandDismantle(
+                island,
                 new Vector2(-11.83f, -0.04f),
                 out TideIslandSalvagePart secondPart);
             bool stagedAtBoat = island.TryStageCarriedPart(
@@ -297,6 +372,38 @@ public static class TideCoreLoopConvergenceProbe
         {
             UnityEngine.Object.DestroyImmediate(root);
         }
+    }
+
+    private static bool CompleteIslandDismantle(
+        TideBarrenIslandController island,
+        Vector2 playerPosition,
+        out TideIslandSalvagePart part)
+    {
+        part = TideIslandSalvagePart.None;
+        for (int i = 0; i < 100; i++)
+        {
+            bool consumed = island.TickDismantleNearestPart(
+                playerPosition,
+                0.1f,
+                i == 0,
+                true,
+                true,
+                -1.35f,
+                0.08f,
+                out TideIslandDismantleFeedback feedback);
+            if (!consumed)
+            {
+                return false;
+            }
+
+            if (feedback.Completed)
+            {
+                part = feedback.Part;
+                return island.CarriedPart == part;
+            }
+        }
+
+        return false;
     }
 
     private static void RequireNoLooseOwner(Transform root, TideIslandSalvagePart part)

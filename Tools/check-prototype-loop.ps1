@@ -27,6 +27,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs",
     "Assets/Scripts/StiltHouse/TideBarrenIslandController.cs",
     "Assets/Scripts/StiltHouse/TideIslandInteractionModel.cs",
+    "Assets/Scripts/StiltHouse/TideWreckDismantleModel.cs",
     "Assets/Scripts/StiltHouse/TideRainCisternModel.cs",
     "Assets/Scripts/StiltHouse/TideRepairWorkPhaseModel.cs",
     "Assets/Scripts/StiltHouse/TideSalvageMaterialModel.cs",
@@ -63,6 +64,8 @@ foreach ($file in $required) {
 $controller = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
 $editorDiagnostics = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
+Test-Gate ($controller.Contains("TickDismantleNearestPart") -and
+    $controller.Contains("wreckOcean.Agitation01")) "wreck dismantling consumes continuous input and the authoritative ocean sample"
 Test-Gate ($editorDiagnostics.Contains("RunEditorHeavyWreckTidalLiftIntegrationProbe")) "tidal heavy-wreck lift is covered by editor diagnostics"
 Test-Gate ($controller.Contains("public partial class TideStiltHouseFirstSliceController")) "runtime controller supports focused partial files"
 Test-Gate ($editorDiagnostics.Contains("#if UNITY_EDITOR") -and
@@ -89,12 +92,14 @@ Test-Gate ($controller.Contains("tideDriftFieldCycleOrdinal")) "drift batches us
 Test-Gate ($controller.Contains("wrackLine.TrySettle")) "missed tide batches can leave a physical ebb deposit"
 $coreProbe = Read-ProjectText "Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 Test-Gate ($coreProbe.Contains("ProbeForecastSnapshot")) "core gate covers forecast snapshot lifetime"
+Test-Gate ($coreProbe.Contains("ProbeWreckDismantle")) "core gate covers persistent work, footing, wave load, and part-specific durations"
 Test-Gate ($coreProbe.Contains("ProbeNetEncounter")) "core gate rejects preload, overtopping, stale contact, and skipped windows"
 Test-Gate ($coreProbe.Contains("ProbeWrackDeposit")) "core gate covers ebb deposit and refloat lifecycle"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 Test-Gate ($visualProbe.Contains("RunEditorBoatPassengerScaleProbe")) "visual gate covers complete boat passenger"
 Test-Gate ($visualProbe.Contains("RunEditorWalkSurfacePathContinuityProbe")) "visual gate covers authored walk surfaces"
 Test-Gate ($visualProbe.Contains("RunEditorFirstDayAutonomyProbe")) "visual gate covers first-day autonomy"
+Test-Gate ($visualProbe.Contains("RunEditorWreckDismantleTideWindowProbe")) "visual gate covers physical wreck dismantling in a tide window"
 Test-Gate ($visualProbe.Contains("RunEditorMixedSemidiurnalOpportunityProbe")) "visual gate covers unequal adjacent-tide opportunities"
 Test-Gate ($visualProbe.Contains("TideStormRescueTradeoffConvergenceProbe.Run")) "visual gate covers storm rescue tradeoff"
 Test-Gate ($visualProbe.Contains("RunEditorStormManifestOwnershipProbe")) "visual gate covers storm cargo conservation"
