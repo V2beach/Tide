@@ -10,7 +10,7 @@
   - [x] Build Settings 只保留 `Tide_StiltHouse_FirstSlice`
   - [x] 修正 Git LFS/ignore：V59 `Runtime/High` 仍可跟踪，QA/GIF/UHD 不入库
   - [x] Windows/macOS 同步检查从逐文件 Git 进程收敛为批量检查；Windows 约 `6.4s`
-  - [ ] 审核暂存清单、LFS 指针和最大对象，提交并推送 `origin/main`
+  - [x] 审核暂存清单、850 个 LFS 指针和最大对象；核心提交 `5f99071` 已推送 `origin/main`
 
 - 贫瘠外海岩礁岛
   - [x] 新增左侧连续区域；人物开场直接站在可见岩板，不再从虚空补位
