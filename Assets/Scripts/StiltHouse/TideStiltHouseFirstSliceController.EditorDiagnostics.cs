@@ -2671,6 +2671,127 @@ public partial class TideStiltHouseFirstSliceController
             : $"FAIL：船骸仍可瞬取、无潮浪约束或完成时出现重复 owner。{evidence}";
     }
 
+    public string RunEditorArrivalSalvagePayoffProbe()
+    {
+        EnsureScene();
+        ResetSlice();
+        UpdateVisuals(0f);
+        if (barrenIsland == null)
+        {
+            return "FAIL：正式 Scene 缺少贫瘠岩礁岛控制器。";
+        }
+
+        TideIslandSalvagePart[] parts =
+        {
+            TideIslandSalvagePart.HullPlank,
+            TideIslandSalvagePart.HullPlank,
+            TideIslandSalvagePart.Sailcloth,
+            TideIslandSalvagePart.Sailcloth,
+            TideIslandSalvagePart.RivetedPlate,
+            TideIslandSalvagePart.RivetedPlate
+        };
+        RepairChoice[] choices =
+        {
+            RepairChoice.Stilt,
+            RepairChoice.Hull,
+            RepairChoice.Net,
+            RepairChoice.Sail,
+            RepairChoice.Cistern,
+            RepairChoice.Cabin
+        };
+        TideIslandSalvageDestination[] destinations =
+        {
+            TideIslandSalvageDestination.ShelterStaging,
+            TideIslandSalvageDestination.EscapeBoatStaging,
+            TideIslandSalvageDestination.ShelterStaging,
+            TideIslandSalvageDestination.EscapeBoatStaging,
+            TideIslandSalvageDestination.ShelterStaging,
+            TideIslandSalvageDestination.EscapeBoatStaging
+        };
+        bool allSixStartFromOnePhysicalPart = true;
+        for (int i = 0; i < choices.Length; i++)
+        {
+            GetRepairMaterialNeeds(
+                choices[i],
+                out int timberNeed,
+                out int ropeNeed,
+                out int clothNeed,
+                out int metalNeed,
+                out int foodNeed);
+            TideMaterialBundle needs = new TideMaterialBundle(
+                timberNeed,
+                ropeNeed,
+                clothNeed,
+                metalNeed,
+                foodNeed);
+            int selected = TideSalvageMaterialModel.SelectMinimumParts(
+                TideSalvageMaterialModel.GetPartBit(parts[i]),
+                new TideMaterialBundle(),
+                needs);
+            allSixStartFromOnePhysicalPart &= selected == TideSalvageMaterialModel.GetPartBit(parts[i]) &&
+                GetStagingDestinationForRepair(choices[i]) == destinations[i];
+        }
+
+        Vector2 plateAnchor = barrenIsland.GetPartWorldPosition(TideIslandSalvagePart.RivetedPlate);
+        bool dismantled = CompleteEditorWreckDismantle(
+            plateAnchor,
+            out TideIslandSalvagePart completedPart);
+        bool staged = dismantled && completedPart == TideIslandSalvagePart.RivetedPlate &&
+            barrenIsland.TryStageCarriedPart(
+                TideIslandSalvageUse.Shelter,
+                out TideIslandSalvagePart stagedPart) &&
+            stagedPart == TideIslandSalvagePart.RivetedPlate;
+
+        float crackBefore = barrenIsland.Cistern.Crack01;
+        playerLane = WalkLane.TideFlat;
+        viewMode = SliceViewMode.Shelter;
+        playerPosition = GetRepairChoicePosition(RepairChoice.Cistern);
+        bool workPositionHasVisibleSupport = barrenIsland.IsVisibleWalkSupportAt(new Vector2(
+            playerPosition.x,
+            GetPlayerStandingFeetY(WalkLane.TideFlat)));
+        bool startedBeforeFirstTide = state == SliceState.LowTidePlanning &&
+            TickRepairWorkAtWorldTarget(0.02f, true, true);
+        for (int i = 0; i < 320 && !repairChoiceApplied; i++)
+        {
+            TickRepairWorkAtWorldTarget(0.02f, false, true);
+        }
+        UpdateVisuals(1f);
+
+        Transform visualRoot = barrenIsland.transform.Find("GeneratedBarrenIslandRoot");
+        SpriteRenderer source = visualRoot != null
+            ? visualRoot.Find("SalvageRivetedPlate")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer carried = visualRoot != null
+            ? visualRoot.Find("CarriedWreckPart")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer stagedRenderer = visualRoot != null
+            ? visualRoot.Find("StagedAtShelter_RivetedPlate")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer patch = visualRoot != null
+            ? visualRoot.Find("CisternRivetedPatch")?.GetComponent<SpriteRenderer>()
+            : null;
+        bool oneFinalOwner = source != null && carried != null && stagedRenderer != null && patch != null &&
+            !source.enabled && !carried.enabled && !stagedRenderer.enabled && patch.enabled;
+        bool physicalCommit = staged && workPositionHasVisibleSupport &&
+            startedBeforeFirstTide && repairChoiceApplied &&
+            barrenIsland.CisternPlatePatchApplied &&
+            barrenIsland.Cistern.Crack01 <= 0.1f &&
+            barrenIsland.Cistern.Crack01 < crackBefore - 0.5f &&
+            barrenIsland.GetDestination(TideIslandSalvagePart.RivetedPlate) ==
+                TideIslandSalvageDestination.IntegratedIntoShelter &&
+            barrenIsland.ShelterStagedParts == 0 &&
+            metalStock == 0 && oneFinalOwner;
+
+        string evidence =
+            $"六路={allSixStartFromOnePhysicalPart}/拆放={dismantled}/{completedPart}/{staged}/" +
+            $"承重={workPositionHasVisibleSupport}/首潮前={startedBeforeFirstTide}/" +
+            $"裂缝={crackBefore:F2}->{barrenIsland.Cistern.Crack01:F2}/" +
+            $"owner={oneFinalOwner}/余铁={metalStock}";
+        return allSixStartFromOnePhysicalPart && physicalCommit
+            ? $"PASS：三件船骸投向住所或船的六种选择都能立即兑现，铆板修池保持唯一实物与真实漏率收益。{evidence}"
+            : $"FAIL：首件材料仍存在死路、状态门、重复 owner 或虚假蓄水收益。{evidence}";
+    }
+
     private bool CompleteEditorWreckDismantle(
         Vector2 workPosition,
         out TideIslandSalvagePart completedPart)

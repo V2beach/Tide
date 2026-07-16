@@ -100,6 +100,7 @@ Test-Gate ($visualProbe.Contains("RunEditorBoatPassengerScaleProbe")) "visual ga
 Test-Gate ($visualProbe.Contains("RunEditorWalkSurfacePathContinuityProbe")) "visual gate covers authored walk surfaces"
 Test-Gate ($visualProbe.Contains("RunEditorFirstDayAutonomyProbe")) "visual gate covers first-day autonomy"
 Test-Gate ($visualProbe.Contains("RunEditorWreckDismantleTideWindowProbe")) "visual gate covers physical wreck dismantling in a tide window"
+Test-Gate ($visualProbe.Contains("RunEditorArrivalSalvagePayoffProbe")) "visual gate covers six immediate arrival-salvage payoffs"
 Test-Gate ($visualProbe.Contains("RunEditorMixedSemidiurnalOpportunityProbe")) "visual gate covers unequal adjacent-tide opportunities"
 Test-Gate ($visualProbe.Contains("TideStormRescueTradeoffConvergenceProbe.Run")) "visual gate covers storm rescue tradeoff"
 Test-Gate ($visualProbe.Contains("RunEditorStormManifestOwnershipProbe")) "visual gate covers storm cargo conservation"

@@ -73,6 +73,7 @@ gate grep -q RunEditorBoatPassengerScaleProbe "$root/Assets/Editor/TideVisualSce
 gate grep -q RunEditorWalkSurfacePathContinuityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorFirstDayAutonomyProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorWreckDismantleTideWindowProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
+gate grep -q RunEditorArrivalSalvagePayoffProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorMixedSemidiurnalOpportunityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q TideStormRescueTradeoffConvergenceProbe.Run "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorStormManifestOwnershipProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"

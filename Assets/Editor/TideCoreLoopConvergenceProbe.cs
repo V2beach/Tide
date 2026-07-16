@@ -279,6 +279,9 @@ public static class TideCoreLoopConvergenceProbe
         TideRainCisternState rainy = TideRainCisternModel.Advance(initial, 1800f, 22f, 1f, 0f);
         TideRainCisternState dry = TideRainCisternModel.Advance(rainy, 1800f, 0f, 1f, 0f);
         TideRainCisternState salted = TideRainCisternModel.Advance(dry, 80f, 0f, 1f, 1f);
+        TideRainCisternState repaired = TideRainCisternModel.RepairCrack(initial, 1f);
+        TideRainCisternState damagedLeak = TideRainCisternModel.Advance(initial, 1800f, 0f, 1f, 0f);
+        TideRainCisternState repairedLeak = TideRainCisternModel.Advance(repaired, 1800f, 0f, 1f, 0f);
         TideRainCisternState afterFill = TideRainCisternModel.WithdrawPotableWater(
             initial,
             4f,
@@ -287,6 +290,9 @@ public static class TideCoreLoopConvergenceProbe
         Require(rainy.StoredLiters > initial.StoredLiters, "雨槽没有增加蓄水");
         Require(dry.StoredLiters < rainy.StoredLiters, "裂池在无雨时没有漏水");
         Require(salted.SaltFraction01 > dry.SaltFraction01, "暴潮越池没有提高盐分");
+        Require(repaired.Crack01 <= 0.1f &&
+            repairedLeak.StoredLiters > damagedLeak.StoredLiters + 0.4f,
+            "铆接补片没有显著降低同一段现实时间内的裂池漏水");
         Require(TideRainCisternModel.GetDrinkableLiters(initial) >= initial.StoredLiters - 0.001f,
             "初始雨水被错误标成不可饮用盐水");
         Require(TideRainCisternModel.GetDrinkableLiters(salted) <= 0.001f,
@@ -294,7 +300,7 @@ public static class TideCoreLoopConvergenceProbe
         Require(Mathf.Abs(portable.Liters - 4f) <= 0.001f &&
             Mathf.Abs(initial.StoredLiters - afterFill.StoredLiters - portable.Liters) <= 0.001f,
             "蓄水池装入便携容器时没有守恒");
-        return $"蓄水 {initial.StoredLiters:F1}->{rainy.StoredLiters:F1}->{dry.StoredLiters:F1}L/暴潮盐{salted.SaltFraction01:P2}/装罐{portable.Liters:F1}L";
+        return $"蓄水 {initial.StoredLiters:F1}->{rainy.StoredLiters:F1}->{dry.StoredLiters:F1}L/补片裂缝{initial.Crack01:F2}->{repaired.Crack01:F2}/暴潮盐{salted.SaltFraction01:P2}/装罐{portable.Liters:F1}L";
     }
 
     private static string ProbeIslandOwnership()
@@ -504,18 +510,13 @@ public static class TideCoreLoopConvergenceProbe
             hullNeeds);
         Require(stockOnlySelection == 0, "库存已足时仍误吞可见船骸原物");
 
-        TideMaterialBundle cabinNeeds = new TideMaterialBundle(1, 0, 0, 1, 0);
+        TideMaterialBundle cabinNeeds = new TideMaterialBundle(0, 0, 0, 2, 0);
         int plateAlone = TideSalvageMaterialModel.SelectMinimumParts(
             TideSalvageMaterialModel.RivetedPlateBit,
             new TideMaterialBundle(),
             cabinNeeds);
-        Require(plateAlone < 0, "铆接板凭空提供了不存在的木料");
-        int plateWithStoredWood = TideSalvageMaterialModel.SelectMinimumParts(
-            TideSalvageMaterialModel.RivetedPlateBit,
-            new TideMaterialBundle(1, 0, 0, 0, 0),
-            cabinNeeds);
-        Require(plateWithStoredWood == TideSalvageMaterialModel.RivetedPlateBit,
-            "已有木料时铆接板仍不能进入船舱维修");
+        Require(plateAlone == TideSalvageMaterialModel.RivetedPlateBit,
+            "开场铆接板放到船边仍不能独立完成金属舱盖与排水口第一阶段");
 
         int curvedRibSelection = TideSalvageMaterialModel.SelectMinimumParts(
             TideSalvageMaterialModel.HeavyKeelRibPieceABit |
@@ -524,7 +525,7 @@ public static class TideCoreLoopConvergenceProbe
             hullNeeds);
         Require(curvedRibSelection == TideSalvageMaterialModel.HeavyKeelRibPieceABit,
             "成形弯肋不能作为一处柱脚斜撑或船体肋骨的最小原物提交");
-        return "原物最终固定=最少组合/库存足不误吞/铆板不生木/弯肋保形";
+        return "原物最终固定=最少组合/库存足不误吞/铆板首修不生木/弯肋保形";
     }
 
     private static string ProbeRepairWorkPhases()

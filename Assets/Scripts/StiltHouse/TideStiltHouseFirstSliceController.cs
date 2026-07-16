@@ -157,6 +157,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     {
         None,
         Stilt,
+        Cistern,
         Sail,
         Lamp,
         Roof,
@@ -1564,6 +1565,17 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return;
         }
 
+        // 船骸启动物不必先熬完整个潮次才产生价值。只要同一件原物已经被玩家
+        // 搬到可见施工位，就允许在首潮前投入一个外部工位；这会与布网、观潮
+        // 争夺真实低潮时间，而不是由剧情状态机发放一次免费修理。
+        bool hasStagedArrivalPart = barrenIsland != null &&
+            (barrenIsland.ShelterStagedParts > 0 || barrenIsland.BoatStagedParts > 0);
+        if (state != SliceState.RepairMoment && !repairChoiceApplied &&
+            hasStagedArrivalPart && HandleRepairWorkAtWorldTarget(deltaTime))
+        {
+            return;
+        }
+
         if (state == SliceState.LowTidePlanning)
         {
             if (dayNightPhase == DayNightPhase.Night && Input.GetKeyDown(KeyCode.F) && IsPlayerNearRestPoint())
@@ -2367,6 +2379,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     private bool IsOutdoorRepairChoice(RepairChoice choice)
     {
         return choice == RepairChoice.Stilt ||
+            choice == RepairChoice.Cistern ||
             choice == RepairChoice.Net ||
             choice == RepairChoice.Hull ||
             choice == RepairChoice.Sail ||
@@ -2381,6 +2394,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             ConsiderRepairChoice(RepairChoice.Net, contextDistance, ref closestChoice, ref closestDistance);
             ConsiderRepairChoice(RepairChoice.Stilt, shoreWorkDistance, ref closestChoice, ref closestDistance);
+            ConsiderRepairChoice(RepairChoice.Cistern, contextDistance, ref closestChoice, ref closestDistance);
             // The boat exposes three physical work areas. Choosing only the first
             // affordable recommendation made the hull steal input even while the
             // survivor stood beside the mast or cabin. Proximity now owns selection.
@@ -2429,7 +2443,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     private float GetRepairWorkDuration(RepairChoice choice)
     {
         float baseDuration;
-        if (choice == RepairChoice.Stilt || choice == RepairChoice.Hull)
+        if (choice == RepairChoice.Stilt || choice == RepairChoice.Hull || choice == RepairChoice.Cistern)
         {
             baseDuration = 4.8f;
         }
@@ -2477,6 +2491,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         if (choice == RepairChoice.Stilt)
         {
             return stiltIntegrity >= 3;
+        }
+        if (choice == RepairChoice.Cistern)
+        {
+            return barrenIsland == null || barrenIsland.Cistern.Crack01 <= 0.1f;
         }
         if (choice == RepairChoice.Net)
         {
@@ -2607,15 +2625,28 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return false;
         }
 
-        bool nearShelterStaging = Mathf.Abs(
-            playerPosition.x - TideBarrenIslandController.ShelterDeliveryX) <= 0.52f;
+        bool nearCistern = barrenIsland.IsNearCistern(playerPosition);
+        bool carryingCisternPlate = barrenIsland.CarriedPart == TideIslandSalvagePart.RivetedPlate;
+        bool nearShelterStaging = carryingCisternPlate
+            ? nearCistern
+            : Mathf.Abs(playerPosition.x - TideBarrenIslandController.ShelterDeliveryX) <= 0.52f;
         bool nearBoatStaging = Mathf.Abs(playerPosition.x - EscapeBoatStagingX) <= 0.52f;
         TideIslandContextAction action = TideIslandInteractionModel.Resolve(
             barrenIsland.CarriedPart,
             nearShelterStaging,
             nearBoatStaging,
             barrenIsland.IsNearWreck(playerPosition),
-            barrenIsland.IsNearCistern(playerPosition));
+            nearCistern);
+
+        bool cisternPlateReady = barrenIsland.GetDestination(TideIslandSalvagePart.RivetedPlate) ==
+            TideIslandSalvageDestination.ShelterStaging &&
+            barrenIsland.Cistern.Crack01 > 0.1f;
+        if (action == TideIslandContextAction.DrinkFromCistern && cisternPlateReady)
+        {
+            // 一旦原板已经放在裂口旁，同一个 F 优先继续这件可见工作。完成后
+            // 裂口不再抢占输入，蓄水池恢复普通饮水交互。
+            return false;
+        }
 
         if (interactionPressed &&
             (action == TideIslandContextAction.StageAtShelter ||
@@ -2630,7 +2661,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             }
 
             lastActionHint = use == TideIslandSalvageUse.Shelter
-                ? $"{stagedPart} 留在屋侧施工位；它尚未固定，也没有变成材料数字。"
+                ? stagedPart == TideIslandSalvagePart.RivetedPlate
+                    ? "铆接板放在裂蓄水池旁；它尚未固定，池壁和原船骸仍只拥有这一块板。"
+                    : $"{stagedPart} 留在屋侧施工位；它尚未固定，也没有变成材料数字。"
                 : $"{stagedPart} 留在船边检修位；检查、试装和固定后才会成为船的一部分。";
             return true;
         }
@@ -8416,6 +8449,15 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                     : "钻穿补木与旧桩，收紧湿绳，再检查平台是否回平。";
         }
 
+        if (choice == RepairChoice.Cistern)
+        {
+            return step <= 1
+                ? "沿水迹找出仍在渗漏的裂缝，确认池壁没有继续张开。"
+                : step == 3
+                    ? "剪整铆接板，让它跨过裂口并贴合池壁弧面。"
+                    : "穿孔压紧补片，填实板缘，再观察池外是否继续挂水。";
+        }
+
         if (choice == RepairChoice.Net)
         {
             return step <= 1
@@ -8531,6 +8573,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private string GetRepairCleaningInstruction(RepairChoice choice)
     {
+        if (choice == RepairChoice.Cistern)
+        {
+            return "把裂口外侧的盐霜、浮锈和湿藻刮净，擦到硬实池壁；污物不能掉回剩余淡水。";
+        }
         if (choice == RepairChoice.Net || choice == RepairChoice.Sail)
         {
             return "先用少量淡水洗去盐泥，拆掉失去强度的腐线，再把纤维摊开晾到不滴水。";
@@ -8552,6 +8598,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private string GetRepairSealingInstruction(RepairChoice choice)
     {
+        if (choice == RepairChoice.Cistern)
+        {
+            return "从雨槽缓慢放一小股水，沿补片四边摸查渗漏；池外不再挂水才算封住。";
+        }
         if (choice == RepairChoice.Stilt || choice == RepairChoice.Workbench || choice == RepairChoice.Bed)
         {
             return "逐步加上真实负重，观察接缝和支点；确认不再位移后才收走工具与余料。";
@@ -8798,6 +8848,12 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             timberNeed = 2;
             ropeNeed = 1;
         }
+        else if (choice == RepairChoice.Cistern)
+        {
+            // 一整块铆接板被剪成补片、压条和铆钉，正好吃掉船骸板的两份金属；
+            // 不把剩余半块藏进抽象库存，也不凭空要求海岛上不存在的木料。
+            metalNeed = 2;
+        }
         else if (choice == RepairChoice.Net)
         {
             ropeNeed = 1;
@@ -8835,8 +8891,17 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         }
         else if (choice == RepairChoice.Cabin)
         {
-            timberNeed = 1;
-            metalNeed = 1;
+            if (boatCabinIntegrity <= 0)
+            {
+                // 第一阶段先把铆板做成舱盖、排水口护板和压舱隔片；后续结构
+                // 加固才需要木框。这样开场把板送到船边也是完整而非陷阱选择。
+                metalNeed = 2;
+            }
+            else
+            {
+                timberNeed = 1;
+                metalNeed = 1;
+            }
         }
     }
 
@@ -8864,6 +8929,14 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             stiltIntegrity = Mathf.Min(3, stiltIntegrity + 1);
             netIntegrity = Mathf.Min(3, netIntegrity + 1);
             return "盐木被削掉软烂边，楔进承重桩后钻孔穿绳并加斜撑；地基多撑一截，也补了一段破网。";
+        }
+
+        if (choice == RepairChoice.Cistern)
+        {
+            bool patched = barrenIsland != null && barrenIsland.ApplyCisternPlatePatch();
+            return patched
+                ? "铆接板跨住主裂口，压条和旧铆钉把边缘锁回池壁；同样一池雨水现在会留得更久。"
+                : "池壁裂口已经封住；没有重复生成第二块补片。";
         }
 
         if (choice == RepairChoice.Net)
@@ -8924,9 +8997,12 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
         if (choice == RepairChoice.Cabin)
         {
+            bool firstCabinRepair = boatCabinIntegrity <= 0;
             boatCabinIntegrity = Mathf.Min(2, boatCabinIntegrity + 1);
             RecalculateBoatReadiness();
-            return "材料被做成舱盖、压舱格和固定桶座；远航时货物不再全泡在舱底。";
+            return firstCabinRepair
+                ? "铆接板被剪成低矮舱盖、排水口护板和压舱隔片；积水能舀出，货物也不再直接泡在舱底。"
+                : "木框撑住舱盖并补齐绑货点和固定桶座；远航载荷不再随每一道浪滑向一舷。";
         }
 
         stoveCondition = Mathf.Min(2, stoveCondition + 1);
@@ -10258,7 +10334,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                     GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.02f),
                 GetNaturalSailingWindSpeed(),
                 GetOceanSample(TideBarrenIslandController.CisternX).SurfaceY,
-                time);
+                time,
+                pendingRepairChoice == RepairChoice.Cistern && !repairChoiceApplied,
+                pendingRepairChoice == RepairChoice.Cistern ? repairWorkProgress : 0f);
         }
         wrackLine?.UpdatePresentation(
             viewMode == SliceViewMode.Shelter && state != SliceState.FinalDeparture);
@@ -17880,6 +17958,13 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.18f);
         }
 
+        if (choice == RepairChoice.Cistern)
+        {
+            return new Vector2(
+                TideBarrenIslandController.CisternX - 0.46f,
+                GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.14f);
+        }
+
         if (choice == RepairChoice.Net || choice == RepairChoice.Hull || choice == RepairChoice.Cabin)
         {
             return workPosition + new Vector2(-0.26f, 0.08f);
@@ -18814,6 +18899,11 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return "修地基";
         }
 
+        if (choice == RepairChoice.Cistern)
+        {
+            return "封蓄水池裂口";
+        }
+
         if (choice == RepairChoice.Sail)
         {
             return "补帆";
@@ -18895,6 +18985,14 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return HasHdFormalHouse()
                 ? new Vector2(GetShoreWorkX(), -1.68f)
                 : useFormalHouse ? new Vector2(-0.96f, -1.18f) : houseAnchor + new Vector2(-1.12f, -0.54f);
+        }
+
+        if (choice == RepairChoice.Cistern)
+        {
+            // 人站在池体左侧的可见裸岩上施工，而不是穿进池壁或跨出岛缘。
+            return new Vector2(
+                TideBarrenIslandController.CisternX - 0.72f,
+                GetPlayerLaneY(WalkLane.TideFlat));
         }
 
 

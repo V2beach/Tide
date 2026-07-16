@@ -66,6 +66,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     private static Sprite pipeSprite;
 
     [SerializeField] private TideRainCisternState cistern;
+    [SerializeField] private bool cisternPlatePatchApplied;
     [SerializeField] private TideIslandSalvagePart carriedPart;
     [SerializeField] private bool hullPlankRemoved;
     [SerializeField] private bool sailclothRemoved;
@@ -87,6 +88,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     private SpriteRenderer wreckRenderer;
     private SpriteRenderer cisternRenderer;
     private SpriteRenderer cisternSaltLineRenderer;
+    private SpriteRenderer cisternPlatePatchRenderer;
     private SpriteRenderer carriedPartRenderer;
     private readonly SpriteRenderer[] salvageRenderers = new SpriteRenderer[3];
     private readonly SpriteRenderer[] shelterStagedRenderers = new SpriteRenderer[3];
@@ -97,6 +99,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     private float lastPresentationTime;
 
     public TideRainCisternState Cistern => cistern;
+    public bool CisternPlatePatchApplied => cisternPlatePatchApplied;
     public TideIslandSalvagePart CarriedPart => carriedPart;
     public int ShelterStagedParts => shelterStagedParts;
     public int BoatStagedParts => boatStagedParts;
@@ -170,6 +173,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     public void ResetIsland()
     {
         cistern = TideRainCisternModel.CreateDamaged();
+        cisternPlatePatchApplied = false;
         carriedPart = TideIslandSalvagePart.None;
         hullPlankRemoved = false;
         sailclothRemoved = false;
@@ -185,6 +189,24 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         rivetedPlateDismantleProgress01 = 0f;
         dismantleWorkActive = false;
         UpdateVisibility(true);
+    }
+
+    /// <summary>
+    /// 把已经放在蓄水池旁的铆接板固定到裂口。这里同时提交水力状态和最终可见
+    /// owner，避免数值先修好、原板却消失，或场景出现第二块凭空生成的补片。
+    /// </summary>
+    public bool ApplyCisternPlatePatch()
+    {
+        if (cisternPlatePatchApplied)
+        {
+            return false;
+        }
+
+        float before = cistern.Crack01;
+        cistern = TideRainCisternModel.RepairCrack(cistern, 1f);
+        cisternPlatePatchApplied = cistern.Crack01 < before - 0.001f;
+        UpdateVisibility(visualRoot != null && visualRoot.gameObject.activeSelf);
+        return cisternPlatePatchApplied;
     }
 
     public void TickNaturalState(
@@ -430,7 +452,9 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         Vector2 boatStagingAnchor,
         float signedWind,
         float waterSurfaceY,
-        float time)
+        float time,
+        bool cisternRepairActive = false,
+        float cisternRepairProgress01 = 0f)
     {
         EnsureVisuals();
         groundY = walkSurfaceY;
@@ -481,10 +505,24 @@ public sealed class TideBarrenIslandController : MonoBehaviour
             new Color(0.94f, 0.95f, 0.9f, 0.92f),
             TideRainCisternModel.GetSaltContamination01(cistern));
 
+        bool plateStagedAtCistern = GetDestination(TideIslandSalvagePart.RivetedPlate) ==
+            TideIslandSalvageDestination.ShelterStaging;
+        bool plateTestFitted = cisternRepairActive && plateStagedAtCistern &&
+            cisternRepairProgress01 >= 0.42f;
+        cisternPlatePatchRenderer.enabled = cisternPlatePatchApplied || plateTestFitted;
+        if (cisternPlatePatchRenderer.enabled)
+        {
+            SetWorldSize(
+                cisternPlatePatchRenderer,
+                new Vector2(CisternX + 0.12f, groundY + 0.51f),
+                new Vector2(0.34f, 0.46f),
+                5f);
+        }
+
         UpdateGutters();
         UpdatePlants(signedWind, time);
         UpdateCarriedPart(playerPosition);
-        UpdateStagedParts(shelterStagingAnchor, boatStagingAnchor);
+        UpdateStagedParts(shelterStagingAnchor, boatStagingAnchor, plateTestFitted);
 
         // 岛前缘与水面只在真实高度相交，不能另画一条局部水线。
         float submerged01 = Mathf.InverseLerp(groundY - 0.55f, groundY + 0.2f, waterSurfaceY);
@@ -511,6 +549,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         salvageRenderers[2] = EnsureRenderer("SalvageRivetedPlate", GetPlateSprite(), 4);
         cisternRenderer = EnsureRenderer("CrackedRainCistern", GetCisternSprite(), 4);
         cisternSaltLineRenderer = EnsureRenderer("CisternSaltLine", GetSaltLineSprite(), 5);
+        cisternPlatePatchRenderer = EnsureRenderer("CisternRivetedPatch", GetPlateSprite(), 6);
         carriedPartRenderer = EnsureRenderer("CarriedWreckPart", null, 15);
         for (int i = 0; i < salvageRenderers.Length; i++)
         {
@@ -571,6 +610,7 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         salvageRenderers[1].enabled = !sailclothRemoved;
         salvageRenderers[2].enabled = !rivetedPlateRemoved;
         carriedPartRenderer.enabled = carriedPart != TideIslandSalvagePart.None;
+        cisternPlatePatchRenderer.enabled = cisternPlatePatchApplied;
         for (int i = 0; i < salvageRenderers.Length; i++)
         {
             TideIslandSalvageDestination destination = GetDestination((TideIslandSalvagePart)(i + 1));
@@ -619,7 +659,10 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         SetWorldSize(carriedPartRenderer, playerPosition + new Vector2(0f, 0.03f), size, -7f);
     }
 
-    private void UpdateStagedParts(Vector2 shelterAnchor, Vector2 boatAnchor)
+    private void UpdateStagedParts(
+        Vector2 shelterAnchor,
+        Vector2 boatAnchor,
+        bool plateTestFitted)
     {
         for (int i = 0; i < salvageRenderers.Length; i++)
         {
@@ -628,16 +671,29 @@ public sealed class TideBarrenIslandController : MonoBehaviour
             SpriteRenderer renderer = destination == TideIslandSalvageDestination.ShelterStaging
                 ? shelterStagedRenderers[i]
                 : boatStagedRenderers[i];
-            if (destination == TideIslandSalvageDestination.None)
+            if (destination != TideIslandSalvageDestination.ShelterStaging &&
+                destination != TideIslandSalvageDestination.EscapeBoatStaging)
             {
+                continue;
+            }
+
+            // 铆接板的住所用途就是裂池本体。玩家必须把它搬到池边，试装阶段后
+            // 同一 owner 才从地面切到裂口；不能在屋侧堆场和池壁同时出现两块板。
+            bool plateAtCistern = part == TideIslandSalvagePart.RivetedPlate &&
+                destination == TideIslandSalvageDestination.ShelterStaging;
+            if (plateAtCistern && plateTestFitted)
+            {
+                renderer.enabled = false;
                 continue;
             }
 
             // 三件原物分别靠在施工位、叠在干木面和放在可见检修面上；它们不跟
             // 船的浪上浮沉，因为此时尚未固定到船体，也不能提前获得维修收益。
-            Vector2 anchor = destination == TideIslandSalvageDestination.ShelterStaging
-                ? shelterAnchor
-                : boatAnchor;
+            Vector2 anchor = plateAtCistern
+                ? new Vector2(CisternX - 0.46f, groundY + 0.02f)
+                : destination == TideIslandSalvageDestination.ShelterStaging
+                    ? shelterAnchor
+                    : boatAnchor;
             Vector2 offset = part == TideIslandSalvagePart.HullPlank
                 ? new Vector2(0f, 0.11f)
                 : part == TideIslandSalvagePart.Sailcloth
