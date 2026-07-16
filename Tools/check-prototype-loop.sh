@@ -56,6 +56,7 @@ for file in "${required[@]}"; do gate test -f "$root/$file"; done
 controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
 editor_diagnostics="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs"
 repair_recipe="$root/Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs"
+barren_island="$root/Assets/Scripts/StiltHouse/TideBarrenIslandController.cs"
 for token in TickBarrenIslandNaturalState TickDismantleNearestPart wreckOcean.Agitation01 heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance stormRescue.Advance RunEditorStormManifestOwnershipProbe KeyCode.F3 forecastTideNotches.UpdatePresentation TideForecastSnapshotModel.Capture TideNetEncounterModel.Advance tideDriftFieldCycleOrdinal wrackLine.TrySettle; do
   gate grep -q "$token" "$controller"
 done
@@ -64,6 +65,9 @@ gate grep -q TideRepairRecipeModel.GetMaterialNeeds "$controller"
 gate grep -q TideRepairRecipeModel.GetStagingDestination "$controller"
 gate grep -q GetArrivalRepairTarget "$repair_recipe"
 gate grep -q GetMaterialNeeds "$repair_recipe"
+gate grep -q CisternWaterSurface "$barren_island"
+gate grep -q CisternSaltLine "$barren_island"
+gate grep -q CisternLeakStream "$barren_island"
 gate grep -q 'public partial class TideStiltHouseFirstSliceController' "$controller"
 gate grep -q '#if UNITY_EDITOR' "$editor_diagnostics"
 gate grep -q 'public partial class TideStiltHouseFirstSliceController' "$editor_diagnostics"

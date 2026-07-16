@@ -87,7 +87,9 @@ public sealed class TideBarrenIslandController : MonoBehaviour
     private SpriteRenderer rockFrontRenderer;
     private SpriteRenderer wreckRenderer;
     private SpriteRenderer cisternRenderer;
+    private SpriteRenderer cisternWaterSurfaceRenderer;
     private SpriteRenderer cisternSaltLineRenderer;
+    private SpriteRenderer cisternLeakStreamRenderer;
     private SpriteRenderer cisternPlatePatchRenderer;
     private SpriteRenderer carriedPartRenderer;
     private readonly SpriteRenderer[] salvageRenderers = new SpriteRenderer[3];
@@ -494,7 +496,21 @@ public sealed class TideBarrenIslandController : MonoBehaviour
 
         SetWorldSize(cisternRenderer, new Vector2(CisternX, groundY + 0.52f), new Vector2(1.18f, 1.06f), 0f);
         float fill01 = Mathf.Clamp01(cistern.StoredLiters / TideRainCisternModel.CapacityLiters);
-        float saltLine01 = Mathf.Max(fill01, cistern.HighestSaltLine01);
+        float cisternSurfaceY = groundY + 0.13f + fill01 * 0.67f;
+        cisternWaterSurfaceRenderer.enabled = cistern.StoredLiters > 0.25f;
+        if (cisternWaterSurfaceRenderer.enabled)
+        {
+            SetWorldSize(
+                cisternWaterSurfaceRenderer,
+                new Vector2(CisternX, cisternSurfaceY),
+                new Vector2(0.82f, 0.028f),
+                0f);
+            cisternWaterSurfaceRenderer.color = new Color(0.31f, 0.58f, 0.63f, 0.86f);
+        }
+
+        // 盐线是池壁留下的历史痕迹，不得继续兼任当前水面。否则水量下降时
+        // 玩家只能看到一条悬空不动的线，无法读出裂缝正在漏水。
+        float saltLine01 = Mathf.Clamp01(cistern.HighestSaltLine01);
         SetWorldSize(
             cisternSaltLineRenderer,
             new Vector2(CisternX, groundY + 0.13f + saltLine01 * 0.67f),
@@ -504,6 +520,24 @@ public sealed class TideBarrenIslandController : MonoBehaviour
             new Color(0.78f, 0.82f, 0.78f, 0.55f),
             new Color(0.94f, 0.95f, 0.9f, 0.92f),
             TideRainCisternModel.GetSaltContamination01(cistern));
+
+        float visibleLeak01 = GetVisibleCisternLeak01();
+        cisternLeakStreamRenderer.enabled = cistern.StoredLiters > 0.25f && visibleLeak01 > 0.025f;
+        if (cisternLeakStreamRenderer.enabled)
+        {
+            Vector2 leakStart = new Vector2(CisternX + 0.11f, groundY + 0.48f);
+            Vector2 leakEnd = new Vector2(CisternX + 0.18f, groundY + 0.035f);
+            SetSegment(
+                cisternLeakStreamRenderer,
+                leakStart,
+                leakEnd,
+                Mathf.Lerp(0.008f, 0.034f, visibleLeak01));
+            cisternLeakStreamRenderer.color = new Color(
+                0.31f,
+                0.6f,
+                0.65f,
+                Mathf.Lerp(0.42f, 0.82f, visibleLeak01));
+        }
 
         bool plateStagedAtCistern = GetDestination(TideIslandSalvagePart.RivetedPlate) ==
             TideIslandSalvageDestination.ShelterStaging;
@@ -548,8 +582,10 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         salvageRenderers[1] = EnsureRenderer("SalvageSailcloth", GetClothSprite(), 4);
         salvageRenderers[2] = EnsureRenderer("SalvageRivetedPlate", GetPlateSprite(), 4);
         cisternRenderer = EnsureRenderer("CrackedRainCistern", GetCisternSprite(), 4);
-        cisternSaltLineRenderer = EnsureRenderer("CisternSaltLine", GetSaltLineSprite(), 5);
-        cisternPlatePatchRenderer = EnsureRenderer("CisternRivetedPatch", GetPlateSprite(), 6);
+        cisternWaterSurfaceRenderer = EnsureRenderer("CisternWaterSurface", GetSaltLineSprite(), 5);
+        cisternSaltLineRenderer = EnsureRenderer("CisternSaltLine", GetSaltLineSprite(), 6);
+        cisternLeakStreamRenderer = EnsureRenderer("CisternLeakStream", GetSaltLineSprite(), 7);
+        cisternPlatePatchRenderer = EnsureRenderer("CisternRivetedPatch", GetPlateSprite(), 8);
         carriedPartRenderer = EnsureRenderer("CarriedWreckPart", null, 15);
         for (int i = 0; i < salvageRenderers.Length; i++)
         {
@@ -610,6 +646,10 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         salvageRenderers[1].enabled = !sailclothRemoved;
         salvageRenderers[2].enabled = !rivetedPlateRemoved;
         carriedPartRenderer.enabled = carriedPart != TideIslandSalvagePart.None;
+        cisternWaterSurfaceRenderer.enabled = cistern.StoredLiters > 0.25f;
+        cisternSaltLineRenderer.enabled = true;
+        cisternLeakStreamRenderer.enabled = cistern.StoredLiters > 0.25f &&
+            GetVisibleCisternLeak01() > 0.025f;
         cisternPlatePatchRenderer.enabled = cisternPlatePatchApplied;
         for (int i = 0; i < salvageRenderers.Length; i++)
         {
@@ -626,6 +666,12 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         SetSegment(gutters[0], roofEdge, new Vector2(CisternX + 0.5f, roofEdge.y), 0.055f);
         SetSegment(gutters[1], new Vector2(CisternX + 0.5f, roofEdge.y), new Vector2(CisternX + 0.5f, tankTop.y), 0.05f);
         SetSegment(gutters[2], new Vector2(CisternX + 0.5f, tankTop.y), tankTop, 0.05f);
+    }
+
+    private float GetVisibleCisternLeak01()
+    {
+        float fill01 = Mathf.Clamp01(cistern.StoredLiters / TideRainCisternModel.CapacityLiters);
+        return Mathf.InverseLerp(0.08f, 0.72f, cistern.Crack01) * Mathf.Sqrt(fill01);
     }
 
     private void UpdatePlants(float signedWind, float time)

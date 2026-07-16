@@ -2754,6 +2754,43 @@ public partial class TideStiltHouseFirstSliceController
                 out TideIslandSalvagePart stagedPart) &&
             stagedPart == TideIslandSalvagePart.RivetedPlate;
 
+        UpdateVisuals(0.25f);
+        Transform visualRoot = barrenIsland.transform.Find("GeneratedBarrenIslandRoot");
+        SpriteRenderer source = visualRoot != null
+            ? visualRoot.Find("SalvageRivetedPlate")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer carried = visualRoot != null
+            ? visualRoot.Find("CarriedWreckPart")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer stagedRenderer = visualRoot != null
+            ? visualRoot.Find("StagedAtShelter_RivetedPlate")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer patch = visualRoot != null
+            ? visualRoot.Find("CisternRivetedPatch")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer cisternBody = visualRoot != null
+            ? visualRoot.Find("CrackedRainCistern")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer liveWater = visualRoot != null
+            ? visualRoot.Find("CisternWaterSurface")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer saltResidue = visualRoot != null
+            ? visualRoot.Find("CisternSaltLine")?.GetComponent<SpriteRenderer>()
+            : null;
+        SpriteRenderer leakStream = visualRoot != null
+            ? visualRoot.Find("CisternLeakStream")?.GetComponent<SpriteRenderer>()
+            : null;
+        float waterYBeforeRepair = liveWater != null ? liveWater.transform.position.y : float.NaN;
+        float feetY = GetPlayerStandingFeetY(WalkLane.TideFlat);
+        bool damagedCisternIsReadable = cisternBody != null && liveWater != null &&
+            saltResidue != null && leakStream != null && liveWater.enabled &&
+            saltResidue.enabled && leakStream.enabled &&
+            Mathf.Abs(liveWater.transform.position.y - saltResidue.transform.position.y) > 0.008f &&
+            liveWater.bounds.min.x >= cisternBody.bounds.min.x - 0.02f &&
+            liveWater.bounds.max.x <= cisternBody.bounds.max.x + 0.02f &&
+            leakStream.bounds.max.y >= feetY + 0.43f &&
+            leakStream.bounds.min.y <= feetY + 0.07f;
+
         float crackBefore = barrenIsland.Cistern.Crack01;
         playerLane = WalkLane.TideFlat;
         viewMode = SliceViewMode.Shelter;
@@ -2769,22 +2806,14 @@ public partial class TideStiltHouseFirstSliceController
         }
         UpdateVisuals(1f);
 
-        Transform visualRoot = barrenIsland.transform.Find("GeneratedBarrenIslandRoot");
-        SpriteRenderer source = visualRoot != null
-            ? visualRoot.Find("SalvageRivetedPlate")?.GetComponent<SpriteRenderer>()
-            : null;
-        SpriteRenderer carried = visualRoot != null
-            ? visualRoot.Find("CarriedWreckPart")?.GetComponent<SpriteRenderer>()
-            : null;
-        SpriteRenderer stagedRenderer = visualRoot != null
-            ? visualRoot.Find("StagedAtShelter_RivetedPlate")?.GetComponent<SpriteRenderer>()
-            : null;
-        SpriteRenderer patch = visualRoot != null
-            ? visualRoot.Find("CisternRivetedPatch")?.GetComponent<SpriteRenderer>()
-            : null;
         bool oneFinalOwner = source != null && carried != null && stagedRenderer != null && patch != null &&
             !source.enabled && !carried.enabled && !stagedRenderer.enabled && patch.enabled;
-        bool physicalCommit = staged && workPositionHasVisibleSupport &&
+        bool sealedCisternIsReadable = liveWater != null && saltResidue != null &&
+            leakStream != null && liveWater.enabled && saltResidue.enabled &&
+            !leakStream.enabled &&
+            Mathf.Abs(liveWater.transform.position.y - waterYBeforeRepair) <= 0.001f;
+        bool physicalCommit = staged && damagedCisternIsReadable && sealedCisternIsReadable &&
+            workPositionHasVisibleSupport &&
             startedBeforeFirstTide && repairChoiceApplied &&
             barrenIsland.CisternPlatePatchApplied &&
             barrenIsland.Cistern.Crack01 <= 0.1f &&
@@ -2798,6 +2827,7 @@ public partial class TideStiltHouseFirstSliceController
             $"六路={allSixStartFromOnePhysicalPart}/拆放={dismantled}/{completedPart}/{staged}/" +
             $"承重={workPositionHasVisibleSupport}/首潮前={startedBeforeFirstTide}/" +
             $"裂缝={crackBefore:F2}->{barrenIsland.Cistern.Crack01:F2}/" +
+            $"池态={damagedCisternIsReadable}->{sealedCisternIsReadable}/" +
             $"owner={oneFinalOwner}/余铁={metalStock}";
         return allSixStartFromOnePhysicalPart && physicalCommit
             ? $"PASS：三件船骸投向住所或船的六种选择都能立即兑现，铆板修池保持唯一实物与真实漏率收益。{evidence}"

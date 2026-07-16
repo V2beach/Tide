@@ -65,6 +65,7 @@ foreach ($file in $required) {
 $controller = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
 $editorDiagnostics = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs"
 $repairRecipe = Read-ProjectText "Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs"
+$barrenIsland = Read-ProjectText "Assets/Scripts/StiltHouse/TideBarrenIslandController.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
 Test-Gate ($controller.Contains("TickDismantleNearestPart") -and
     $controller.Contains("wreckOcean.Agitation01")) "wreck dismantling consumes continuous input and the authoritative ocean sample"
@@ -79,6 +80,9 @@ Test-Gate ($controller.Contains("TideRepairRecipeModel.GetMaterialNeeds") -and
     $controller.Contains("TideRepairRecipeModel.GetStagingDestination")) "runtime controller consumes the canonical repair recipe model"
 Test-Gate ($repairRecipe.Contains("GetArrivalRepairTarget") -and
     $repairRecipe.Contains("GetMaterialNeeds")) "repair targets, first salvage routes, and material needs share one pure model"
+Test-Gate ($barrenIsland.Contains("CisternWaterSurface") -and
+    $barrenIsland.Contains("CisternSaltLine") -and
+    $barrenIsland.Contains("CisternLeakStream")) "cistern current water, historical salt, and active leak stay separate"
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
 Test-Gate ($controller.Contains("mooringRope.AdvanceEnvironment")) "mooring runtime orchestration is extracted"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
