@@ -27,6 +27,7 @@ required=(
   Assets/Scripts/StiltHouse/TideHeavyWreckSalvageController.cs
   Assets/Scripts/StiltHouse/TideV85HeavyWreckCatalog.cs
   Assets/Scripts/StiltHouse/TideMooringRopeModel.cs
+  Assets/Scripts/StiltHouse/TideMooringRopeController.cs
   Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs
   Assets/Scripts/StiltHouse/TideStormRescueModel.cs
   Assets/Editor/TideCoreLoopConvergenceProbe.cs
@@ -40,7 +41,7 @@ required=(
 for file in "${required[@]}"; do gate test -f "$root/$file"; done
 
 controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
-for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput TideSailboatDynamicsModel.Advance TickStormRescue RunEditorStormManifestOwnershipProbe KeyCode.F3; do
+for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance TickStormRescue RunEditorStormManifestOwnershipProbe KeyCode.F3; do
   gate grep -q "$token" "$controller"
 done
 gate grep -q RunEditorBoatPassengerScaleProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"

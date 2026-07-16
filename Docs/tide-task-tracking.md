@@ -78,6 +78,9 @@
 ## P1 架构
 
 - [ ] 将 `TideStiltHouseFirstSliceController` 中新增状态编排继续拆成岛屿、泊位、航行、暴潮 presenter；纯公式已独立
+  - [x] 泊位绳：`TideMooringRopeController` 独立拥有输入占用、状态推进、一次性环境结果和绳形表现；主控制器只提供人物/船锚点与统一风流
+    - [x] 模块门覆盖甩绳起手、松手命中、张力收绳、风流推进、靠稳结果、连续绳段和船艉端点；正式 Scene 登船路径/可走面回归通过
+  - [ ] 航行与暴潮继续按同一边界拆分；不得在新模块内复制潮位、风场或库存 owner
 - [x] 借潮重物独立为 `TideHeavyWreckTidalLiftModel` + `TideHeavyWreckSalvageController`，主控制器只转发输入、统一海况和可见性
 - [x] 船骸原物可见暂存在住所/船施工位；源船骸、手持物和两个施工位保持唯一显示，暂存不增加库存数字
 - [x] 接通日用水消耗、便携容器与盐水污染；状态只在 `F3` 调试层显示，不增加常驻口渴条

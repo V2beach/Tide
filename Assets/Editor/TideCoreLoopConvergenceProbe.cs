@@ -363,21 +363,103 @@ public static class TideCoreLoopConvergenceProbe
 
     private static string ProbeMooringRope()
     {
-        TideMooringRopeState rope = TideMooringRopeModel.CreateLoose(1.08f);
-        rope = TideMooringRopeModel.BeginSwing(rope);
-        rope = TideMooringRopeModel.AdvanceSwing(rope, 0.55f, true);
-        rope = TideMooringRopeModel.ReleaseThrow(rope);
-        Require(rope.Phase == TideMooringRopePhase.Attached, "正确甩绳时没有套住船艉");
-        for (int i = 0; i < 1200 && rope.Phase != TideMooringRopePhase.Secured; i++)
+        GameObject root = new GameObject("TideMooringRopeRuntimeProbe");
+        Texture2D probeTexture = null;
+        Sprite probeSprite = null;
+        try
         {
-            bool reelWithoutOverstrain = rope.Tension01 < 0.82f;
-            rope = TideMooringRopeModel.Advance(rope, 0.02f, 0.05f, 0f, reelWithoutOverstrain);
-        }
+            TideMooringRopeController rope = root.AddComponent<TideMooringRopeController>();
+            rope.ResetRuntime(1.08f);
 
-        Require(rope.Phase == TideMooringRopePhase.Secured, "收绳没有通过有限张力把船拉回泊位");
-        Require(Mathf.Abs(rope.BoatOffsetMeters) <= TideMooringRopeModel.SecuredOffsetMeters + 0.02f,
-            "固定后船仍离跳板过远");
-        return $"绳相={rope.Phase}/离岸{rope.BoatOffsetMeters:F2}m/张力{rope.Tension01:F2}";
+            TideMooringRopeInteractionResult start = rope.HandleInteraction(
+                true, true, true, false, 0f);
+            for (int i = 0; i < 28; i++)
+            {
+                rope.HandleInteraction(true, false, true, false, 0.02f);
+            }
+            TideMooringRopeInteractionResult release = rope.HandleInteraction(
+                true, false, false, true, 0f);
+            Require(start.Handled &&
+                start.Outcome == TideMooringRopeInteractionOutcome.SwingStarted,
+                "新泊位组件没有独占甩绳起手输入");
+            Require(release.Outcome == TideMooringRopeInteractionOutcome.ThrowAttached &&
+                rope.Phase == TideMooringRopePhase.Attached,
+                "正确松手时新泊位组件没有套住船艉");
+
+            probeTexture = new Texture2D(1, 1);
+            probeTexture.SetPixel(0, 0, Color.white);
+            probeTexture.Apply();
+            probeSprite = Sprite.Create(
+                probeTexture,
+                new Rect(0f, 0f, 1f, 1f),
+                new Vector2(0.5f, 0.5f),
+                100f);
+            SpriteRenderer[] segments = new SpriteRenderer[4];
+            for (int i = 0; i < segments.Length; i++)
+            {
+                segments[i] = new GameObject($"ProbeSegment_{i}").AddComponent<SpriteRenderer>();
+                segments[i].transform.SetParent(root.transform, false);
+                segments[i].sprite = probeSprite;
+                segments[i].sortingOrder = 13;
+            }
+            SpriteRenderer ropeEnd = new GameObject("ProbeRopeEnd").AddComponent<SpriteRenderer>();
+            ropeEnd.transform.SetParent(root.transform, false);
+            ropeEnd.sprite = probeSprite;
+            ropeEnd.sortingOrder = 14;
+            Vector2 expectedTie = new Vector2(1.08f, 0.24f);
+            rope.UpdatePresentation(
+                segments,
+                ropeEnd,
+                true,
+                Vector2.zero,
+                new Vector2(-0.1f, 0.12f),
+                expectedTie,
+                probeSprite,
+                0f);
+            bool presentationBound = ropeEnd.enabled &&
+                Vector2.Distance(ropeEnd.transform.localPosition, expectedTie) <= 0.001f;
+            for (int i = 0; i < segments.Length; i++)
+            {
+                presentationBound &= segments[i].enabled &&
+                    segments[i].transform.localScale.x > 0.001f;
+            }
+            Require(presentationBound,
+                "泊位组件推进了状态，但没有把同一状态绑定到连续绳段与船艉端点");
+
+            TideMooringRopeEnvironmentOutcome finalOutcome = TideMooringRopeEnvironmentOutcome.None;
+            for (int i = 0; i < 1200 && rope.Phase != TideMooringRopePhase.Secured; i++)
+            {
+                bool reelWithoutOverstrain = rope.State.Tension01 < 0.82f;
+                rope.HandleInteraction(true, false, reelWithoutOverstrain, false, 0f);
+                TideMooringRopeEnvironmentOutcome outcome = rope.AdvanceEnvironment(
+                    0.02f, 0.05f, 0f, false);
+                if (outcome != TideMooringRopeEnvironmentOutcome.None)
+                {
+                    finalOutcome = outcome;
+                }
+            }
+
+            Require(rope.Phase == TideMooringRopePhase.Secured,
+                "收绳没有通过有限张力把船拉回泊位");
+            Require(finalOutcome == TideMooringRopeEnvironmentOutcome.BoatSecured,
+                "船靠稳时新泊位组件没有向主控制器发出一次性结果");
+            Require(Mathf.Abs(rope.BoatOffsetMeters) <=
+                TideMooringRopeModel.SecuredOffsetMeters + 0.02f,
+                "固定后船仍离跳板过远");
+            return $"绳相={rope.Phase}/离岸{rope.BoatOffsetMeters:F2}m/张力{rope.State.Tension01:F2}/组件结果={finalOutcome}";
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(root);
+            if (probeSprite != null)
+            {
+                UnityEngine.Object.DestroyImmediate(probeSprite);
+            }
+            if (probeTexture != null)
+            {
+                UnityEngine.Object.DestroyImmediate(probeTexture);
+            }
+        }
     }
 
     private static string ProbeSailingDynamics()

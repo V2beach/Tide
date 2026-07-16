@@ -651,9 +651,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private bool sailingIngressMidWarned;
     private bool sailingIngressHighWarned;
     private bool sailingRangeBlockedThisTrip;
-    private float mooredBoatOffsetX;
-    private TideMooringRopeState mooringRopeState;
-    private bool mooringReelHeld;
+    private float mooredBoatOffsetFallback;
     private bool sailingClueCollected;
     private bool sailingRewardPending;
     private bool sailingClueWasLighthouse;
@@ -724,6 +722,24 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TideAudioController firstSliceAudio;
     private TideBarrenIslandController barrenIsland;
     private TideHeavyWreckSalvageController heavyWreckSalvage;
+    private TideMooringRopeController mooringRope;
+
+    // 旧场景与几何探针仍以这个名字读取船位。实际权威状态已经移入泊位绳
+    // 组件；fallback 只覆盖组件尚未由 EnsureScene 建立的反序列化瞬间。
+    private float mooredBoatOffsetX
+    {
+        get => mooringRope != null
+            ? mooringRope.BoatOffsetMeters
+            : mooredBoatOffsetFallback;
+        set
+        {
+            mooredBoatOffsetFallback = value;
+            if (mooringRope != null)
+            {
+                mooringRope.SetBoatOffsetForEditor(value);
+            }
+        }
+    }
     private int lampForecastCharges;
     private int loftForecastRound = -1;
     private int shortSailCount;
@@ -11068,9 +11084,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingIngressMidWarned = false;
         sailingIngressHighWarned = false;
         sailingRangeBlockedThisTrip = false;
-        mooringRopeState = TideMooringRopeModel.CreateLoose(1.08f);
-        mooredBoatOffsetX = mooringRopeState.BoatOffsetMeters;
-        mooringReelHeld = false;
+        mooringRope.ResetRuntime(1.08f);
+        mooredBoatOffsetFallback = mooringRope.BoatOffsetMeters;
         sailingClueCollected = false;
         sailingRewardPending = false;
         sailingClueWasLighthouse = false;
@@ -11191,7 +11206,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     /// </summary>
     private void HandleContextInteraction(float deltaTime)
     {
-        mooringReelHeld = false;
         stormRescueHeldIndex = -1;
         if (state == SliceState.FinalDeparture || isLaneTransitioning ||
             boatViewTransition != BoatViewTransition.None)
@@ -14518,55 +14532,30 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private bool HandleMooringRopeInput(float deltaTime)
     {
-        if (viewMode != SliceViewMode.Shelter || playerLane != WalkLane.TideFlat ||
-            Mathf.Abs(playerPosition.x - GetBoatBoardingX()) > boatBoardDistance * 1.35f ||
-            mooringRopeState.Phase == TideMooringRopePhase.Secured)
-        {
-            return false;
-        }
+        bool canInteract = viewMode == SliceViewMode.Shelter &&
+            playerLane == WalkLane.TideFlat &&
+            Mathf.Abs(playerPosition.x - GetBoatBoardingX()) <= boatBoardDistance * 1.35f;
+        TideMooringRopeInteractionResult result = mooringRope.HandleInteraction(
+            canInteract,
+            Input.GetKeyDown(KeyCode.F),
+            Input.GetKey(KeyCode.F),
+            Input.GetKeyUp(KeyCode.F),
+            deltaTime);
 
-        if (mooringRopeState.Phase == TideMooringRopePhase.Loose)
+        if (result.Outcome == TideMooringRopeInteractionOutcome.SwingStarted)
         {
-            if (!Input.GetKeyDown(KeyCode.F))
-            {
-                return false;
-            }
-
-            mooringRopeState = TideMooringRopeModel.BeginSwing(mooringRopeState);
             lastActionHint = "你握住绳圈开始甩动；松手时绳头会按这一圈的长度飞出去。";
-            return true;
         }
-
-        if (mooringRopeState.Phase == TideMooringRopePhase.Swinging)
+        else if (result.Outcome == TideMooringRopeInteractionOutcome.ThrowAttached)
         {
-            if (Input.GetKey(KeyCode.F))
-            {
-                mooringRopeState = TideMooringRopeModel.AdvanceSwing(
-                    mooringRopeState,
-                    deltaTime,
-                    true);
-                return true;
-            }
-
-            if (Input.GetKeyUp(KeyCode.F))
-            {
-                mooringRopeState = TideMooringRopeModel.ReleaseThrow(mooringRopeState);
-                lastActionHint = mooringRopeState.Phase == TideMooringRopePhase.Attached
-                    ? "绳圈套住了船艉系柱。继续按住 F 收绳，浪大时别让张力一直绷满。"
-                    : "绳头落进水里，没有够到船艉；等船和潮流改变距离后再甩。";
-            }
-
-            return true;
+            lastActionHint = "绳圈套住了船艉系柱。继续按住 F 收绳，浪大时别让张力一直绷满。";
         }
-
-        if (mooringRopeState.Phase == TideMooringRopePhase.Attached ||
-            mooringRopeState.Phase == TideMooringRopePhase.Reeling)
+        else if (result.Outcome == TideMooringRopeInteractionOutcome.ThrowMissed)
         {
-            mooringReelHeld = Input.GetKey(KeyCode.F);
-            return true;
+            lastActionHint = "绳头落进水里，没有够到船艉；等船和潮流改变距离后再甩。";
         }
 
-        return false;
+        return result.Handled;
     }
 
     private bool TryHandleMooringInteraction()
@@ -17173,29 +17162,18 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void TickMooredBoatCurrent(float deltaTime)
     {
-        if (sailTripActive)
-        {
-            mooringReelHeld = false;
-            return;
-        }
-
-        TideMooringRopePhase phaseBefore = mooringRopeState.Phase;
-        mooringRopeState = TideMooringRopeModel.Advance(
-            mooringRopeState,
+        TideMooringRopeEnvironmentOutcome outcome = mooringRope.AdvanceEnvironment(
             deltaTime,
             GetNaturalCurrentSpeed(),
             GetNaturalSailingWindSpeed(),
-            mooringReelHeld);
-        mooredBoatOffsetX = mooringRopeState.BoatOffsetMeters;
-        mooringReelHeld = false;
+            sailTripActive);
+        mooredBoatOffsetFallback = mooringRope.BoatOffsetMeters;
 
-        if (phaseBefore != TideMooringRopePhase.Loose &&
-            mooringRopeState.Phase == TideMooringRopePhase.Loose)
+        if (outcome == TideMooringRopeEnvironmentOutcome.RopeBroke)
         {
             lastActionHint = "浪和船速把绳子猛地绷断了；船仍在随潮漂，必须重新甩绳。";
         }
-        else if (phaseBefore != TideMooringRopePhase.Secured &&
-            mooringRopeState.Phase == TideMooringRopePhase.Secured)
+        else if (outcome == TideMooringRopeEnvironmentOutcome.BoatSecured)
         {
             lastActionHint = "船艉已经靠到跳板旁，绳长和相对速度都稳定下来，现在可以登船。";
         }
@@ -19429,6 +19407,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         if (heavyWreckSalvage == null)
         {
             heavyWreckSalvage = gameObject.AddComponent<TideHeavyWreckSalvageController>();
+        }
+        mooringRope = GetComponent<TideMooringRopeController>();
+        if (mooringRope == null)
+        {
+            mooringRope = gameObject.AddComponent<TideMooringRopeController>();
         }
         backdropRenderer = EnsureRenderer("GeneratedStiltFirstBackdrop", GetBackdropSprite(), -100);
         daySeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalDaySeaSky", GetFormalDaySeaSkySprite(), -99);
@@ -26224,61 +26207,20 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void UpdateMooringRopeVisuals()
     {
-        bool visible = viewMode == SliceViewMode.Shelter &&
-            state != SliceState.FinalDeparture &&
-            mooringRopeState.Phase != TideMooringRopePhase.Loose;
-        SetEnabled(mooringRopeSegments, visible);
-        SetEnabled(mooringRopeEndRenderer, visible);
-        if (!visible)
-        {
-            return;
-        }
-
-        Vector2 hand = mooringRopeState.Phase == TideMooringRopePhase.Secured
-            ? new Vector2(GetBoatBoardingX() - 0.1f, GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.12f)
-            : playerPosition + new Vector2(playerFacing * 0.2f, 0.14f);
+        Vector2 playerHand = playerPosition + new Vector2(playerFacing * 0.2f, 0.14f);
+        Vector2 securedDockPoint = new Vector2(
+            GetBoatBoardingX() - 0.1f,
+            GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.12f);
         Vector2 boatTie = GetMooredBoatPosition() + new Vector2(-0.48f, 0.24f);
-        Vector2 ropeEnd = boatTie;
-        float sag = -0.12f;
-        if (mooringRopeState.Phase == TideMooringRopePhase.Swinging)
-        {
-            float phase = Mathf.Clamp01(mooringRopeState.ThrowCharge01);
-            float angle = Mathf.Lerp(22f, 154f, phase) * Mathf.Deg2Rad;
-            float radius = Mathf.Lerp(0.38f, 0.92f, Mathf.Sin(phase * Mathf.PI));
-            ropeEnd = hand + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-            sag = Mathf.Lerp(0.06f, 0.22f, Mathf.Sin(phase * Mathf.PI));
-        }
-        else
-        {
-            float slackMeters = Mathf.Max(
-                0f,
-                mooringRopeState.RopeLengthMeters - Vector2.Distance(hand, boatTie));
-            sag = -Mathf.Lerp(0.06f, 0.34f, Mathf.Clamp01(slackMeters / 0.7f));
-        }
-
-        Vector2 control = (hand + ropeEnd) * 0.5f + Vector2.up * sag;
-        Vector2 previous = hand;
-        for (int i = 0; i < mooringRopeSegments.Count; i++)
-        {
-            float t = (i + 1f) / mooringRopeSegments.Count;
-            Vector2 point = EvaluateQuadraticBezier(hand, control, ropeEnd, t);
-            SetThinRopeSegment(mooringRopeSegments[i], previous, point);
-            previous = point;
-        }
-
-        mooringRopeEndRenderer.sprite = GetNetWeightSprite();
-        SetWorldSize(
+        mooringRope.UpdatePresentation(
+            mooringRopeSegments,
             mooringRopeEndRenderer,
-            ropeEnd,
-            new Vector2(0.08f, 0.11f),
-            new Color(0.47f, 0.4f, 0.3f, 0.96f),
-            0f);
-    }
-
-    private static Vector2 EvaluateQuadraticBezier(Vector2 start, Vector2 control, Vector2 end, float t)
-    {
-        float oneMinusT = 1f - Mathf.Clamp01(t);
-        return oneMinusT * oneMinusT * start + 2f * oneMinusT * t * control + t * t * end;
+            viewMode == SliceViewMode.Shelter && state != SliceState.FinalDeparture,
+            playerHand,
+            securedDockPoint,
+            boatTie,
+            GetNetWeightSprite(),
+            visualZ);
     }
 
     private void SetThinRopeSegment(SpriteRenderer renderer, Vector2 start, Vector2 end)

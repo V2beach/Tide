@@ -34,6 +34,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideHeavyWreckSalvageController.cs",
     "Assets/Scripts/StiltHouse/TideV85HeavyWreckCatalog.cs",
     "Assets/Scripts/StiltHouse/TideMooringRopeModel.cs",
+    "Assets/Scripts/StiltHouse/TideMooringRopeController.cs",
     "Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs",
     "Assets/Scripts/StiltHouse/TideStormRescueModel.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
@@ -54,6 +55,7 @@ Test-Gate ($controller.Contains("RunEditorHeavyWreckTidalLiftIntegrationProbe"))
 Test-Gate ($controller.Contains("heavyWreckSalvage.IsCarryingPiece")) "heavy pieces impose a physical drag cost"
 Test-Gate ($controller.Contains("GetRepairStagedPartMask")) "heavy pieces only enter compatible final repairs"
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
+Test-Gate ($controller.Contains("mooringRope.AdvanceEnvironment")) "mooring runtime orchestration is extracted"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
 Test-Gate ($controller.Contains("TickStormRescue")) "storm rescue advances in the world tick"
 Test-Gate ($controller.Contains("RunEditorStormManifestOwnershipProbe")) "storm cargo keeps a grounded physical manifest"

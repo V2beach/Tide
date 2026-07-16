@@ -23,10 +23,9 @@
 
 ### 泊位绳
 
-- 规则：`TideMooringRopeModel`
-- 输入：`HandleMooringRopeInput`
-- 世界推进：`TickMooredBoatCurrent`
-- 表现：`UpdateMooringRopeVisuals`
+- 纯规则：`TideMooringRopeModel`
+- 运行编排/表现：`TideMooringRopeController`；独立拥有输入占用、当前绳状态、收绳意图、断绳/靠稳一次性结果和贝塞尔绳形
+- 主控制器边界：`HandleMooringRopeInput` 只转发按键并消费交互结果，`TickMooredBoatCurrent` 只传统一潮流/风场并消费环境结果，`UpdateMooringRopeVisuals` 只传人物手、码头与船艉锚点
 - 状态：Loose -> Swinging -> Attached/Reeling -> Secured；张力过载回 Loose
 
 ### 借潮牵引重物
@@ -92,7 +91,7 @@
 
 ## 推荐阅读练习
 
-1. 从 `HandleMooringRopeInput` 追到 `TideMooringRopeModel.Advance`，画出每个状态和断绳条件。
+1. 从 `HandleMooringRopeInput` 追到 `TideMooringRopeController`，再进入 `TideMooringRopeModel.Advance`，画出输入、环境与表现分别拥有的数据。
 2. 从 `HandleSailingInput` 追到 `TideSailboatDynamicsModel.Advance`，分别关掉风、流、玩家输入，预测速度变化。
 3. 修改一个纯模型常量，先补 `TideCoreLoopConvergenceProbe` 断言，再改数值。
 4. 从 `TideHeavyWreckTidalLiftModel` 比较急流与平流的拖运率，解释为什么“涨潮”和“平流”是两个不同条件。
