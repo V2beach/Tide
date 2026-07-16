@@ -35,7 +35,8 @@ public static class TideCoreLoopConvergenceProbe
         string sailingReefRuntime = ProbeSailingReefRuntime();
         string sailingSalvageRuntime = ProbeSailingSalvageRuntime();
         string storm = ProbeStormRescue();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm}";
+        string stormRuntime = ProbeStormRescueRuntime();
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime}";
     }
 
     private static string ProbeCistern()
@@ -842,6 +843,71 @@ public static class TideCoreLoopConvergenceProbe
         }
         Require(secured.Secured && !secured.Lost, "持续固定物资后仍被判定冲失");
         return $"冲失水桶/海图={water.WashoutProgress01:F2}/{chart.WashoutProgress01:F2}/固定={secured.Secured}";
+    }
+
+    private static string ProbeStormRescueRuntime()
+    {
+        GameObject root = new GameObject("TideStormRescueRuntimeProbe");
+        try
+        {
+            TideStormRescueController rescue = root.AddComponent<TideStormRescueController>();
+            rescue.ResetRuntime();
+            rescue.SetItemPresent(TideStormRescueItemKind.DrinkingWater, true);
+            rescue.SetItemPresent(TideStormRescueItemKind.LighthouseChart, true);
+
+            bool heldBeforeRelease = rescue.TryHoldItem((int)TideStormRescueItemKind.DrinkingWater);
+            TideStormRescueAdvanceResult shallow = rescue.Advance(1f, 0.08f, 0.12f);
+            Require(!heldBeforeRelease && !shallow.CargoReleasedThisStep &&
+                !rescue.CargoReleased && rescue.FloodStarted,
+                "暴潮组件没有区分浅水已经进屋与搁架真正失效，或允许提前固定");
+
+            TideStormRescueAdvanceResult release = rescue.Advance(0.02f, 0.42f, 0.65f);
+            Require(release.CargoReleasedThisStep && rescue.CargoReleased && rescue.FloodStarted,
+                "真实水深和涌浪达到搁架失效条件时组件没有产生唯一释放事件");
+            TideStormRescueAdvanceResult releaseAgain = rescue.Advance(0.02f, 0.42f, 0.65f);
+            Require(!releaseAgain.CargoReleasedThisStep,
+                "搁架失效事件在持续洪水中重复触发");
+
+            int securedMask = 0;
+            int lostMask = 0;
+            int waterBit = 1 << (int)TideStormRescueItemKind.DrinkingWater;
+            int chartBit = 1 << (int)TideStormRescueItemKind.LighthouseChart;
+            for (int i = 0; i < 160 &&
+                ((securedMask & waterBit) == 0 || (lostMask & chartBit) == 0); i++)
+            {
+                if ((securedMask & waterBit) == 0)
+                {
+                    bool holding = rescue.TryHoldItem((int)TideStormRescueItemKind.DrinkingWater);
+                    Require(holding, "玩家仍在水桶旁持续交互时组件拒绝保持拉绳目标");
+                }
+                TideStormRescueAdvanceResult step = rescue.Advance(0.1f, 0.42f, 0.65f);
+                securedMask |= step.SecuredMask;
+                lostMask |= step.LostMask;
+            }
+
+            Require((securedMask & waterBit) != 0 && rescue.GetItem(TideStormRescueItemKind.DrinkingWater).Secured,
+                "持续在真实距离内收绳仍不能把水桶吊到高处");
+            Require((lostMask & chartBit) != 0 && rescue.GetItem(TideStormRescueItemKind.LighthouseChart).Lost,
+                "未处理的高浮力海图没有在同一股暴潮中更快冲失");
+
+            rescue.SetItemPresent(TideStormRescueItemKind.BoatMaterial, true);
+            int recoveredMask = rescue.SecureSurvivorsAfterRecede(0f);
+            int timberBit = 1 << (int)TideStormRescueItemKind.BoatMaterial;
+            Require((recoveredMask & timberBit) != 0 &&
+                rescue.GetItem(TideStormRescueItemKind.BoatMaterial).Secured,
+                "真实经历洪水并在退水后幸存的物资没有进入可整理状态");
+
+            rescue.ResetRuntime();
+            rescue.SetItemPresent(TideStormRescueItemKind.StoveFuel, true);
+            Require(rescue.SecureSurvivorsAfterRecede(0f) == 0,
+                "只有警戒清单、未经历洪水的干柴被睡眠白送到高处");
+
+            return $"暴潮组件=浅水不放/失效一次/水桶收妥/海图冲失/退水守恒，掩码{securedMask:X}/{lostMask:X}/{recoveredMask:X}";
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(root);
+        }
     }
 
     private static TideSailboatDynamicsState CreateBoatState()

@@ -34,6 +34,7 @@ required=(
   Assets/Scripts/StiltHouse/TideContinuousSalvageModel.cs
   Assets/Scripts/StiltHouse/TideSailingSalvageController.cs
   Assets/Scripts/StiltHouse/TideStormRescueModel.cs
+  Assets/Scripts/StiltHouse/TideStormRescueController.cs
   Assets/Editor/TideCoreLoopConvergenceProbe.cs
   Assets/Editor/TideRepairSceneConvergenceProbe.cs
   Assets/Editor/TideVisualSceneConvergenceProbe.cs
@@ -45,10 +46,12 @@ required=(
 for file in "${required[@]}"; do gate test -f "$root/$file"; done
 
 controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
-for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance TickStormRescue RunEditorStormManifestOwnershipProbe KeyCode.F3; do
+for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance stormRescue.Advance RunEditorStormManifestOwnershipProbe KeyCode.F3; do
   gate grep -q "$token" "$controller"
 done
 if grep -q TickFreeSailingSalvage "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
+if grep -q TideStormRescueModel.Advance "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
+if grep -q stormRescueItems "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 gate grep -q RunEditorBoatPassengerScaleProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorWalkSurfacePathContinuityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorFirstDayAutonomyProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"

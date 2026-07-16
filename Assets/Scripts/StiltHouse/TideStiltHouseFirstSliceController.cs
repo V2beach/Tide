@@ -692,12 +692,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private int shelterResolvedStressThisTide;
     private bool shelterBreachThisTide;
     private float shelterImpactTimer;
-    private TideStormRescueItemState[] stormRescueItems = Array.Empty<TideStormRescueItemState>();
-    private int stormRescueHeldIndex = -1;
     private TidePortableWaterState stormRescueWater;
     private bool stormRescueManifestPrepared;
-    private bool stormRescueFloodStarted;
-    private bool stormRescueCargoReleased;
     private int stormRescueReservedTimber;
     private int stormRescueReservedFuelBundles;
     private int stormRescueReservedChartClues;
@@ -713,6 +709,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private TideMooringRopeController mooringRope;
     private TideSailingReefController sailingReef;
     private TideSailingSalvageController sailingSalvage;
+    private TideStormRescueController stormRescue;
 
     // 旧的 Scene 预览和几何探针仍使用这些语义名称。实际存储已集中到
     // TideSailingSalvageController；这些属性只是过渡期的单源投影，不保留副本。
@@ -11362,12 +11359,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         shelterResolvedStressThisTide = 0;
         shelterBreachThisTide = false;
         shelterImpactTimer = 0f;
-        InitializeStormRescueItems();
-        stormRescueHeldIndex = -1;
+        stormRescue.ResetRuntime();
         stormRescueWater = default;
         stormRescueManifestPrepared = false;
-        stormRescueFloodStarted = false;
-        stormRescueCargoReleased = false;
         stormRescueReservedTimber = 0;
         stormRescueReservedFuelBundles = 0;
         stormRescueReservedChartClues = 0;
@@ -11449,7 +11443,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     /// </summary>
     private void HandleContextInteraction(float deltaTime)
     {
-        stormRescueHeldIndex = -1;
+        stormRescue.ClearInteraction();
         if (state == SliceState.FinalDeparture || isLaneTransitioning ||
             boatViewTransition != BoatViewTransition.None)
         {
@@ -12656,26 +12650,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         return false;
     }
 
-    private void InitializeStormRescueItems()
-    {
-        stormRescueItems = new TideStormRescueItemState[4];
-        stormRescueItems[0] = TideStormRescueModel.Create(TideStormRescueItemKind.DrinkingWater);
-        stormRescueItems[1] = TideStormRescueModel.Create(TideStormRescueItemKind.BoatMaterial);
-        stormRescueItems[2] = TideStormRescueModel.Create(TideStormRescueItemKind.StoveFuel);
-        stormRescueItems[3] = TideStormRescueModel.Create(TideStormRescueItemKind.LighthouseChart);
-        for (int i = 0; i < stormRescueItems.Length; i++)
-        {
-            TideStormRescueItemState item = stormRescueItems[i];
-            item.Present = false;
-            stormRescueItems[i] = item;
-        }
-    }
-
     private bool HandleStormRescueInteraction()
     {
-        if (!IsStormRescueActive() || !stormRescueCargoReleased ||
+        if (!IsStormRescueActive() || !stormRescue.CargoReleased ||
             playerLane != WalkLane.InteriorLower ||
-            !Input.GetKey(KeyCode.F) || stormRescueItems == null)
+            !Input.GetKey(KeyCode.F))
         {
             return false;
         }
@@ -12683,9 +12662,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         int nearestIndex = -1;
         float nearestDistance = 0.46f;
         float localCurrentSpeed = GetStormRescueLocalCurrentSpeed();
-        for (int i = 0; i < stormRescueItems.Length; i++)
+        for (int i = 0; i < TideStormRescueController.ItemCount; i++)
         {
-            TideStormRescueItemState item = stormRescueItems[i];
+            TideStormRescueItemState item = stormRescue.GetItem(i);
             if (!item.Present || item.Lost || item.Secured)
             {
                 continue;
@@ -12706,17 +12685,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             return false;
         }
 
-        stormRescueHeldIndex = nearestIndex;
-        return true;
+        return stormRescue.TryHoldItem(nearestIndex);
     }
 
     private void TickStormRescue(float deltaTime)
     {
-        if (stormRescueItems == null || stormRescueItems.Length != 4)
-        {
-            InitializeStormRescueItems();
-        }
-
         if (!stormRescueManifestPrepared &&
             (GetStormPressure01() >= 0.34f || IsStormRescueActive()))
         {
@@ -12724,17 +12697,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         float localWaterDepth = GetStormRescueLocalWaterDepth();
-        if (localWaterDepth > StormRescueFloodDepthThreshold)
-        {
-            stormRescueFloodStarted = true;
-        }
         float currentSpeed = GetStormRescueLocalCurrentSpeed();
-        bool cargoWasReleased = stormRescueCargoReleased;
-        stormRescueCargoReleased = TideStormRescueModel.ShouldReleaseCargo(
-            stormRescueCargoReleased,
+        TideStormRescueAdvanceResult result = stormRescue.Advance(
+            deltaTime,
             localWaterDepth,
             currentSpeed);
-        if (!cargoWasReleased && stormRescueCargoReleased)
+        if (result.CargoReleasedThisStep)
         {
             float releaseImpact01 = Mathf.Clamp01(
                 localWaterDepth / 0.8f + Mathf.Abs(currentSpeed) / 1.4f);
@@ -12743,37 +12711,27 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             lastActionHint = "第一股横浪撞塌了低层搁架，松动的实物开始沿破口水路移动。";
         }
 
-        for (int i = 0; i < stormRescueItems.Length; i++)
+        for (int i = 0; i < TideStormRescueController.ItemCount; i++)
         {
-            TideStormRescueItemState before = stormRescueItems[i];
-            stormRescueItems[i] = TideStormRescueModel.Advance(
-                before,
-                deltaTime,
-                stormRescueCargoReleased ? localWaterDepth : 0f,
-                currentSpeed,
-                stormRescueCargoReleased && stormRescueHeldIndex == i);
-            TideStormRescueItemState after = stormRescueItems[i];
-            if (!before.Secured && after.Secured)
+            int bit = 1 << i;
+            TideStormRescueItemKind kind = (TideStormRescueItemKind)i;
+            if ((result.SecuredMask & bit) != 0)
             {
-                RestoreSecuredStormRescueCargo(after.Kind);
+                RestoreSecuredStormRescueCargo(kind);
                 TideAudioController.PlayPickupCueInScene(0.72f);
                 lastActionHint = "你把这件东西绑上了高处横梁。它离开水路，不会再被这一场潮带走。";
             }
-            else if (!before.Lost && after.Lost)
+            else if ((result.LostMask & bit) != 0)
             {
-                ApplyStormRescueLoss(after.Kind);
+                ApplyStormRescueLoss(kind);
             }
         }
-
-        stormRescueHeldIndex = -1;
     }
 
     private bool IsStormRescueActive()
     {
-        return GetStormRescueLocalWaterDepth() > StormRescueFloodDepthThreshold;
+        return GetStormRescueLocalWaterDepth() > TideStormRescueController.FloodDepthThresholdMeters;
     }
-
-    private const float StormRescueFloodDepthThreshold = 0.02f;
 
     private float GetStormRescueLocalWaterDepth()
     {
@@ -12833,7 +12791,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         float depthCoupling01 = Mathf.SmoothStep(
             0f,
             1f,
-            Mathf.InverseLerp(StormRescueFloodDepthThreshold, 0.42f, localWaterDepthMeters));
+            Mathf.InverseLerp(
+                TideStormRescueController.FloodDepthThresholdMeters,
+                0.42f,
+                localWaterDepthMeters));
         float breachContraction = Mathf.Lerp(0.55f, 1.55f, depthCoupling01);
         float waveDrivenCurrent = outsideSea.HorizontalVelocity * breachContraction;
         return EvaluateNaturalCurrentSpeed(sampleTideClock) + waveDrivenCurrent;
@@ -12841,21 +12802,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private bool HasUnresolvedStormRescueCargo()
     {
-        if (!stormRescueManifestPrepared || stormRescueItems == null)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < stormRescueItems.Length; i++)
-        {
-            TideStormRescueItemState item = stormRescueItems[i];
-            if (item.Present && !item.Lost && !item.Secured)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return stormRescueManifestPrepared && stormRescue.HasUnresolvedCargo();
     }
 
     private float GetSleepSkipSeconds()
@@ -12873,7 +12820,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             return false;
         }
 
-        if (GetStormRescueLocalWaterDepth() > StormRescueFloodDepthThreshold)
+        if (GetStormRescueLocalWaterDepth() > TideStormRescueController.FloodDepthThresholdMeters)
         {
             return true;
         }
@@ -12910,7 +12857,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 futureWaterY,
                 futurePressure01,
                 projectedBreach);
-            if (futureDepth > StormRescueFloodDepthThreshold)
+            if (futureDepth > TideStormRescueController.FloodDepthThresholdMeters)
             {
                 return true;
             }
@@ -12922,8 +12869,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private bool CanRestThroughCurrentStormState()
     {
         return !HasUnresolvedStormRescueCargo() ||
-            (stormRescueCargoReleased &&
-             GetStormRescueLocalWaterDepth() <= StormRescueFloodDepthThreshold) ||
+            (stormRescue.CargoReleased &&
+             GetStormRescueLocalWaterDepth() <= TideStormRescueController.FloodDepthThresholdMeters) ||
             !WouldSleepIntervalFloodLooseStormCargo();
     }
 
@@ -13127,8 +13074,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         weatherClockSeconds = dayLengthSeconds * stormFrontArrivalDays;
         shelterBreachThisTide = true;
         currentWaterY = GetPlayerStandingFeetY(WalkLane.InteriorLower) + 0.7f;
-        stormRescueFloodStarted = true;
-        stormRescueCargoReleased = true;
+        stormRescue.RestoreFloodState(true, true);
 
         int unresolvedBefore = CountUnresolvedStormRescueCargo();
         int timberBeforeRecovery = timberStock;
@@ -13169,8 +13115,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         timberStock = 3;
         lighthouseClues = 1;
         PrepareStormRescueManifest();
-        stormRescueFloodStarted = true;
-        stormRescueCargoReleased = true;
+        stormRescue.RestoreFloodState(true, true);
         currentWaterY = GetPlayerStandingFeetY(WalkLane.InteriorLower) - 0.1f;
         int expectedRecoveredTimber = timberStock + stormRescueReservedTimber;
         int expectedRecoveredFuel = dryFuelBundles + stormRescueReservedFuelBundles;
@@ -13193,22 +13138,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private int CountUnresolvedStormRescueCargo()
     {
-        int count = 0;
-        if (stormRescueItems == null)
-        {
-            return count;
-        }
-
-        for (int i = 0; i < stormRescueItems.Length; i++)
-        {
-            TideStormRescueItemState item = stormRescueItems[i];
-            if (item.Present && !item.Lost && !item.Secured)
-            {
-                count++;
-            }
-        }
-
-        return count;
+        return stormRescue.CountUnresolvedCargo();
     }
 
     private void PrepareStormRescueManifest()
@@ -13219,11 +13149,6 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         stormRescueManifestPrepared = true;
-        if (stormRescueItems == null || stormRescueItems.Length != 4)
-        {
-            InitializeStormRescueItems();
-        }
-
         bool filled = barrenIsland != null && barrenIsland.TryFillPortableWaterContainer(
             StormRescueWaterContainerLiters,
             out stormRescueWater);
@@ -13256,32 +13181,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void SetStormRescueItemPresent(TideStormRescueItemKind kind, bool present)
     {
-        int index = (int)kind;
-        TideStormRescueItemState item = stormRescueItems[index];
-        item.Present = present;
-        item.Lost = false;
-        item.Secured = false;
-        item.SecuringProgress01 = 0f;
-        item.WashoutProgress01 = 0f;
-        stormRescueItems[index] = item;
+        stormRescue.SetItemPresent(kind, present);
     }
 
     private int GetStormRescuePresentMask()
     {
-        int mask = 0;
-        if (stormRescueItems == null)
-        {
-            return mask;
-        }
-
-        for (int i = 0; i < stormRescueItems.Length; i++)
-        {
-            if (stormRescueItems[i].Present)
-            {
-                mask |= 1 << i;
-            }
-        }
-        return mask;
+        return stormRescue.GetPresentMask();
     }
 
     private void RestoreSecuredStormRescueCargo(TideStormRescueItemKind kind)
@@ -13305,9 +13210,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void RecoverSurvivingStormCargoAtRest()
     {
-        if (!stormRescueFloodStarted || !stormRescueCargoReleased ||
-            GetStormRescueLocalWaterDepth() > StormRescueFloodDepthThreshold ||
-            !stormRescueManifestPrepared || stormRescueItems == null)
+        if (!stormRescueManifestPrepared)
         {
             return;
         }
@@ -13315,19 +13218,16 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         // Only cargo that physically survived an actual flood can be tidied away
         // during rest. A warning manifest cannot turn into secured stock before the
         // water arrives, and active floodwater can never move cargo upstairs for free.
-        for (int i = 0; i < stormRescueItems.Length; i++)
+        int securedMask = stormRescue.SecureSurvivorsAfterRecede(
+            GetStormRescueLocalWaterDepth());
+        for (int i = 0; i < TideStormRescueController.ItemCount; i++)
         {
-            TideStormRescueItemState item = stormRescueItems[i];
-            if (!item.Present || item.Lost || item.Secured)
+            if ((securedMask & (1 << i)) == 0)
             {
                 continue;
             }
 
-            item.Secured = true;
-            item.SecuringProgress01 = 1f;
-            item.WashoutProgress01 = 0f;
-            stormRescueItems[i] = item;
-            RestoreSecuredStormRescueCargo(item.Kind);
+            RestoreSecuredStormRescueCargo((TideStormRescueItemKind)i);
         }
     }
 
@@ -19504,6 +19404,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             sailingSalvage = gameObject.AddComponent<TideSailingSalvageController>();
         }
+        stormRescue = GetComponent<TideStormRescueController>();
+        if (stormRescue == null)
+        {
+            stormRescue = gameObject.AddComponent<TideStormRescueController>();
+        }
         backdropRenderer = EnsureRenderer("GeneratedStiltFirstBackdrop", GetBackdropSprite(), -100);
         daySeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalDaySeaSky", GetFormalDaySeaSkySprite(), -99);
         nightSeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalNightSeaSky", GetFormalNightSeaSkySprite(), -98);
@@ -23069,9 +22974,8 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void UpdateStormRescueVisuals(float time, float storm01)
     {
-        if (stormRescueItems == null || stormRescueItems.Length != 4 ||
-            stormRescueRenderers.Count < stormRescueItems.Length ||
-            stormRescueRopeRenderers.Count < stormRescueItems.Length)
+        if (stormRescueRenderers.Count < TideStormRescueController.ItemCount ||
+            stormRescueRopeRenderers.Count < TideStormRescueController.ItemCount)
         {
             SetEnabled(stormRescueRenderers, false);
             SetEnabled(stormRescueRopeRenderers, false);
@@ -23080,9 +22984,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
         bool pressureVisible = storm01 >= 0.34f || IsStormRescueActive();
         float localCurrentSpeed = GetStormRescueLocalCurrentSpeed();
-        for (int i = 0; i < stormRescueItems.Length; i++)
+        for (int i = 0; i < TideStormRescueController.ItemCount; i++)
         {
-            TideStormRescueItemState item = stormRescueItems[i];
+            TideStormRescueItemState item = stormRescue.GetItem(i);
             SpriteRenderer renderer = stormRescueRenderers[i];
             SpriteRenderer ropeRenderer = stormRescueRopeRenderers[i];
             bool visible = item.Present &&

@@ -54,6 +54,7 @@
 ### 暴潮抢救
 
 - 规则：`TideStormRescueModel`
+- 运行时：`TideStormRescueController`；独立拥有四件实物的搁架失效、当前拉绳目标、吊升、冲失与退水整理状态。主控制器注入唯一房内水深/流速，只消费收妥/冲失事件并结算水罐升数和库存 owner。
 - 输入：`HandleStormRescueInteraction`
 - 推进：`TickStormRescue`
 - 表现：`UpdateStormRescueVisuals`

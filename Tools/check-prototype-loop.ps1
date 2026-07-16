@@ -41,6 +41,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideContinuousSalvageModel.cs",
     "Assets/Scripts/StiltHouse/TideSailingSalvageController.cs",
     "Assets/Scripts/StiltHouse/TideStormRescueModel.cs",
+    "Assets/Scripts/StiltHouse/TideStormRescueController.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
     "Assets/Editor/TideRepairSceneConvergenceProbe.cs",
     "Assets/Editor/TideVisualSceneConvergenceProbe.cs",
@@ -65,7 +66,9 @@ Test-Gate ($controller.Contains("sailingReef.ResolveMovement")) "sailing reef ru
 Test-Gate ($controller.Contains("sailingReef.UpdatePresentation")) "sailing reef runtime binds exposure and breaker to the same tide"
 Test-Gate ($controller.Contains("sailingSalvage.Advance")) "sailing salvage runtime owns drift, hook and hauling progression"
 Test-Gate (-not $controller.Contains("TickFreeSailingSalvage")) "main controller does not retain a second free-drift implementation"
-Test-Gate ($controller.Contains("TickStormRescue")) "storm rescue advances in the world tick"
+Test-Gate ($controller.Contains("stormRescue.Advance")) "storm rescue runtime owns release, hoist and washout progression"
+Test-Gate (-not $controller.Contains("TideStormRescueModel.Advance")) "main controller does not retain a second storm-cargo progression loop"
+Test-Gate (-not $controller.Contains("stormRescueItems")) "storm rescue runtime is the only item-state owner"
 Test-Gate ($controller.Contains("RunEditorStormManifestOwnershipProbe")) "storm cargo keeps a grounded physical manifest"
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"

@@ -88,6 +88,8 @@
     - [x] 模块门覆盖轻触约束、重撞冷却、高潮越过和物理/表现同源；首轮返木、维修、暴潮与视觉几何回归通过
   - [x] 航行漂木：`TideSailingSalvageController` 独立拥有自由漂移、连续抛钩、张力、过载脱钩、收绳和拖带收妥；主控制器只保留实物 owner，并注入统一风潮
     - [x] 模块门覆盖随流漂、艏侧拒绝、抛钩可撤、匹配速度收妥和过载原位脱钩；首轮返木、维修、暴潮与视觉几何回归通过
+  - [x] 暴潮物资：`TideStormRescueController` 独立拥有搁架失效、追取目标、吊升、冲失和退水整理；主控制器只注入房内水深/流速并结算库存 owner
+    - [x] 模块门覆盖浅水不放货、失效事件只触发一次、持续近身收妥、高浮力物冲失和退水守恒；自然暴潮取舍、睡眠旁路与正式 Scene 回归通过
   - [ ] 航行与暴潮继续按同一边界拆分；不得在新模块内复制潮位、风场或库存 owner
 - [x] 借潮重物独立为 `TideHeavyWreckTidalLiftModel` + `TideHeavyWreckSalvageController`，主控制器只转发输入、统一海况和可见性
 - [x] 船骸原物可见暂存在住所/船施工位；源船骸、手持物和两个施工位保持唯一显示，暂存不增加库存数字
@@ -100,4 +102,4 @@
 
 - 连续天文潮、相邻高潮不等高、实际米制潮流、潮源批次守恒、网深/张力/收网、短航打捞与船体维修已有纯模型和回归。
 - V34 外景、V35 室内、V41 接触动作、V42 生存动作、V39 船体、V43 海况、V44 瞭望、V59 潮带实物为当前运行基线；详见运行资源清册。
-- 当前聚焦门：Windows 静态、macOS shell 静态、跨平台同步 `2589` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确静态项数以脚本当次输出为准。
+- 当前聚焦门：Windows 静态、macOS shell 静态、跨平台同步 `2591` 项、`TIDE_CORE_LOOP_PROBE PASS`、`TIDE_REPAIR_SCENE_PROBE PASS`、`TIDE_VISUAL_SCENE_PROBE PASS`、Unity 编译通过；准确静态项数以脚本当次输出为准。
