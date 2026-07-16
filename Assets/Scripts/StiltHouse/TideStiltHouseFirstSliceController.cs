@@ -625,13 +625,29 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     private bool sailTripActive;
     private float sailTripTimer;
     private float sailingBoatX;
-    private float sailingBoatLaneY;
-    private float sailingBoatVelocity;
     private float sailingBoatWorldVelocity;
     private float sailingFlowCrestTravelWorld;
-    private float sailingWaterIngress01;
-    private float sailingSailTrim01;
     private TideSailboatDynamicsState sailingDynamics;
+    private float sailingBoatLaneY
+    {
+        get => sailingDynamics.HeaveY;
+        set => sailingDynamics.HeaveY = value;
+    }
+    private float sailingBoatVelocity
+    {
+        get => sailingDynamics.HorizontalVelocity;
+        set => sailingDynamics.HorizontalVelocity = value;
+    }
+    private float sailingWaterIngress01
+    {
+        get => sailingDynamics.Ingress01;
+        set => sailingDynamics.Ingress01 = value;
+    }
+    private float sailingSailTrim01
+    {
+        get => sailingDynamics.SailRaised01;
+        set => sailingDynamics.SailRaised01 = value;
+    }
     private float sailingBallastInput;
     private float sailingBailCycle;
     private float sailingTrimActionTimer;
@@ -4431,9 +4447,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         // current, hull leakage or range limits; those remain owned by the live world.
         float clampedDirection = Mathf.Clamp(direction, -1f, 1f);
         TideOceanSample ocean = GetSailingOceanSample(sailingBoatX);
-        sailingDynamics.HorizontalVelocity = sailingBoatVelocity;
-        sailingDynamics.SailRaised01 = sailingSailTrim01;
-        sailingDynamics.Ingress01 = sailingWaterIngress01;
         sailingDynamics = TideSailboatDynamicsModel.Advance(
             sailingDynamics,
             deltaTime,
@@ -4452,10 +4465,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             sailingDynamics.HorizontalVelocity,
             -effectiveMaxSpeed,
             effectiveMaxSpeed);
-        sailingBoatVelocity = sailingDynamics.HorizontalVelocity;
-        sailingSailTrim01 = sailingDynamics.SailRaised01;
-        sailingWaterIngress01 = sailingDynamics.Ingress01;
-        sailingBoatLaneY = sailingDynamics.HeaveY;
         float effectiveVelocity = sailingBoatVelocity;
         float boatXBeforeMove = sailingBoatX;
         if (Mathf.Abs(effectiveVelocity) > 0.02f)
@@ -4530,8 +4539,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingBailedWaterThisTrip += waterBefore - sailingWaterIngress01;
         sailingBailCycle += deltaTime * 3.2f;
         sailingBoatVelocity = Mathf.MoveTowards(sailingBoatVelocity, 0f, GetEffectiveSailingDrag() * deltaTime);
-        sailingDynamics.Ingress01 = sailingWaterIngress01;
-        sailingDynamics.HorizontalVelocity = sailingBoatVelocity;
     }
 
     private float GetEffectiveSailingBailRate()

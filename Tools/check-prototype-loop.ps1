@@ -94,6 +94,15 @@ Test-Gate ($barrenIsland.Contains("CisternWaterSurface") -and
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
 Test-Gate ($controller.Contains("mooringRope.AdvanceEnvironment")) "mooring runtime orchestration is extracted"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
+Test-Gate ($controller.Contains("TideSailboatDynamicsState sailingDynamics") -and
+    $controller.Contains("get => sailingDynamics.HorizontalVelocity") -and
+    $controller.Contains("get => sailingDynamics.HeaveY") -and
+    $controller.Contains("get => sailingDynamics.Ingress01") -and
+    $controller.Contains("get => sailingDynamics.SailRaised01")) "sailing dynamics state is the single owner of motion, trim, and ingress"
+Test-Gate (-not $controller.Contains("private float sailingBoatVelocity;") -and
+    -not $controller.Contains("private float sailingBoatLaneY;") -and
+    -not $controller.Contains("private float sailingWaterIngress01;") -and
+    -not $controller.Contains("private float sailingSailTrim01;")) "main controller keeps no duplicate sailing dynamics fields"
 Test-Gate ($controller.Contains("sailingReef.ResolveMovement")) "sailing reef runtime owns physical collision"
 Test-Gate ($controller.Contains("sailingReef.UpdatePresentation")) "sailing reef runtime binds exposure and breaker to the same tide"
 Test-Gate ($controller.Contains("sailingSalvage.Advance")) "sailing salvage runtime owns drift, hook and hauling progression"
@@ -115,6 +124,7 @@ $coreProbe = Read-ProjectText "Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 Test-Gate ($coreProbe.Contains("ProbeForecastSnapshot")) "core gate covers forecast snapshot lifetime"
 Test-Gate ($coreProbe.Contains("ProbeWreckDismantle")) "core gate covers persistent work, footing, wave load, and part-specific durations"
 Test-Gate ($coreProbe.Contains("ProbeRepairWorkSession")) "core gate covers repair pause, retarget, and commit semantics"
+Test-Gate ($coreProbe.Contains("ProbeSailingDynamics")) "core gate covers the authoritative sailing dynamics state"
 Test-Gate ($coreProbe.Contains("ProbeNetEncounter")) "core gate rejects preload, overtopping, stale contact, and skipped windows"
 Test-Gate ($coreProbe.Contains("ProbeWrackDeposit")) "core gate covers ebb deposit and refloat lifecycle"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"

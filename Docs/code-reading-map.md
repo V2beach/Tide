@@ -43,6 +43,7 @@
 ### 短航
 
 - 船体动力：`TideSailboatDynamicsModel`
+- 航行运动状态：主控制器中的单一 `TideSailboatDynamicsState` 同时拥有水平速度、浮沉、俯仰、帆高、压舱和舱水；旧速度/水位/帆高镜像字段已退役，碰礁、舀水、打捞和表现都通过同一状态读写
 - 浅礁净空：`TideSailingReefModel`；固定礁顶、瞬时物理水位、舱水、拖载和高速浅水下沉共同决定吃水、搁浅与撞击
 - 浅礁运行时：`TideSailingReefController`；独立拥有真实越过状态、撞击冷却、连续位移约束和岩脊/碎浪表现。主控制器注入唯一 `TideOceanSample` 与吃水样本，并只结算返回的船体后果。
 - 漂木运行时：`TideSailingSalvageController`；独立拥有自由漂移、抛钩、张力、过载脱钩、收绳和拖带状态。主控制器注入唯一 `TideOceanSample`、风和潮流，保留物资 owner，并把一次性结果结算回世界实物。

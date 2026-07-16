@@ -75,6 +75,14 @@ gate grep -q repairWork.Complete "$controller"
 gate grep -q 'public void Begin' "$repair_work"
 gate grep -q 'public bool Advance' "$repair_work"
 gate grep -q 'public void Complete' "$repair_work"
+gate grep -q TideSailboatDynamicsState "$controller"
+gate grep -q 'get => sailingDynamics.HorizontalVelocity' "$controller"
+gate grep -q 'get => sailingDynamics.HeaveY' "$controller"
+gate grep -q 'get => sailingDynamics.Ingress01' "$controller"
+gate grep -q 'get => sailingDynamics.SailRaised01' "$controller"
+for duplicate in 'private float sailingBoatVelocity;' 'private float sailingBoatLaneY;' 'private float sailingWaterIngress01;' 'private float sailingSailTrim01;'; do
+  if grep -q "$duplicate" "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
+done
 gate grep -q CisternWaterSurface "$barren_island"
 gate grep -q CisternSaltLine "$barren_island"
 gate grep -q CisternLeakStream "$barren_island"
