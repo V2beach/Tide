@@ -707,6 +707,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private int repairStartHouseWarmth;
     private TideAudioController firstSliceAudio;
     private TideBarrenIslandController barrenIsland;
+    private TideHeavyWreckSalvageController heavyWreckSalvage;
     private int lampForecastCharges;
     private int loftForecastRound = -1;
     private int shortSailCount;
@@ -10146,6 +10147,24 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             : $"FAIL：开场人物仍存在无支撑、自动位移或镜头错位。{evidence}";
     }
 
+    public string RunEditorHeavyWreckTidalLiftIntegrationProbe()
+    {
+        EnsureScene();
+        if (heavyWreckSalvage == null)
+        {
+            return "FAIL 场景没有 TideHeavyWreckSalvageController";
+        }
+
+        heavyWreckSalvage.ResetFeature();
+        TideOceanSample ocean = GetOceanSample(heavyWreckSalvage.SampleWorldX);
+        heavyWreckSalvage.UpdatePresentation(
+            true,
+            GetPlayerStandingFeetY(WalkLane.TideFlat),
+            ocean,
+            0f);
+        return heavyWreckSalvage.RunEditorIntegrationProbe();
+    }
+
     private float MeasureClimbRenderBodyError(
         SliceViewMode probeView,
         WalkLane fromLane,
@@ -11016,6 +11035,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         if (barrenIsland != null)
         {
             barrenIsland.ResetIsland();
+        }
+        if (heavyWreckSalvage != null)
+        {
+            heavyWreckSalvage.ResetFeature();
         }
         // 正式开场直接把人物放在潮间木路与同源残骸共同提供的可见承重面上。
         // 旧短镜头会从木路右端外侧自动游入，即使脚点最后正确，第一眼仍像
@@ -12147,7 +12170,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void TickBarrenIslandNaturalState(float deltaTime)
     {
-        if (barrenIsland == null)
+        if (barrenIsland == null && heavyWreckSalvage == null)
         {
             return;
         }
@@ -12160,17 +12183,51 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         float localSurfaceY = GetOceanSample(TideBarrenIslandController.CisternX).SurfaceY;
         float overtopping01 = Mathf.InverseLerp(cisternRimY - 0.04f, cisternRimY + 0.48f, localSurfaceY) *
             Mathf.SmoothStep(0.55f, 1f, storm01);
-        barrenIsland.TickNaturalState(
-            deltaTime,
-            rainMillimetersPerHour,
-            roofCatchIntegrity01,
-            overtopping01);
+        if (barrenIsland != null)
+        {
+            barrenIsland.TickNaturalState(
+                deltaTime,
+                rainMillimetersPerHour,
+                roofCatchIntegrity01,
+                overtopping01);
+        }
+
+        if (heavyWreckSalvage != null)
+        {
+            TideOceanSample heavyOcean = GetOceanSample(heavyWreckSalvage.SampleWorldX);
+            heavyWreckSalvage.TickNaturalState(
+                deltaTime,
+                GetPlayerStandingFeetY(WalkLane.TideFlat),
+                heavyOcean,
+                EvaluateNaturalCurrentSpeed(tideClockSeconds));
+        }
     }
 
     private bool TryHandleBarrenIslandInteraction()
     {
-        if (barrenIsland == null || viewMode != SliceViewMode.Shelter ||
-            playerLane != WalkLane.TideFlat || !Input.GetKeyDown(KeyCode.F))
+        if ((barrenIsland == null && heavyWreckSalvage == null) ||
+            viewMode != SliceViewMode.Shelter || playerLane != WalkLane.TideFlat)
+        {
+            return false;
+        }
+
+        bool interactionPressed = Input.GetKeyDown(KeyCode.F);
+        bool interactionHeld = Input.GetKey(KeyCode.F);
+        if (heavyWreckSalvage != null &&
+            heavyWreckSalvage.TryHandleInteraction(
+                playerPosition,
+                interactionPressed,
+                interactionHeld,
+                out string heavyWreckFeedback))
+        {
+            if (!string.IsNullOrEmpty(heavyWreckFeedback))
+            {
+                lastActionHint = heavyWreckFeedback;
+            }
+            return true;
+        }
+
+        if (barrenIsland == null || !interactionPressed)
         {
             return false;
         }
@@ -18549,6 +18606,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             barrenIsland = gameObject.AddComponent<TideBarrenIslandController>();
         }
+        heavyWreckSalvage = GetComponent<TideHeavyWreckSalvageController>();
+        if (heavyWreckSalvage == null)
+        {
+            heavyWreckSalvage = gameObject.AddComponent<TideHeavyWreckSalvageController>();
+        }
         backdropRenderer = EnsureRenderer("GeneratedStiltFirstBackdrop", GetBackdropSprite(), -100);
         daySeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalDaySeaSky", GetFormalDaySeaSkySprite(), -99);
         nightSeaSkyRenderer = EnsureRenderer("GeneratedStiltFirstFormalNightSeaSky", GetFormalNightSeaSkySprite(), -98);
@@ -19109,6 +19171,15 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                     GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.02f),
                 GetNaturalSailingWindSpeed(),
                 GetOceanSample(TideBarrenIslandController.CisternX).SurfaceY,
+                time);
+        }
+        if (heavyWreckSalvage != null)
+        {
+            TideOceanSample heavyOcean = GetOceanSample(heavyWreckSalvage.SampleWorldX);
+            heavyWreckSalvage.UpdatePresentation(
+                viewMode == SliceViewMode.Shelter && state != SliceState.FinalDeparture,
+                GetPlayerStandingFeetY(WalkLane.TideFlat),
+                heavyOcean,
                 time);
         }
 
@@ -27279,12 +27350,16 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         string previousPeakText = highWaterMemory.HasPreviousCycle
             ? $"{highWaterMemory.PreviousCyclePeakY:0.00}m"
             : "无完整潮";
+        string heavyWreckText = heavyWreckSalvage != null
+            ? heavyWreckSalvage.GetDebugSummary()
+            : "重物 未接入";
         return $"{BuildPlayerHudSummary(phase, storm01)}\n" +
             $"距天黑 {FormatDebugDuration(secondsToDark)} · 距天亮 {FormatDebugDuration(secondsToDawn)} · " +
             $"离家 {distanceFromHome:0.0}m · 画面 {outdoorScreen} · F3 隐藏\n" +
             $"潮痕 上一潮 {previousPeakText} · 本潮已到 {highWaterMemory.CurrentCyclePeakY:0.00}m · 完整潮 {highWaterMemory.CompletedCycleCount}\n" +
             $"潮源 #{tideSourceBatchId} {GetTideDriftProvenanceName(currentTideDriftField.NearshoreBatch.Provenance)}/{GetHarvestName(tideSourceHarvest)} " +
             $"路程{incomingHarvestTravel01:0.00} · 盐木 #{extraSaltWoodBatchId} {extraSaltWoodOwner} 路程{outerWreckTravel01:0.00}\n" +
+            $"{heavyWreckText}\n" +
             $"开发循环：看潮 -> 布网 -> 回收实物 -> 修屋/修船 -> 短航 · 当前：{lastActionHint}";
     }
 

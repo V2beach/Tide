@@ -27,6 +27,15 @@
 - 表现：`UpdateMooringRopeVisuals`
 - 状态：Loose -> Swinging -> Attached/Reeling -> Secured；张力过载回 Loose
 
+### 借潮牵引重物
+
+- 纯规则：`TideHeavyWreckTidalLiftModel`
+- 场景 owner：`TideHeavyWreckSalvageController`
+- 资源索引：`TideV85HeavyWreckCatalog`，首轮只引用外露龙骨肋的完整态、显缝层和三件拆解 owner
+- 编排入口：`TryHandleBarrenIslandInteraction`、`TickBarrenIslandNaturalState`
+- 状态：低潮双系 -> 涨潮浮起 -> 平流收绳 -> 架边待退潮 -> 落底显缝 -> 可见拆解
+- 关键约束：小吊机不能整块起吊；强流不是更快，而是更高张力；拆件到分类位前不得生成 V59 或库存数字
+
 ### 短航
 
 - 规则：`TideSailboatDynamicsModel`
@@ -77,7 +86,8 @@
 1. 从 `HandleMooringRopeInput` 追到 `TideMooringRopeModel.Advance`，画出每个状态和断绳条件。
 2. 从 `HandleSailingInput` 追到 `TideSailboatDynamicsModel.Advance`，分别关掉风、流、玩家输入，预测速度变化。
 3. 修改一个纯模型常量，先补 `TideCoreLoopConvergenceProbe` 断言，再改数值。
-4. 最后再读 Controller 的视觉分支，理解为什么同一状态不能由两套资源同时拥有。
+4. 从 `TideHeavyWreckTidalLiftModel` 比较急流与平流的拖运率，解释为什么“涨潮”和“平流”是两个不同条件。
+5. 最后再读 Controller 的视觉分支，理解为什么同一状态不能由两套资源同时拥有。
 
 ## 验证
 

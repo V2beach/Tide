@@ -27,10 +27,11 @@ public static class TideCoreLoopConvergenceProbe
         string context = ProbeIslandContextPriority();
         string salvage = ProbeSalvageMaterialCommit();
         string repairPhases = ProbeRepairWorkPhases();
+        string heavyWreck = ProbeHeavyWreckTidalLift();
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
         string storm = ProbeStormRescue();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {rope} | {sailing} | {storm}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {storm}";
     }
 
     private static string ProbeCistern()
@@ -246,6 +247,66 @@ public static class TideCoreLoopConvergenceProbe
         Require(TideRepairWorkPhaseModel.Evaluate(0.9f) == TideRepairWorkPhase.Seal,
             "最终提交前没有密封与复核");
         return "施工=检查>清理>试装>固定>密封";
+    }
+
+    private static string ProbeHeavyWreckTidalLift()
+    {
+        TideHeavyWreckState single = TideHeavyWreckTidalLiftModel.CreateInitial();
+        single = TideHeavyWreckTidalLiftModel.TrySecurePoint(single, 0, 0.1f, out bool firstSecured);
+        Require(firstSecured, "低潮无法系住第一处重型残骸绳箍");
+        for (int i = 0; i < 12; i++)
+        {
+            single = TideHeavyWreckTidalLiftModel.AdvanceNatural(
+                single, 0.1f, 1f, 0.95f, 0.08f, false);
+        }
+        Require(single.SecuredPointMask == 0,
+            "单点系缆在强流中没有扭转载荷或失效风险");
+
+        TideHeavyWreckState secured = TideHeavyWreckTidalLiftModel.CreateInitial();
+        secured = TideHeavyWreckTidalLiftModel.TrySecurePoint(secured, 0, 0.1f, out _);
+        secured = TideHeavyWreckTidalLiftModel.TrySecurePoint(secured, 1, 0.1f, out bool secondSecured);
+        Require(secondSecured && secured.SecuredPointMask == 3,
+            "低潮双点系稳没有建立唯一重物 owner");
+
+        TideHeavyWreckState groundedPull = TideHeavyWreckTidalLiftModel.AdvanceNatural(
+            secured, 4f, 0.1f, 0f, 0f, true);
+        Require(groundedPull.TowProgress01 <= 0.001f,
+            "未涨潮时重物在没有浮力的情况下被拖过岩床");
+
+        TideHeavyWreckState peakCurrent = secured;
+        TideHeavyWreckState slackCurrent = secured;
+        for (int i = 0; i < 80; i++)
+        {
+            peakCurrent = TideHeavyWreckTidalLiftModel.AdvanceNatural(
+                peakCurrent, 0.05f, 1f, 0.75f, 0.04f, true);
+            slackCurrent = TideHeavyWreckTidalLiftModel.AdvanceNatural(
+                slackCurrent, 0.05f, 1f, 0.02f, 0.01f, true);
+        }
+        Require(slackCurrent.TowProgress01 >= peakCurrent.TowProgress01 + 0.35f,
+            "平流窗口没有显著优于急流硬拉");
+        for (int i = 0; i < 180 && slackCurrent.TowProgress01 < 0.999f; i++)
+        {
+            slackCurrent = TideHeavyWreckTidalLiftModel.AdvanceNatural(
+                slackCurrent, 0.05f, 1f, 0.01f, 0f, true);
+        }
+        Require(slackCurrent.Phase == TideHeavyWreckPhase.AtCradleAfloat,
+            "涨潮平流时没有把重物带到作业架");
+        slackCurrent = TideHeavyWreckTidalLiftModel.AdvanceNatural(
+            slackCurrent, 0.1f, 0.05f, 0f, 0f, false);
+        Require(slackCurrent.Phase == TideHeavyWreckPhase.RecoveredIntact,
+            "退潮后重物没有在作业架落底");
+
+        slackCurrent = TideHeavyWreckTidalLiftModel.TryBeginWork(slackCurrent, out bool exposing);
+        slackCurrent = TideHeavyWreckTidalLiftModel.AdvanceWork(
+            slackCurrent, TideHeavyWreckTidalLiftModel.ExposeJointSeconds + 0.1f, true);
+        Require(exposing && slackCurrent.Phase == TideHeavyWreckPhase.JointsExposed,
+            "原物落底后没有先显露接缝");
+        slackCurrent = TideHeavyWreckTidalLiftModel.TryBeginWork(slackCurrent, out bool separating);
+        slackCurrent = TideHeavyWreckTidalLiftModel.AdvanceWork(
+            slackCurrent, TideHeavyWreckTidalLiftModel.SeparateSeconds + 0.1f, true);
+        Require(separating && slackCurrent.Phase == TideHeavyWreckPhase.Separated,
+            "显缝后没有原子切换为三件拆解 owner");
+        return $"借潮=双系>浮起>平流拖{peakCurrent.TowProgress01:P0}/{slackCurrent.TowProgress01:P0}>退潮落架>可见拆解";
     }
 
     private static string ProbeMooringRope()

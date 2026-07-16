@@ -29,11 +29,16 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideRainCisternModel.cs",
     "Assets/Scripts/StiltHouse/TideRepairWorkPhaseModel.cs",
     "Assets/Scripts/StiltHouse/TideSalvageMaterialModel.cs",
+    "Assets/Scripts/StiltHouse/TideHeavyWreckTidalLiftModel.cs",
+    "Assets/Scripts/StiltHouse/TideHeavyWreckSalvageController.cs",
+    "Assets/Scripts/StiltHouse/TideV85HeavyWreckCatalog.cs",
     "Assets/Scripts/StiltHouse/TideMooringRopeModel.cs",
     "Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs",
     "Assets/Scripts/StiltHouse/TideStormRescueModel.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
     "Assets/Editor/TideRepairSceneConvergenceProbe.cs",
+    "Assets/Editor/TideV85HeavyWreckCatalogBuilder.cs",
+    "Assets/Resources/StiltFirstSliceAI/V85HeavyWreckCatalog.asset",
     "Docs/ai-work-prompts.md",
     "Docs/tide-task-tracking.md"
 )
@@ -43,6 +48,7 @@ foreach ($file in $required) {
 
 $controller = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
+Test-Gate ($controller.Contains("RunEditorHeavyWreckTidalLiftIntegrationProbe")) "tidal heavy-wreck lift is integrated"
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
 Test-Gate ($controller.Contains("TickStormRescue")) "storm rescue advances in the world tick"

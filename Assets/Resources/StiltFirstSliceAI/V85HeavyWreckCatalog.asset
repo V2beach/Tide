@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72bb63cc69e44104ebfe43b1828a4884, type: 3}
+  m_Name: V85HeavyWreckCatalog
+  m_EditorClassIdentifier: 
+  version: 85
+  profile: Balanced
+  intactKeelRib: {fileID: 21300000, guid: a5243bd34811a0e26ca6bace03378e8d, type: 3}
+  scoreMarks: {fileID: 21300000, guid: 37a4eb09c02bad8951fbd18e1599ec75, type: 3}
+  remainder: {fileID: 21300000, guid: 84f4747978badfe93dd08638449efd40, type: 3}
+  pieceA: {fileID: 21300000, guid: c28fcb497a7514c132fcf4e4dfe94567, type: 3}
+  pieceB: {fileID: 21300000, guid: 3cc80f4ca748a94a9933160e9875b699, type: 3}

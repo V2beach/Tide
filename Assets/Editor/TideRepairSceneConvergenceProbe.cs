@@ -33,8 +33,9 @@ public static class TideRepairSceneConvergenceProbe
         RequirePass("V69 房屋 owner", controller.RunEditorV69HouseRepairIntegrationProbe());
         RequirePass("材料落地", controller.RunEditorRepairMaterialGroundingProbe());
         RequirePass("首潮修船反馈", controller.RunEditorFirstTideSaltWoodBoatRepairFeedbackProbe());
+        RequirePass("借潮重物", controller.RunEditorHeavyWreckTidalLiftIntegrationProbe());
         Debug.Log(
-            "TIDE_REPAIR_SCENE_PROBE PASS | 连续施工/全部维修点/V52/V69/材料落地/首潮修船反馈");
+            "TIDE_REPAIR_SCENE_PROBE PASS | 连续施工/全部维修点/V52/V69/材料落地/首潮修船反馈/借潮重物");
     }
 
     private static void RequirePass(string label, string result)

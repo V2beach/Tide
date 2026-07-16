@@ -22,18 +22,23 @@ required=(
   Assets/Scripts/StiltHouse/TideRainCisternModel.cs
   Assets/Scripts/StiltHouse/TideRepairWorkPhaseModel.cs
   Assets/Scripts/StiltHouse/TideSalvageMaterialModel.cs
+  Assets/Scripts/StiltHouse/TideHeavyWreckTidalLiftModel.cs
+  Assets/Scripts/StiltHouse/TideHeavyWreckSalvageController.cs
+  Assets/Scripts/StiltHouse/TideV85HeavyWreckCatalog.cs
   Assets/Scripts/StiltHouse/TideMooringRopeModel.cs
   Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs
   Assets/Scripts/StiltHouse/TideStormRescueModel.cs
   Assets/Editor/TideCoreLoopConvergenceProbe.cs
   Assets/Editor/TideRepairSceneConvergenceProbe.cs
+  Assets/Editor/TideV85HeavyWreckCatalogBuilder.cs
+  Assets/Resources/StiltFirstSliceAI/V85HeavyWreckCatalog.asset
   Docs/ai-work-prompts.md
   Docs/tide-task-tracking.md
 )
 for file in "${required[@]}"; do gate test -f "$root/$file"; done
 
 controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs"
-for token in TickBarrenIslandNaturalState HandleMooringRopeInput TideSailboatDynamicsModel.Advance TickStormRescue KeyCode.F3; do
+for token in TickBarrenIslandNaturalState RunEditorHeavyWreckTidalLiftIntegrationProbe HandleMooringRopeInput TideSailboatDynamicsModel.Advance TickStormRescue KeyCode.F3; do
   gate grep -q "$token" "$controller"
 done
 gate grep -q 'Assets/Scenes/Tide_StiltHouse_FirstSlice.unity' "$root/ProjectSettings/EditorBuildSettings.asset"
