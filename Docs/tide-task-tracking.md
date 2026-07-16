@@ -111,11 +111,11 @@
 ## P1 架构
 
 - [ ] 将 `TideStiltHouseFirstSliceController` 中新增状态编排继续拆成岛屿、泊位、航行、暴潮 presenter；纯公式已独立
-  - [ ] 主控制器编辑器诊断拆分（2026-07-17）
+  - [x] 主控制器编辑器诊断拆分（2026-07-17）
     - [x] 确认 `RebuildGeneratedHierarchyForEditor` 到 `SetEditorNetRigHoldPreviewPose` 为连续编辑器预览/探针区，正式帧循环从其后的 `Update` 开始
     - [x] 原样迁入独立 `UNITY_EDITOR` partial；主文件约 `34,144 -> 23,975` 行，编辑器诊断约 `10,183` 行，不移动字段、不改变运行状态与数值
     - [x] 迁移前后方法区 SHA-256 一致；Windows/macOS 静态门、三组正式 Scene 探针和 Unity 编译均通过
-    - [ ] 后续把仍散落在运行区的少量 `RunEditor*` 方法并入诊断 partial；先按模块完成状态 owner 拆分，再继续缩小运行主文件
+    - [x] 暴潮清单/休息、自然洪水剖面和灯塔可见性等最后一批编辑器入口移入诊断 partial；运行主文件约 `23,975 -> 23,783` 行且不再含 `RunEditor*`/`GetEditor*`
   - [x] 网深与漂物相遇公式独立为 `TideNetEncounterModel`；主控制器只注入前后水路位置、网面、水面、网况和可见导流下压
   - [x] 泊位绳：`TideMooringRopeController` 独立拥有输入占用、状态推进、一次性环境结果和绳形表现；主控制器只提供人物/船锚点与统一风流
     - [x] 模块门覆盖甩绳起手、松手命中、张力收绳、风流推进、靠稳结果、连续绳段和船艉端点；正式 Scene 登船路径/可走面回归通过

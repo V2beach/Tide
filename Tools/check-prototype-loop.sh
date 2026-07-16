@@ -57,10 +57,12 @@ controller="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.c
 editor_diagnostics="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs"
 repair_recipe="$root/Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs"
 barren_island="$root/Assets/Scripts/StiltHouse/TideBarrenIslandController.cs"
-for token in TickBarrenIslandNaturalState TickDismantleNearestPart wreckOcean.Agitation01 heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance stormRescue.Advance RunEditorStormManifestOwnershipProbe KeyCode.F3 forecastTideNotches.UpdatePresentation TideForecastSnapshotModel.Capture TideNetEncounterModel.Advance tideDriftFieldCycleOrdinal wrackLine.TrySettle; do
+for token in TickBarrenIslandNaturalState TickDismantleNearestPart wreckOcean.Agitation01 heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance stormRescue.Advance KeyCode.F3 forecastTideNotches.UpdatePresentation TideForecastSnapshotModel.Capture TideNetEncounterModel.Advance tideDriftFieldCycleOrdinal wrackLine.TrySettle; do
   gate grep -q "$token" "$controller"
 done
 gate grep -q RunEditorHeavyWreckTidalLiftIntegrationProbe "$editor_diagnostics"
+gate grep -q RunEditorStormManifestOwnershipProbe "$editor_diagnostics"
+gate grep -q RunEditorStormRestIntegrityProbe "$editor_diagnostics"
 gate grep -q TideRepairRecipeModel.GetMaterialNeeds "$controller"
 gate grep -q TideRepairRecipeModel.GetStagingDestination "$controller"
 gate grep -q GetArrivalRepairTarget "$repair_recipe"
@@ -72,6 +74,7 @@ gate grep -q 'public partial class TideStiltHouseFirstSliceController' "$control
 gate grep -q '#if UNITY_EDITOR' "$editor_diagnostics"
 gate grep -q 'public partial class TideStiltHouseFirstSliceController' "$editor_diagnostics"
 if grep -q SetEditorNetRigHoldPreviewPose "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
+if grep -qE 'RunEditor|GetEditor' "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 gate grep -q ProbeForecastSnapshot "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeWreckDismantle "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeNetEncounter "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"

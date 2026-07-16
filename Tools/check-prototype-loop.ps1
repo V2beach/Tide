@@ -93,7 +93,10 @@ Test-Gate (-not $controller.Contains("TickFreeSailingSalvage")) "main controller
 Test-Gate ($controller.Contains("stormRescue.Advance")) "storm rescue runtime owns release, hoist and washout progression"
 Test-Gate (-not $controller.Contains("TideStormRescueModel.Advance")) "main controller does not retain a second storm-cargo progression loop"
 Test-Gate (-not $controller.Contains("stormRescueItems")) "storm rescue runtime is the only item-state owner"
-Test-Gate ($controller.Contains("RunEditorStormManifestOwnershipProbe")) "storm cargo keeps a grounded physical manifest"
+Test-Gate ($editorDiagnostics.Contains("RunEditorStormManifestOwnershipProbe") -and
+    $editorDiagnostics.Contains("RunEditorStormRestIntegrityProbe")) "storm cargo diagnostics stay editor-only"
+Test-Gate (-not $controller.Contains("RunEditor") -and
+    -not $controller.Contains("GetEditor")) "runtime controller contains no editor probe entry points"
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"
 Test-Gate ($controller.Contains("forecastTideNotches.UpdatePresentation")) "forecast is projected onto physical stilt notches"
 Test-Gate ($controller.Contains("TideForecastSnapshotModel.Capture")) "forecast observations are immutable astronomical-cycle snapshots"

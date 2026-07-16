@@ -4,7 +4,7 @@
 
 1. `Assets/Scenes/Tide_StiltHouse_FirstSlice.unity`
 2. `Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs`
-3. `Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs`（只在追预览姿态或自动 Scene 探针时读）
+3. `Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs`（只在追预览姿态或自动 Scene 探针时读；全部 `RunEditor*`/`GetEditor*` 入口都在这个 `UNITY_EDITOR` partial，玩家运行主文件不得再承载探针）
 4. `Assets/Scripts/StiltHouse/TideOceanFieldModel.cs`
 5. 本页下面列出的独立纯模型
 
