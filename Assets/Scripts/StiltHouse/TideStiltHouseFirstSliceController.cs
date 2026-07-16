@@ -12479,6 +12479,10 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             currentSpeed);
         if (!cargoWasReleased && stormRescueCargoReleased)
         {
+            float releaseImpact01 = Mathf.Clamp01(
+                localWaterDepth / 0.8f + Mathf.Abs(currentSpeed) / 1.4f);
+            shelterImpactTimer = Mathf.Max(shelterImpactTimer, 0.9f);
+            TideAudioController.PlayStormShelfBreakCueInScene(releaseImpact01);
             lastActionHint = "第一股横浪撞塌了低层搁架，松动的实物开始沿破口水路移动。";
         }
 
@@ -12495,6 +12499,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             if (!before.Secured && after.Secured)
             {
                 RestoreSecuredStormRescueCargo(after.Kind);
+                TideAudioController.PlayPickupCueInScene(0.72f);
                 lastActionHint = "你把这件东西绑上了高处横梁。它离开水路，不会再被这一场潮带走。";
             }
             else if (!before.Lost && after.Lost)

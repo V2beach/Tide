@@ -12,6 +12,7 @@ public sealed class TideAudioController : MonoBehaviour
     private static AudioClip pickupClip;
     private static AudioClip netLoadClip;
     private static AudioClip ropeBreakClip;
+    private static AudioClip stormShelfBreakClip;
 
     private AudioSource seaSource;
     private AudioSource locomotionSource;
@@ -71,6 +72,15 @@ public sealed class TideAudioController : MonoBehaviour
             broke ? GetRopeBreakClip() : GetNetLoadClip(),
             broke ? 0.52f : Mathf.Lerp(0.22f, 0.4f, tier01),
             broke ? 0.86f : Mathf.Lerp(1.08f, 0.9f, tier01));
+    }
+
+    public static void PlayStormShelfBreakCueInScene(float impact01)
+    {
+        TideAudioController controller = FindFirstObjectByType<TideAudioController>();
+        controller?.PlayCue(
+            GetStormShelfBreakClip(),
+            Mathf.Lerp(0.34f, 0.58f, Mathf.Clamp01(impact01)),
+            Mathf.Lerp(0.94f, 0.82f, Mathf.Clamp01(impact01)));
     }
 
     private void Update()
@@ -165,6 +175,47 @@ public sealed class TideAudioController : MonoBehaviour
     private static AudioClip GetRopeBreakClip()
     {
         return ropeBreakClip ??= CreateNoiseClip("TideRopeBreak", 0.24f, 0.72f, 0.82f);
+    }
+
+    private static AudioClip GetStormShelfBreakClip()
+    {
+        if (stormShelfBreakClip != null)
+        {
+            return stormShelfBreakClip;
+        }
+
+        const int sampleRate = 22050;
+        const float seconds = 0.46f;
+        int sampleCount = Mathf.RoundToInt(seconds * sampleRate);
+        float[] data = new float[sampleCount];
+        uint noiseState = 0x9e3779b9u;
+        float woodNoise = 0f;
+        for (int i = 0; i < sampleCount; i++)
+        {
+            float t = i / (float)sampleRate;
+            noiseState = noiseState * 1664525u + 1013904223u;
+            float white = ((noiseState >> 8) / 16777215f) * 2f - 1f;
+            woodNoise = Mathf.Lerp(white, woodNoise, 0.68f);
+            float firstCrack = Mathf.Exp(-t * 46f);
+            float secondCrackTime = Mathf.Max(0f, t - 0.075f);
+            float secondCrack = t >= 0.075f ? Mathf.Exp(-secondCrackTime * 58f) : 0f;
+            float thudTime = Mathf.Max(0f, t - 0.11f);
+            float thud = t >= 0.11f
+                ? Mathf.Sin(thudTime * 68f * Mathf.PI * 2f) * Mathf.Exp(-thudTime * 9.5f)
+                : 0f;
+            float edge = Mathf.Min(1f, i / 96f, (sampleCount - i - 1) / 256f);
+            data[i] = (woodNoise * (firstCrack * 0.62f + secondCrack * 0.44f) + thud * 0.48f) *
+                Mathf.Clamp01(edge);
+        }
+
+        stormShelfBreakClip = AudioClip.Create(
+            "TideStormShelfBreak",
+            sampleCount,
+            1,
+            sampleRate,
+            false);
+        stormShelfBreakClip.SetData(data, 0);
+        return stormShelfBreakClip;
     }
 
     private static AudioClip CreatePulseClip(string name, float seconds, float frequency, float gain)
