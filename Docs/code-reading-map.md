@@ -55,6 +55,7 @@
 - 表现：`UpdateStormRescueVisuals`
 - 物件由浮力、局部水深、潮流和系固决定冲失，剧情不写死次序；第一次抓住漂物后，交互点固定在原开间吊点，`SecuringProgress01` 同时驱动物件和吊绳连续上升
 - `Present` 区分“没有这件实物”和“实物被冲失”；`PrepareStormRescueManifest` 只把真实 `4L` 水、`2` 木料、独立干柴和已有海图转成暴潮预留。抢救成功由 `RestoreSecuredStormRescueCargo` 归回可用储物，失败不再对普通库存二次扣账
+- 睡眠边界：`WouldSleepIntervalFloodLooseStormCargo` 用权威潮位、风暴压力和可能的结构破口采样到黎明前的水深；未处理物资仍在水路或即将进入水路时，`BeginSleepPresentation` 拒绝换日。`stormRescueFloodStarted` 区分“刚收到警戒”和“实物确实经历过进水”，`RecoverSurvivingStormCargoAtRest` 只整理退水后的幸存物
 - 场景取舍门：`TideStormRescueTradeoffConvergenceProbe` 遍历四件物资的 24 种完整优先级，验证至少可救一件、不能全救、不同顺序产生不同实物损失，并检查吊升完成帧不跳位；运行控制器只通过 `TideStormRescueLayout` 提供房内实物布局
 
 ### 实物维修
@@ -98,7 +99,7 @@
 
 - 聚焦探针：`Assets/Editor/TideCoreLoopConvergenceProbe.cs`
 - 正式 Scene 维修门：`Assets/Editor/TideRepairSceneConvergenceProbe.cs`
-- 正式 Scene 视觉与流程门：`Assets/Editor/TideVisualSceneConvergenceProbe.cs`；每项重开权威 Scene，验证首日自主性与几何契约，防止预览状态串扰，不执行自动截图
+- 正式 Scene 视觉与流程门：`Assets/Editor/TideVisualSceneConvergenceProbe.cs`；每项重开权威 Scene，验证首日自主性、暴潮物资守恒、暴潮休息旁路与几何契约，防止预览状态串扰，不执行自动截图
 - 静态门：`Tools/check-prototype-loop.ps1` / `.sh`
 - 同步门：`Tools/check-unity-sync.ps1` / `.sh`
 - 完整入口：`Tools/check-tide-play-readiness.ps1` / `.sh`
