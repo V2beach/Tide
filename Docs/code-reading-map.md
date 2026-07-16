@@ -52,7 +52,8 @@
 - 输入：`HandleStormRescueInteraction`
 - 推进：`TickStormRescue`
 - 表现：`UpdateStormRescueVisuals`
-- 物件由浮力、局部水深、潮流和系固决定冲失，剧情不写死次序。
+- 物件由浮力、局部水深、潮流和系固决定冲失，剧情不写死次序；第一次抓住漂物后，交互点固定在原开间吊点，`SecuringProgress01` 同时驱动物件和吊绳连续上升
+- 场景取舍门：`TideStormRescueTradeoffConvergenceProbe` 遍历四件物资的 24 种完整优先级，验证至少可救一件、不能全救、不同顺序产生不同实物损失，并检查吊升完成帧不跳位；运行控制器只通过 `TideStormRescueLayout` 提供房内实物布局
 
 ### 实物维修
 

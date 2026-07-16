@@ -19,6 +19,15 @@ public struct TideStormRescueItemState
     public bool Lost;
 }
 
+public struct TideStormRescueLayout
+{
+    public Vector2 PlayerStart;
+    public Vector2[] BasePositions;
+    public Vector2[] DryRackPositions;
+    public float PlayerMoveSpeed;
+    public int HoistRopeOwnerCount;
+}
+
 /// <summary>
 /// 暴潮抢救模型。物件是否冲失由水深、流速、浮力和系固决定，不按剧情顺序写死。
 /// 玩家可以中断施工，但时间不足时无法保住所有东西。
@@ -67,5 +76,38 @@ public static class TideStormRescueModel
         state.WashoutProgress01 = Mathf.Clamp01(state.WashoutProgress01 + washRate * dt);
         state.Lost = state.WashoutProgress01 >= 1f;
         return state;
+    }
+
+    public static Vector2 EvaluateWorldPosition(
+        Vector2 basePosition,
+        Vector2 dryRackPosition,
+        TideStormRescueItemState item,
+        float currentSpeedMetersPerSecond)
+    {
+        float direction = Mathf.Abs(currentSpeedMetersPerSecond) < 0.03f
+            ? 1f
+            : Mathf.Sign(currentSpeedMetersPerSecond);
+        float horizontalDrift = direction * item.WashoutProgress01 *
+            Mathf.Lerp(0.7f, 1.55f, item.Buoyancy01);
+        float lift = item.WashoutProgress01 * Mathf.Lerp(0.04f, 0.42f, item.Buoyancy01);
+        Vector2 floodedPosition = basePosition + new Vector2(horizontalDrift, lift);
+
+        // 固定不是结算瞬移。施工进度同时代表吊绳提升进度，因此物件从当前
+        // 漂移位置连续升到同一开间的干燥搁架，完成前后共用一条轨迹。
+        float hoist01 = Mathf.SmoothStep(0f, 1f, item.SecuringProgress01);
+        return Vector2.Lerp(floodedPosition, dryRackPosition, hoist01);
+    }
+
+    public static Vector2 EvaluateInteractionPosition(
+        Vector2 basePosition,
+        Vector2 dryRackPosition,
+        TideStormRescueItemState item,
+        float currentSpeedMetersPerSecond)
+    {
+        // 第一次必须追到仍在漂移的实物。绳挂上以后玩家留在吊点下收绳，
+        // 不需要跟着逐渐升高的物件一起浮到半空。
+        return item.SecuringProgress01 > 0.001f
+            ? basePosition
+            : EvaluateWorldPosition(basePosition, dryRackPosition, item, currentSpeedMetersPerSecond);
     }
 }

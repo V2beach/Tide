@@ -24,6 +24,7 @@ public static class TideVisualSceneConvergenceProbe
         List<string> failures = new List<string>();
         RunProbe("开场承重", controller => controller.RunEditorOpeningGroundingProbe(), failures);
         RunProbe("首日自主性", controller => controller.RunEditorFirstDayAutonomyProbe(), failures);
+        RunProbe("暴潮取舍", controller => TideStormRescueTradeoffConvergenceProbe.Run(controller), failures);
         RunProbe("人物船屋尺度", controller => controller.RunEditorActorBoatWysiwygProbe(), failures);
         RunProbe("船上完整人物", controller => controller.RunEditorBoatPassengerScaleProbe(), failures);
         RunProbe("行走帧连续", controller => controller.RunEditorLocomotionFrameContinuityProbe(), failures);
@@ -42,7 +43,7 @@ public static class TideVisualSceneConvergenceProbe
                 "TIDE_VISUAL_SCENE_PROBE FAIL | " + string.Join(" | ", failures));
         }
         Debug.Log(
-            "TIDE_VISUAL_SCENE_PROBE PASS | 开场/首日自主性/尺度/船上人物/行走/登船/三段梯/可走面/显式输入");
+            "TIDE_VISUAL_SCENE_PROBE PASS | 开场/首日自主性/暴潮取舍/尺度/船上人物/行走/登船/三段梯/可走面/显式输入");
     }
 
     private static void RunProbe(

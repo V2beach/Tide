@@ -349,6 +349,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private readonly List<SpriteRenderer> weatherRainStreaks = new List<SpriteRenderer>();
     private readonly List<SpriteRenderer> mooringRopeSegments = new List<SpriteRenderer>();
     private readonly List<SpriteRenderer> stormRescueRenderers = new List<SpriteRenderer>();
+    private readonly List<SpriteRenderer> stormRescueRopeRenderers = new List<SpriteRenderer>();
     private readonly List<SpriteRenderer> formalBoardwalkSegments = new List<SpriteRenderer>();
     private readonly List<SpriteRenderer> interiorWallPlanks = new List<SpriteRenderer>();
     private readonly List<SpriteRenderer> interiorWindowRenderers = new List<SpriteRenderer>();
@@ -12389,7 +12390,9 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 continue;
             }
 
-            float distance = Vector2.Distance(playerPosition, GetStormRescueWorldPosition(i, item));
+            float distance = Vector2.Distance(
+                playerPosition,
+                GetStormRescueInteractionPosition(i, item, GetNaturalCurrentSpeed()));
             if (distance < nearestDistance)
             {
                 nearestDistance = distance;
@@ -12462,20 +12465,73 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private Vector2 GetStormRescueWorldPosition(int index, TideStormRescueItemState item)
     {
-        Vector2 basePosition = GetStormRescueBasePosition(index);
-        float direction = Mathf.Abs(GetNaturalCurrentSpeed()) < 0.03f
-            ? 1f
-            : Mathf.Sign(GetNaturalCurrentSpeed());
-        float horizontalDrift = direction * item.WashoutProgress01 * Mathf.Lerp(0.7f, 1.55f, item.Buoyancy01);
-        float lift = item.WashoutProgress01 * Mathf.Lerp(0.04f, 0.42f, item.Buoyancy01);
-        if (item.Secured)
+        return EvaluateStormRescueWorldPosition(index, item, GetNaturalCurrentSpeed());
+    }
+
+    private Vector2 GetStormRescueInteractionPosition(
+        int index,
+        TideStormRescueItemState item,
+        float currentSpeedMetersPerSecond)
+    {
+        return TideStormRescueModel.EvaluateInteractionPosition(
+            GetStormRescueBasePosition(index),
+            GetStormRescueDryRackPosition(index),
+            item,
+            currentSpeedMetersPerSecond);
+    }
+
+    private Vector2 EvaluateStormRescueWorldPosition(
+        int index,
+        TideStormRescueItemState item,
+        float currentSpeedMetersPerSecond)
+    {
+        return TideStormRescueModel.EvaluateWorldPosition(
+            GetStormRescueBasePosition(index),
+            GetStormRescueDryRackPosition(index),
+            item,
+            currentSpeedMetersPerSecond);
+    }
+
+    public TideStormRescueLayout GetStormRescueLayout()
+    {
+        EnsureScene();
+        const int itemCount = 4;
+        Vector2[] basePositions = new Vector2[itemCount];
+        Vector2[] dryRackPositions = new Vector2[itemCount];
+        for (int i = 0; i < itemCount; i++)
         {
-            return new Vector2(
-                GetLaneMaxX(WalkLane.InteriorUpper) - 0.48f - index * 0.18f,
-                GetPlayerStandingFeetY(WalkLane.InteriorUpper) + 0.48f + (index % 2) * 0.12f);
+            basePositions[i] = GetStormRescueBasePosition(i);
+            dryRackPositions[i] = GetStormRescueDryRackPosition(i);
         }
 
-        return basePosition + new Vector2(horizontalDrift, lift);
+        return new TideStormRescueLayout
+        {
+            PlayerStart = new Vector2(
+                GetInteriorStairBottomPosition().x,
+                GetPlayerLaneY(WalkLane.InteriorLower)),
+            BasePositions = basePositions,
+            DryRackPositions = dryRackPositions,
+            PlayerMoveSpeed = playerMoveSpeed,
+            HoistRopeOwnerCount = stormRescueRopeRenderers.Count
+        };
+    }
+
+    private Vector2 GetStormRescueDryRackPosition(int index)
+    {
+        Vector2 basePosition = GetStormRescueBasePosition(index);
+        float lowerFeetY = GetPlayerStandingFeetY(WalkLane.InteriorLower);
+        float upperFloorUndersideY = GetPlayerStandingFeetY(WalkLane.InteriorUpper) - 0.24f;
+        return new Vector2(
+            basePosition.x,
+            Mathf.Min(lowerFeetY + 1.08f, upperFloorUndersideY));
+    }
+
+    private Vector2 GetStormRescueBeamPosition(int index)
+    {
+        Vector2 rack = GetStormRescueDryRackPosition(index);
+        return new Vector2(
+            rack.x,
+            GetPlayerStandingFeetY(WalkLane.InteriorUpper) - 0.035f);
     }
 
     private void ApplyStormRescueLoss(TideStormRescueItemKind kind)
@@ -18848,6 +18904,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
             4,
             null,
             26);
+        EnsureList(
+            stormRescueRopeRenderers,
+            "GeneratedStiltFirstStormRescueHoistRope",
+            4,
+            GetNetLineSprite(),
+            26);
         lighthouseRenderer = EnsureRenderer("GeneratedStiltFirstLighthouse", GetLighthouseSprite(), -2);
         lighthouseBeamRenderer = EnsureRenderer("GeneratedStiltFirstLighthouseLensBeam", GetLighthouseBeamSprite(), -1);
         moonRenderer = EnsureRenderer("GeneratedStiltFirstMoon", GetMoonSprite(), -4);
@@ -19290,6 +19352,7 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         SetEnabled(washedAwayHarvestItems, false);
         SetEnabled(interiorStoredItems, false);
         SetEnabled(stormRescueRenderers, false);
+        SetEnabled(stormRescueRopeRenderers, false);
         SetEnabled(shelterTideZoneWearRenderers, false);
         SetEnabled(previousHighWaterSaltMarks, false);
         SetEnabled(v30RepairOwnerRenderers, false);
@@ -22290,9 +22353,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
     private void UpdateStormRescueVisuals(float time, float storm01)
     {
         if (stormRescueItems == null || stormRescueItems.Length != 4 ||
-            stormRescueRenderers.Count < stormRescueItems.Length)
+            stormRescueRenderers.Count < stormRescueItems.Length ||
+            stormRescueRopeRenderers.Count < stormRescueItems.Length)
         {
             SetEnabled(stormRescueRenderers, false);
+            SetEnabled(stormRescueRopeRenderers, false);
             return;
         }
 
@@ -22301,8 +22366,11 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             TideStormRescueItemState item = stormRescueItems[i];
             SpriteRenderer renderer = stormRescueRenderers[i];
+            SpriteRenderer ropeRenderer = stormRescueRopeRenderers[i];
             bool visible = (pressureVisible || item.Secured || item.WashoutProgress01 > 0.001f) && !item.Lost;
             renderer.enabled = visible;
+            bool ropeVisible = visible && (item.SecuringProgress01 > 0.001f || item.Secured);
+            ropeRenderer.enabled = ropeVisible;
             if (!visible)
             {
                 continue;
@@ -22336,6 +22404,12 @@ public class TideStiltHouseFirstSliceController : MonoBehaviour
                 : Mathf.Sin(time * 1.3f + i * 1.71f) * item.WashoutProgress01 * 7f;
             SetWorldSize(renderer, position, size, Color.white, waterRock);
             renderer.sortingOrder = item.Secured ? 25 : 27;
+            if (ropeVisible)
+            {
+                ropeRenderer.sprite = GetNetLineSprite();
+                ropeRenderer.sortingOrder = 26;
+                SetThinRopeSegment(ropeRenderer, GetStormRescueBeamPosition(i), position);
+            }
         }
     }
 
