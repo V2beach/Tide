@@ -610,6 +610,15 @@ public sealed class TideBarrenIslandController : MonoBehaviour
         return rockFrontSprite ??= CreateRockSprite("TideBarrenRockFront", new Color32(25, 32, 34, 255), 43);
     }
 
+    /// <summary>
+    /// 短航浅礁与出生岩礁共用同一种岩性和纹理密度。返回运行时缓存 Sprite，
+    /// 不复制 PNG，也不允许浅礁控制器生成另一套画风相近但尺寸不同的临时石块。
+    /// </summary>
+    public static Sprite GetSharedReefRockSprite()
+    {
+        return GetRockFrontSprite();
+    }
+
     private static Sprite GetCisternSprite()
     {
         if (cisternSprite != null)

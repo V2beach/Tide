@@ -31,8 +31,9 @@ public static class TideCoreLoopConvergenceProbe
         string heavyWreck = ProbeHeavyWreckTidalLift();
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
+        string sailingReef = ProbeSailingReefClearance();
         string storm = ProbeStormRescue();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {storm}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {island} | {context} | {salvage} | {repairPhases} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {storm}";
     }
 
     private static string ProbeCistern()
@@ -493,6 +494,47 @@ public static class TideCoreLoopConvergenceProbe
         Require(Mathf.Abs(trimmed.PitchDegrees) < Mathf.Abs(neutral.PitchDegrees),
             "移动压舱物不能抵消当前浪坡纵倾");
         return $"静风左右{left.HorizontalVelocity:F2}/{right.HorizontalVelocity:F2}m/s/顺风{windDriven.HorizontalVelocity:F2}/压舱{neutral.PitchDegrees:F1}->{trimmed.PitchDegrees:F1}deg";
+    }
+
+    private static string ProbeSailingReefClearance()
+    {
+        const float lowestWaterY = -2.82f;
+        TideSailingReefSample lowTide = TideSailingReefModel.Evaluate(
+            lowestWaterY, lowestWaterY, 0f, 0f, 0f, 1.2f);
+        TideSailingReefSample firstHighTide = TideSailingReefModel.Evaluate(
+            lowestWaterY, lowestWaterY + 1.11f, 0f, 0f, 0f, 1.2f);
+        TideSailingReefSample loadedAtSameTide = TideSailingReefModel.Evaluate(
+            lowestWaterY, lowestWaterY + 1.11f, 1f, 1f, 1.2f, 1.2f);
+        TideSailingReefSample deeperWindow = TideSailingReefModel.Evaluate(
+            lowestWaterY, lowestWaterY + 1.3f, 0f, 0f, 0.18f, 1.2f);
+
+        Require(lowTide.GroundsKeel && lowTide.ExposedRock01 > 0.8f,
+            "最低潮时浅礁没有露出并阻挡船底");
+        Require(!firstHighTide.GroundsKeel && firstHighTide.UnderKeelClearanceMeters > 0f,
+            "同一浅礁在首个高潮窗仍然无条件封路");
+        Require(loadedAtSameTide.GroundsKeel &&
+            loadedAtSameTide.BoatDraftMeters > firstHighTide.BoatDraftMeters,
+            "舱水、拖载和高速没有真实增加吃水");
+        Require(deeperWindow.HasComfortableClearance,
+            "更深潮窗仍没有提供可辨认的安全净空");
+
+        const float reefX = 8f;
+        bool groundedSegmentBlocked = TideSailingReefModel.SegmentEntersGroundedReef(
+            reefX - 1.1f, reefX - 0.2f, reefX, lowTide);
+        bool clearSegmentPasses = !TideSailingReefModel.SegmentEntersGroundedReef(
+            reefX - 1.1f, reefX - 0.2f, reefX, firstHighTide);
+        Require(groundedSegmentBlocked && clearSegmentPasses,
+            "位移段没有按船底净空决定是否穿过固定礁脊");
+        float groundedInPlace = TideSailingReefModel.ConstrainOutsideGroundedReef(
+            reefX, reefX + 0.2f, reefX);
+        Require(Mathf.Abs(groundedInPlace - reefX) <= 0.001f,
+            "船在礁顶遇到退潮时被瞬移到礁石边缘");
+        Require(!TideSailingReefModel.ShouldDamageHull(lowTide, 0.3f) &&
+            TideSailingReefModel.ShouldDamageHull(lowTide, 0.9f),
+            "轻触搁浅与高速撞击没有形成不同后果");
+
+        return $"浅礁净空低/高/满载={lowTide.UnderKeelClearanceMeters:F2}/" +
+            $"{firstHighTide.UnderKeelClearanceMeters:F2}/{loadedAtSameTide.UnderKeelClearanceMeters:F2}m";
     }
 
     private static string ProbeStormRescue()

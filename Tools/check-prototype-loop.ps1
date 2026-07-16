@@ -36,6 +36,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideMooringRopeModel.cs",
     "Assets/Scripts/StiltHouse/TideMooringRopeController.cs",
     "Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs",
+    "Assets/Scripts/StiltHouse/TideSailingReefModel.cs",
     "Assets/Scripts/StiltHouse/TideStormRescueModel.cs",
     "Assets/Editor/TideCoreLoopConvergenceProbe.cs",
     "Assets/Editor/TideRepairSceneConvergenceProbe.cs",
@@ -57,6 +58,8 @@ Test-Gate ($controller.Contains("GetRepairStagedPartMask")) "heavy pieces only e
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
 Test-Gate ($controller.Contains("mooringRope.AdvanceEnvironment")) "mooring runtime orchestration is extracted"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
+Test-Gate ($controller.Contains("TideSailingReefModel.SegmentEntersGroundedReef")) "sailing reef collision uses physical clearance"
+Test-Gate ($controller.Contains("UpdateSailingReefVisuals")) "reef exposure and breaker share the sailing tide"
 Test-Gate ($controller.Contains("TickStormRescue")) "storm rescue advances in the world tick"
 Test-Gate ($controller.Contains("RunEditorStormManifestOwnershipProbe")) "storm cargo keeps a grounded physical manifest"
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"
@@ -66,6 +69,7 @@ Test-Gate ($visualProbe.Contains("RunEditorWalkSurfacePathContinuityProbe")) "vi
 Test-Gate ($visualProbe.Contains("RunEditorFirstDayAutonomyProbe")) "visual gate covers first-day autonomy"
 Test-Gate ($visualProbe.Contains("TideStormRescueTradeoffConvergenceProbe.Run")) "visual gate covers storm rescue tradeoff"
 Test-Gate ($visualProbe.Contains("RunEditorStormManifestOwnershipProbe")) "visual gate covers storm cargo conservation"
+Test-Gate ($visualProbe.Contains("RunEditorSailingTideContinuityProbe")) "visual gate covers authoritative sailing tide"
 
 $buildSettings = Read-ProjectText "ProjectSettings/EditorBuildSettings.asset"
 Test-Gate ($buildSettings.Contains("Assets/Scenes/Tide_StiltHouse_FirstSlice.unity")) "build settings contain the canonical scene"

@@ -40,11 +40,13 @@
 
 ### 短航
 
-- 规则：`TideSailboatDynamicsModel`
+- 船体动力：`TideSailboatDynamicsModel`
+- 浅礁净空：`TideSailingReefModel`；固定礁顶、瞬时物理水位、舱水、拖载和高速浅水下沉共同决定吃水、搁浅与撞击
 - 输入：`HandleSailingInput`
 - 积分：`AdvanceSailingSteering`
-- 表现：`UpdateSailingSceneVisuals`
+- 表现：`UpdateSailingSceneVisuals`、`UpdateSailingReefVisuals`
 - A/D 是有限加速度，W/S 是帆高，Q/E 是前后压舱；风和潮流是两个独立有符号输入。
+- 短航平均水位由 `GetSailingMeanWaterY` 把权威天文水位相对固定礁顶按 `1:1m` 映射；露礁、礁顶碎浪、船底净空和位移碰撞读取同一个样本，浅礁不再是按 `F` 完成的任务点。
 
 ### 暴潮抢救
 
