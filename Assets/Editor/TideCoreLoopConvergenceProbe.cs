@@ -33,6 +33,7 @@ public static class TideCoreLoopConvergenceProbe
         string heavyWreck = ProbeHeavyWreckTidalLift();
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
+        string boatRepairs = ProbeBoatConditionPerformance();
         string visibleWavePhysics = ProbeVisibleWavePhysicalCoupling();
         string waveHandling = ProbeSailingWaveHandling();
         string sailingReef = ProbeSailingReefClearance();
@@ -43,7 +44,7 @@ public static class TideCoreLoopConvergenceProbe
         string forecast = ProbeForecastSnapshot();
         string netEncounter = ProbeNetEncounter();
         string wrack = ProbeWrackDeposit();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {sailing} | {visibleWavePhysics} | {waveHandling} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {sailing} | {boatRepairs} | {visibleWavePhysics} | {waveHandling} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
     }
 
     private static string ProbeWreckDismantle()
@@ -794,12 +795,13 @@ public static class TideCoreLoopConvergenceProbe
 
     private static string ProbeSailingDynamics()
     {
+        TideBoatConditionPerformanceSample boatPerformance = CreateBoatPerformance();
         TideSailboatDynamicsState right = CreateBoatState();
         TideSailboatDynamicsState left = CreateBoatState();
         for (int i = 0; i < 300; i++)
         {
-            right = TideSailboatDynamicsModel.Advance(right, 0.02f, 1f, 0f, 0f, 0f, 0f, -1.18f, 0f, 0.1f, 0.5f);
-            left = TideSailboatDynamicsModel.Advance(left, 0.02f, -1f, 0f, 0f, 0f, 0f, -1.18f, 0f, 0.1f, 0.5f);
+            right = TideSailboatDynamicsModel.Advance(right, 0.02f, 1f, 0f, 0f, 0f, 0f, -1.18f, 0f, 0.1f, boatPerformance);
+            left = TideSailboatDynamicsModel.Advance(left, 0.02f, -1f, 0f, 0f, 0f, 0f, -1.18f, 0f, 0.1f, boatPerformance);
         }
 
         Require(Mathf.Abs(right.HorizontalVelocity + left.HorizontalVelocity) <= 0.025f,
@@ -809,7 +811,7 @@ public static class TideCoreLoopConvergenceProbe
         for (int i = 0; i < 240; i++)
         {
             windDriven = TideSailboatDynamicsModel.Advance(
-                windDriven, 0.02f, 0f, 1f, 0f, 0.8f, 0f, -1.18f, 0f, 0.15f, 0.7f);
+                windDriven, 0.02f, 0f, 1f, 0f, 0.8f, 0f, -1.18f, 0f, 0.15f, boatPerformance);
         }
         Require(windDriven.HorizontalVelocity > 0.2f, "升帆后没有读取有符号风场");
 
@@ -827,7 +829,7 @@ public static class TideCoreLoopConvergenceProbe
                 -1.18f,
                 0f,
                 0.9f,
-                0.7f);
+                boatPerformance);
         }
         Require(localBreakerDriven.HorizontalVelocity > 0.14f,
             "权威海况提供局部浪推力后，帆船动力仍把它丢在当前耦合之外");
@@ -836,12 +838,87 @@ public static class TideCoreLoopConvergenceProbe
         TideSailboatDynamicsState trimmed = CreateBoatState();
         for (int i = 0; i < 160; i++)
         {
-            neutral = TideSailboatDynamicsModel.Advance(neutral, 0.02f, 0f, 0f, 0f, 0f, 0f, -1.08f, 0.12f, 0.4f, 0.7f);
-            trimmed = TideSailboatDynamicsModel.Advance(trimmed, 0.02f, 0f, 0f, 0.38f, 0f, 0f, -1.08f, 0.12f, 0.4f, 0.7f);
+            neutral = TideSailboatDynamicsModel.Advance(neutral, 0.02f, 0f, 0f, 0f, 0f, 0f, -1.08f, 0.12f, 0.4f, boatPerformance);
+            trimmed = TideSailboatDynamicsModel.Advance(trimmed, 0.02f, 0f, 0f, 0.38f, 0f, 0f, -1.08f, 0.12f, 0.4f, boatPerformance);
         }
         Require(Mathf.Abs(trimmed.PitchDegrees) < Mathf.Abs(neutral.PitchDegrees),
             "移动压舱物不能抵消当前浪坡纵倾");
         return $"静风左右{left.HorizontalVelocity:F2}/{right.HorizontalVelocity:F2}m/s/顺风{windDriven.HorizontalVelocity:F2}/破浪推移{localBreakerDriven.HorizontalVelocity:F2}/压舱{neutral.PitchDegrees:F1}->{trimmed.PitchDegrees:F1}deg";
+    }
+
+    private static string ProbeBoatConditionPerformance()
+    {
+        TideBoatConditionPerformanceSample damaged = CreateBoatPerformance(1, 0, 0);
+        TideBoatConditionPerformanceSample hullRepaired = CreateBoatPerformance(2, 0, 0);
+        TideBoatConditionPerformanceSample sailRepaired = CreateBoatPerformance(1, 1, 0);
+        TideBoatConditionPerformanceSample cabinRepaired = CreateBoatPerformance(1, 0, 1);
+
+        Require(hullRepaired.BaseLeakRatePerSecond < damaged.BaseLeakRatePerSecond * 0.7f &&
+            hullRepaired.HullSpeedMultiplier > damaged.HullSpeedMultiplier * 1.08f,
+            "船壳维修没有同时降低真实漏率并提高可承受航速");
+        Require(Mathf.Approximately(hullRepaired.SailTrimRatePerSecond, damaged.SailTrimRatePerSecond),
+            "船壳维修越权改变了升降帆速度");
+        Require(sailRepaired.SailDriveEfficiency01 >= damaged.SailDriveEfficiency01 + 0.2f &&
+            sailRepaired.SailTrimRatePerSecond >= damaged.SailTrimRatePerSecond + 0.08f,
+            "船帆维修没有改善真实风力利用和升降帆速度");
+        Require(Mathf.Approximately(sailRepaired.BaseLeakRatePerSecond, damaged.BaseLeakRatePerSecond),
+            "船帆维修越权堵住了船壳漏水");
+        Require(cabinRepaired.BallastShiftRatePerSecond >= damaged.BallastShiftRatePerSecond + 0.1f &&
+            cabinRepaired.BailRateMultiplier >= damaged.BailRateMultiplier + 0.2f &&
+            cabinRepaired.BailingDragMultiplier < damaged.BailingDragMultiplier,
+            "舱底维修没有改善压舱移动、舀水和操作时的动量保留");
+        Require(Mathf.Approximately(cabinRepaired.SailDriveEfficiency01, damaged.SailDriveEfficiency01),
+            "舱底维修越权提高了船帆效率");
+
+        TideSailboatDynamicsState tornSail = CreateBoatState();
+        TideSailboatDynamicsState soundSail = CreateBoatState();
+        tornSail.SailRaised01 = 0f;
+        soundSail.SailRaised01 = 0f;
+        TideBoatConditionPerformanceSample tornSailPerformance = CreateBoatPerformance(2, 0, 1);
+        TideBoatConditionPerformanceSample soundSailPerformance = CreateBoatPerformance(2, 2, 1);
+        for (int step = 0; step < 150; step++)
+        {
+            tornSail = TideSailboatDynamicsModel.Advance(
+                tornSail, 0.02f, 0f, 1f, 0f, 0.65f, 0f, -1.18f, 0f, 0.1f, tornSailPerformance);
+            soundSail = TideSailboatDynamicsModel.Advance(
+                soundSail, 0.02f, 0f, 1f, 0f, 0.65f, 0f, -1.18f, 0f, 0.1f, soundSailPerformance);
+        }
+        Require(soundSail.SailRaised01 >= tornSail.SailRaised01 + 0.25f &&
+            soundSail.HorizontalVelocity >= tornSail.HorizontalVelocity + 0.2f,
+            "修复后的船帆没有在真实积分器里更快升起并形成可辨认推进差");
+
+        TideSailboatDynamicsState damagedHull = CreateBoatState();
+        TideSailboatDynamicsState soundHull = CreateBoatState();
+        for (int step = 0; step < 300; step++)
+        {
+            damagedHull = TideSailboatDynamicsModel.Advance(
+                damagedHull, 0.02f, 0f, 0f, 0f, 0f, 0f, -1.18f, 0.12f, 0.8f,
+                CreateBoatPerformance(1, 1, 1), 0.9f);
+            soundHull = TideSailboatDynamicsModel.Advance(
+                soundHull, 0.02f, 0f, 0f, 0f, 0f, 0f, -1.18f, 0.12f, 0.8f,
+                CreateBoatPerformance(2, 1, 1), 0.9f);
+        }
+        Require(damagedHull.Ingress01 >= soundHull.Ingress01 + 0.02f,
+            "船壳维修没有在真实越浪积分中形成可辨认的进水差");
+
+        TideSailboatDynamicsState blockedCabin = CreateBoatState();
+        TideSailboatDynamicsState clearedCabin = CreateBoatState();
+        for (int step = 0; step < 80; step++)
+        {
+            blockedCabin = TideSailboatDynamicsModel.Advance(
+                blockedCabin, 0.02f, 0f, 0f, 1f, 0f, 0f, -1.18f, 0f, 0f,
+                CreateBoatPerformance(1, 0, 0));
+            clearedCabin = TideSailboatDynamicsModel.Advance(
+                clearedCabin, 0.02f, 0f, 0f, 1f, 0f, 0f, -1.18f, 0f, 0f,
+                CreateBoatPerformance(1, 0, 2));
+        }
+        Require(clearedCabin.Ballast01 >= blockedCabin.Ballast01 + 0.25f,
+            "清理修复舱底后，压舱物仍以同样迟缓的速度移动");
+
+        return $"部件维修=船壳漏率{damaged.BaseLeakRatePerSecond:F3}->{hullRepaired.BaseLeakRatePerSecond:F3}/" +
+            $"帆速{tornSail.SailRaised01:F2}->{soundSail.SailRaised01:F2}/" +
+            $"进水{damagedHull.Ingress01:F2}->{soundHull.Ingress01:F2}/" +
+            $"压舱{blockedCabin.Ballast01:F2}->{clearedCabin.Ballast01:F2}";
     }
 
     private static string ProbeVisibleWavePhysicalCoupling()
@@ -878,10 +955,10 @@ public static class TideCoreLoopConvergenceProbe
         {
             preparedBoat = TideSailboatDynamicsModel.Advance(
                 preparedBoat, 0.02f, 0f, 0f, 0f, 0f, 0.4f,
-                -1.18f, 0.12f, 0.9f, 0.35f, 0.95f);
+                -1.18f, 0.12f, 0.9f, CreateBoatPerformance(1, 2, 2), 0.95f);
             exposedBoat = TideSailboatDynamicsModel.Advance(
                 exposedBoat, 0.02f, 0f, 0f, 0f, 0f, 0.4f,
-                -1.18f, 0.12f, 0.9f, 0.35f, 0.95f);
+                -1.18f, 0.12f, 0.9f, CreateBoatPerformance(1, 2, 2), 0.95f);
         }
 
         Require(preparedBoat.HorizontalVelocity >= exposedBoat.HorizontalVelocity + 0.16f,
@@ -1312,6 +1389,17 @@ public static class TideCoreLoopConvergenceProbe
             HeaveY = -1.18f,
             SailRaised01 = 0.58f
         };
+    }
+
+    private static TideBoatConditionPerformanceSample CreateBoatPerformance(
+        int hullIntegrity = 3,
+        int sailIntegrity = 2,
+        int cabinIntegrity = 2)
+    {
+        return TideBoatConditionPerformanceModel.Evaluate(
+            hullIntegrity,
+            sailIntegrity,
+            cabinIntegrity);
     }
 
     private static void Require(bool condition, string message)

@@ -8435,7 +8435,7 @@ public partial class TideStiltHouseFirstSliceController
             nearbyChoice == RepairChoice.Hull;
 
         float speedBefore = GetEffectiveSailingMaxSpeed();
-        float leakBefore = GetSailingLeakRatePerSecond();
+        float leakBefore = GetBoatConditionPerformance().BaseLeakRatePerSecond;
         float rangeBefore = GetBoatSeaworthyRightLimit();
         bool cargoNotPreBanked = timberStock == 0 && ropeStock == 0 && clothStock == 0 &&
             !currentHarvestBanked;
@@ -8485,7 +8485,7 @@ public partial class TideStiltHouseFirstSliceController
         float repairFinishedSeconds = followUpSeconds;
 
         float speedAfter = GetEffectiveSailingMaxSpeed();
-        float leakAfter = GetSailingLeakRatePerSecond();
+        float leakAfter = GetBoatConditionPerformance().BaseLeakRatePerSecond;
         float rangeAfter = GetBoatSeaworthyRightLimit();
         bool repairCommittedOnce = repairChoiceApplied &&
             pendingRepairChoice == RepairChoice.Hull &&
@@ -8755,6 +8755,63 @@ public partial class TideStiltHouseFirstSliceController
                 break;
             }
         }
+    }
+
+    public string RunEditorBoatComponentHandlingFeedbackProbe()
+    {
+        EnsureScene();
+        ResetSlice();
+
+        sailingSailTrim01 = 1f;
+        sailingWaterIngress01 = 0f;
+        sailingBailing = false;
+        boatHullIntegrity = 1;
+        boatSailIntegrity = 0;
+        boatCabinIntegrity = 0;
+        RecalculateBoatReadiness();
+        TideBoatConditionPerformanceSample damaged = GetBoatConditionPerformance();
+        float damagedHullSpeed = GetEffectiveSailingMaxSpeed();
+
+        boatHullIntegrity = 2;
+        RecalculateBoatReadiness();
+        TideBoatConditionPerformanceSample hullRepaired = GetBoatConditionPerformance();
+        float repairedHullSpeed = GetEffectiveSailingMaxSpeed();
+
+        boatHullIntegrity = 1;
+        boatSailIntegrity = 1;
+        RecalculateBoatReadiness();
+        TideBoatConditionPerformanceSample sailRepaired = GetBoatConditionPerformance();
+
+        boatSailIntegrity = 0;
+        boatCabinIntegrity = 1;
+        RecalculateBoatReadiness();
+        TideBoatConditionPerformanceSample cabinRepaired = GetBoatConditionPerformance();
+        sailingBailing = true;
+        float repairedCabinBailRate = GetEffectiveSailingBailRate();
+        float repairedCabinMomentumLoss = GetEffectiveSailingDrag();
+
+        boatCabinIntegrity = 0;
+        RecalculateBoatReadiness();
+        float damagedCabinBailRate = GetEffectiveSailingBailRate();
+        float damagedCabinMomentumLoss = GetEffectiveSailingDrag();
+
+        bool hullOwnsHullPhysics = hullRepaired.BaseLeakRatePerSecond < damaged.BaseLeakRatePerSecond &&
+            repairedHullSpeed > damagedHullSpeed * 1.08f &&
+            Mathf.Approximately(hullRepaired.SailTrimRatePerSecond, damaged.SailTrimRatePerSecond);
+        bool sailOwnsRigging = sailRepaired.SailDriveEfficiency01 > damaged.SailDriveEfficiency01 &&
+            sailRepaired.SailTrimRatePerSecond > damaged.SailTrimRatePerSecond &&
+            Mathf.Approximately(sailRepaired.BaseLeakRatePerSecond, damaged.BaseLeakRatePerSecond);
+        bool cabinOwnsWorkSpace = cabinRepaired.BallastShiftRatePerSecond > damaged.BallastShiftRatePerSecond &&
+            repairedCabinBailRate > damagedCabinBailRate &&
+            repairedCabinMomentumLoss < damagedCabinMomentumLoss;
+
+        string evidence =
+            $"船壳速度={damagedHullSpeed:F2}->{repairedHullSpeed:F2}/漏率={damaged.BaseLeakRatePerSecond:F3}->{hullRepaired.BaseLeakRatePerSecond:F3}；" +
+            $"船帆效率={damaged.SailDriveEfficiency01:F2}->{sailRepaired.SailDriveEfficiency01:F2}/收放={damaged.SailTrimRatePerSecond:F2}->{sailRepaired.SailTrimRatePerSecond:F2}；" +
+            $"舱底舀水={damagedCabinBailRate:F2}->{repairedCabinBailRate:F2}/动量损失={damagedCabinMomentumLoss:F2}->{repairedCabinMomentumLoss:F2}";
+        return hullOwnsHullPhysics && sailOwnsRigging && cabinOwnsWorkSpace
+            ? $"PASS：三处船体维修各自改变真实操控，没有再共享抽象船力。{evidence}"
+            : $"FAIL：船壳、船帆或舱底仍没有拥有自己的可触摸后果。{evidence}";
     }
 
     public string RunEditorV28HouseIntegrationProbe()
@@ -10207,7 +10264,27 @@ public partial class TideStiltHouseFirstSliceController
         dayProgress01 = 0.5f;
         dayClockSeconds = dayProgress01 * dayLengthSeconds;
         float dayWind = GetNaturalSailingWindSpeed();
-        float dayAssist = GetSailingWindAssist();
+        TideBoatConditionPerformanceSample boatPerformance = GetBoatConditionPerformance();
+        TideSailboatDynamicsState dayBoat = new TideSailboatDynamicsState
+        {
+            HeaveY = sailingHomeY,
+            SailRaised01 = 1f
+        };
+        for (int step = 0; step < 100; step++)
+        {
+            dayBoat = TideSailboatDynamicsModel.Advance(
+                dayBoat,
+                0.02f,
+                0f,
+                0f,
+                0f,
+                dayWind,
+                0f,
+                sailingHomeY,
+                0f,
+                0f,
+                boatPerformance);
+        }
         UpdateVisuals(1.25f);
         bool dayPennantMatches = stormPennantRenderer.enabled && stormPennantRenderer.flipX;
 
@@ -10216,7 +10293,26 @@ public partial class TideStiltHouseFirstSliceController
         dayProgress01 = 0f;
         dayClockSeconds = 0f;
         float nightWind = GetNaturalSailingWindSpeed();
-        float nightAssist = GetSailingWindAssist();
+        TideSailboatDynamicsState nightBoat = new TideSailboatDynamicsState
+        {
+            HeaveY = sailingHomeY,
+            SailRaised01 = 1f
+        };
+        for (int step = 0; step < 100; step++)
+        {
+            nightBoat = TideSailboatDynamicsModel.Advance(
+                nightBoat,
+                0.02f,
+                0f,
+                0f,
+                0f,
+                nightWind,
+                0f,
+                sailingHomeY,
+                0f,
+                0f,
+                boatPerformance);
+        }
         UpdateVisuals(2.05f);
         bool nightPennantMatches = stormPennantRenderer.enabled && !stormPennantRenderer.flipX;
 
@@ -10227,10 +10323,11 @@ public partial class TideStiltHouseFirstSliceController
         TickPlayerBuoyancyAndCurrent(0.5f);
         bool dryWalkerIgnoresWind = Mathf.Abs(playerPosition.x - dryStartX) <= 0.001f;
 
-        bool directionalPhysics = dayWind < -0.05f && dayAssist < -0.03f &&
-            nightWind > 0.05f && nightAssist > 0.03f;
+        bool directionalPhysics = dayWind < -0.05f && dayBoat.HorizontalVelocity < -0.03f &&
+            nightWind > 0.05f && nightBoat.HorizontalVelocity > 0.03f;
         string evidence =
-            $"日风/助力={dayWind:F2}/{dayAssist:F2}；夜风/助力={nightWind:F2}/{nightAssist:F2}；" +
+            $"日风/实船={dayWind:F2}/{dayBoat.HorizontalVelocity:F2}；" +
+            $"夜风/实船={nightWind:F2}/{nightBoat.HorizontalVelocity:F2}；" +
             $"风标(日/夜)={dayPennantMatches}/{nightPennantMatches}；岸上位移={playerPosition.x - dryStartX:F3}m";
         return directionalPhysics && dayPennantMatches && nightPennantMatches && dryWalkerIgnoresWind
             ? $"PASS：屋顶风标与同一股昼夜风同步，顺逆风只进入帆船推进，干燥岸上人物不受风位移。{evidence}"

@@ -255,7 +255,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     [SerializeField] private float shoreWorkX = -0.48f;
     [SerializeField] private float shoreWorkDistance = 0.64f;
     [SerializeField] private float shoreWorkMaxWaterOffset = 1.22f;
-    [SerializeField] private float sailingAcceleration = 4.8f;
     [SerializeField] private float sailingDrag = 3.4f;
     [SerializeField] private float sailingMaxSpeed = 2.75f;
     [SerializeField] private float sailingHomeX = -4.8f;
@@ -269,7 +268,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     [SerializeField] private Vector2 sailingSalvagePoint = new Vector2(5.15f, -0.88f);
     [SerializeField] private Vector2 sailingReefPoint = new Vector2(2.15f, -1.08f);
     [SerializeField] private float sailTripSeconds = 75f;
-    [SerializeField] private float sailingTrimSpeed = 0.9f;
     [SerializeField] private float sailingBailRate = 0.22f;
     [SerializeField] private float sailingWindMaxSpeed = 0.58f;
     [SerializeField] private float stormFrontArrivalDays = 3f;
@@ -4466,18 +4464,19 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         // current, hull leakage or range limits; those remain owned by the live world.
         float clampedDirection = Mathf.Clamp(direction, -1f, 1f);
         TideOceanSample ocean = GetSailingOceanSample(sailingBoatX);
+        TideBoatConditionPerformanceSample boatPerformance = GetBoatConditionPerformance();
         sailingDynamics = TideSailboatDynamicsModel.Advance(
             sailingDynamics,
             deltaTime,
             clampedDirection,
-            sailInput * sailingTrimSpeed / 0.48f,
+            sailInput,
             ballastInput,
             GetNaturalSailingWindSpeed(),
             GetSailingLocalWaterVelocity(ocean),
             ocean.SurfaceY,
             ocean.Slope,
             ocean.Agitation01,
-            Mathf.Clamp01(boatHullIntegrity / 3f),
+            boatPerformance,
             ocean.LocalWaveContact01);
         TickSailingWaveImpactFeedback(deltaTime);
 
@@ -4585,7 +4584,8 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         // must still release the tiller and hold F, so faster drainage trades sailing
         // momentum and time for safety instead of erasing the leaking-hull problem.
         bool preparedBucket = HasActiveTidePrep() && selectedPrepChoice == TidePrepChoice.Bucket;
-        return sailingBailRate * (preparedBucket ? 1.65f : 1f);
+        TideBoatConditionPerformanceSample boatPerformance = GetBoatConditionPerformance();
+        return sailingBailRate * boatPerformance.BailRateMultiplier * (preparedBucket ? 1.65f : 1f);
     }
 
     private bool CanInteractAtSailingPoint()
@@ -5238,8 +5238,14 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private bool CanReturnFromSailing()
     {
-        return sailingBoatX <= sailingHomeX + 0.72f &&
-            Mathf.Abs(sailingBoatLaneY - sailingHomeY) <= 0.42f;
+        TideOceanSample homeOcean = GetSailingOceanSample(sailingBoatX);
+        bool insideMooringApproach = sailingBoatX <= sailingHomeX + 0.72f;
+        bool afloatOnVisibleWater = Mathf.Abs(sailingBoatLaneY - homeOcean.SurfaceY) <= 0.58f;
+        // The boat rises with tide and individual waves. Comparing that physical hull
+        // height with the opening frame's fixed waterline made a visibly docked boat
+        // fail the return test at another tide. The approach now follows what is shown:
+        // horizontal overlap with the pier plus contact with the current visible sea.
+        return insideMooringApproach && afloatOnVisibleWater;
     }
 
     // 返航规则：涨潮/天黑只加压力，不自动回屋；玩家自己选择回高脚屋。
@@ -5289,8 +5295,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             sailingHomeX + 0.72f,
             sailingMaxX,
             sailingBoatX);
-        // 修船降低被流推走的程度，但一艘好船仍在海里，不会把潮流抵消为零。
-        float handlingExposure01 = Mathf.Clamp01(GetSailingCurrentInfluence() / 1.08f);
+        // 当前返航压力只读取真实舱水和真实潮流。维修舱底会让玩家更快舀水、
+        // 更快移动压舱物，但不会凭一个隐藏船况分数直接削弱海流本身。
+        float handlingExposure01 = Mathf.Lerp(0.58f, 1f, sailingWaterIngress01);
         return physicalCurrent01 *
             Mathf.Lerp(0.28f, 0.94f, distance01) *
             Mathf.Lerp(0.58f, 1f, handlingExposure01);
@@ -5496,6 +5503,14 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         return Mathf.Clamp01(boatReadiness / Mathf.Max(1f, requiredBoatReadiness));
     }
 
+    private TideBoatConditionPerformanceSample GetBoatConditionPerformance()
+    {
+        return TideBoatConditionPerformanceModel.Evaluate(
+            boatHullIntegrity,
+            boatSailIntegrity,
+            boatCabinIntegrity);
+    }
+
     private float GetBoatSeaworthyRightLimit()
     {
         float repaired01 = Mathf.SmoothStep(0f, 1f, GetBoatReadiness01());
@@ -5511,37 +5526,24 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private float GetEffectiveSailingMaxSpeed()
     {
-        float repairedSpeed = Mathf.Lerp(sailingMaxSpeed * 0.58f, sailingMaxSpeed * 1.08f, GetBoatReadiness01());
+        TideBoatConditionPerformanceSample boatPerformance = GetBoatConditionPerformance();
+        float hullLimitedSpeed = sailingMaxSpeed * boatPerformance.HullSpeedMultiplier;
         float trimSpeed = Mathf.Lerp(0.56f, 1.14f, Mathf.SmoothStep(0f, 1f, sailingSailTrim01));
         float bailingPenalty = sailingBailing ? 0.38f : 1f;
         float towLoad01 = GetCurrentSailingTowLoad01();
         float salvageWeight = Mathf.Lerp(1f, 0.82f, towLoad01);
-        return repairedSpeed * trimSpeed * Mathf.Lerp(1f, 0.62f, sailingWaterIngress01) * bailingPenalty * salvageWeight;
-    }
-
-    private float GetEffectiveSailingAcceleration()
-    {
-        float repairedAcceleration = Mathf.Lerp(sailingAcceleration * 0.55f, sailingAcceleration * 1.1f, GetBoatReadiness01());
-        float trimAcceleration = Mathf.Lerp(0.68f, 1.08f, sailingSailTrim01);
-        float bailingPenalty = sailingBailing ? 0.42f : 1f;
-        float towAcceleration = Mathf.Lerp(1f, 0.76f, GetCurrentSailingTowLoad01());
-        return repairedAcceleration * trimAcceleration * Mathf.Lerp(1f, 0.68f, sailingWaterIngress01) * bailingPenalty * towAcceleration;
+        return hullLimitedSpeed * trimSpeed * Mathf.Lerp(1f, 0.62f, sailingWaterIngress01) *
+            bailingPenalty * salvageWeight;
     }
 
     private float GetEffectiveSailingDrag()
     {
-        float repairedDrag = Mathf.Lerp(sailingDrag * 0.62f, sailingDrag * 1.18f, GetBoatReadiness01());
+        TideBoatConditionPerformanceSample boatPerformance = GetBoatConditionPerformance();
         float reefingBrake = Mathf.Lerp(1.34f, 0.9f, sailingSailTrim01);
         float bailingBrake = sailingBailing ? 1.55f : 1f;
         float towDrag = Mathf.Lerp(1f, 1.24f, GetCurrentSailingTowLoad01());
-        return repairedDrag * reefingBrake * Mathf.Lerp(1f, 0.74f, sailingWaterIngress01) * bailingBrake * towDrag;
-    }
-
-    private float GetSailingCurrentInfluence()
-    {
-        float repairedInfluence = Mathf.Lerp(0.9f, 0.48f, GetBoatReadiness01());
-        float trimControl = Mathf.Lerp(1.18f, 0.84f, sailingSailTrim01);
-        return repairedInfluence * trimControl * Mathf.Lerp(1f, 1.24f, sailingWaterIngress01);
+        return sailingDrag * boatPerformance.BailingDragMultiplier * reefingBrake *
+            Mathf.Lerp(1f, 0.74f, sailingWaterIngress01) * bailingBrake * towDrag;
     }
 
     private string GetSailTrimText()
@@ -6742,18 +6744,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         return Mathf.Lerp(baseWindSpeed * Mathf.Lerp(0.86f, 1.05f, onshore01), onshoreStormWind, onshore01 * 0.78f);
     }
 
-    private float GetSailingWindAssist()
-    {
-        float sailCoupling = Mathf.SmoothStep(0f, 1f, sailingSailTrim01);
-        float repairedRigging = Mathf.Lerp(0.72f, 1.04f, GetBoatReadiness01());
-        // Hauling leaves one hand on the wet line and one on the tiller. It reduces
-        // usable sail drive, but does not freeze the boat or secretly brake it.
-        float handsBusy = sailingBailing
-            ? 0.22f
-            : sailingSalvageHauling ? 0.62f : 1f;
-        return GetNaturalSailingWindSpeed() * sailCoupling * repairedRigging * handsBusy;
-    }
-
     private float GetSailingSurfaceFlowSpeed()
     {
         return GetNaturalCurrentSpeed() * 0.62f + GetNaturalSailingWindSpeed() * 0.78f;
@@ -7381,25 +7371,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             lastActionHint = "海面变暗了；目标在右边，但你也要记得靠左按 F 返航。";
         }
-    }
-
-    private float GetSailingLeakRatePerSecond()
-    {
-        float hullTightness01 = Mathf.Clamp01(boatHullIntegrity / 3f);
-        float hullLeakRate = Mathf.Lerp(0.052f, 0.005f, hullTightness01);
-        float speed01 = Mathf.Clamp01(
-            Mathf.Abs(sailingBoatVelocity) /
-            Mathf.Max(0.01f, GetEffectiveSailingMaxSpeed()));
-        // A full sail drives the bow harder into chop. Reefing cannot repair a leaking
-        // hull, but it lowers exposure. Keeping this formula shared makes the visible
-        // ingress and the repair payoff read the exact same hull, tide and weather state.
-        float sailExposure = Mathf.Lerp(0.58f, 1.28f, sailingSailTrim01);
-        float weatherLoad = TideContinuousWeatherModel.EvaluateWaveLoadMultiplier(
-            GetStormPressure01());
-        float roughness =
-            (0.82f + tideStrength * 0.32f + speed01 * 0.18f) *
-            sailExposure * weatherLoad;
-        return hullLeakRate * roughness;
     }
 
     private void TickSailingReefRuntime(float deltaTime)
@@ -13649,11 +13620,11 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             daylight01);
 
         float speed01 = Mathf.Clamp(sailingBoatVelocity / Mathf.Max(0.01f, GetEffectiveSailingMaxSpeed()), -1f, 1f);
-        float unready01 = 1f - GetBoatReadiness01();
-        float handlingWobble = Mathf.Sin(time * 3.1f) *
-            (unready01 * 0.8f + sailingWaterIngress01 * 1.15f);
         TideOceanSample sailingOcean = GetSailingOceanSample(sailingBoatX);
-        float boatTilt = sailingDynamics.PitchDegrees + handlingWobble;
+        // Pitch is already the integrated result of the visible wave slope, ballast
+        // and impact response. Adding an unrelated readiness sine here made the boat
+        // visibly move without a matching physical cause.
+        float boatTilt = sailingDynamics.PitchDegrees;
         Vector2 oldBoatScreenPosition = GetSailingScreenPosition(GetSailingBoatBasePosition());
         float resolvedHeaveY = Mathf.Approximately(sailingDynamics.HeaveY, 0f)
             ? sailingOcean.SurfaceY

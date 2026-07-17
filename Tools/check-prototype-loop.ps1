@@ -39,6 +39,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideV85HeavyWreckCatalog.cs",
     "Assets/Scripts/StiltHouse/TideMooringRopeModel.cs",
     "Assets/Scripts/StiltHouse/TideMooringRopeController.cs",
+    "Assets/Scripts/StiltHouse/TideBoatConditionPerformanceModel.cs",
     "Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs",
     "Assets/Scripts/StiltHouse/TideSailingWaveHandlingModel.cs",
     "Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs",
@@ -73,6 +74,7 @@ $barrenIsland = Read-ProjectText "Assets/Scripts/StiltHouse/TideBarrenIslandCont
 $waveEvents = Read-ProjectText "Assets/Scripts/StiltHouse/TideWaveEventFieldModel.cs"
 $authoritativeOcean = Read-ProjectText "Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs"
 $waveHandling = Read-ProjectText "Assets/Scripts/StiltHouse/TideSailingWaveHandlingModel.cs"
+$boatPerformance = Read-ProjectText "Assets/Scripts/StiltHouse/TideBoatConditionPerformanceModel.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
 Test-Gate ($controller.Contains("TickDismantleNearestPart") -and
     $controller.Contains("wreckOcean.Agitation01")) "wreck dismantling consumes continuous input and the authoritative ocean sample"
@@ -99,6 +101,17 @@ Test-Gate ($barrenIsland.Contains("CisternWaterSurface") -and
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
 Test-Gate ($controller.Contains("mooringRope.AdvanceEnvironment")) "mooring runtime orchestration is extracted"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
+Test-Gate ($controller.Contains("GetBoatConditionPerformance") -and
+    $controller.Contains("boatPerformance.BailRateMultiplier") -and
+    $controller.Contains("boatPerformance.BailingDragMultiplier") -and
+    $controller.Contains("boatPerformance.HullSpeedMultiplier")) "runtime controller maps each repaired boat component to its owned handling consequence"
+Test-Gate ($boatPerformance.Contains("BaseLeakRatePerSecond") -and
+    $boatPerformance.Contains("SailDriveEfficiency01") -and
+    $boatPerformance.Contains("SailTrimRatePerSecond") -and
+    $boatPerformance.Contains("BallastShiftRatePerSecond")) "boat component performance is isolated as a pure readable model"
+Test-Gate (-not $controller.Contains("GetSailingLeakRatePerSecond") -and
+    -not $controller.Contains("GetSailingWindAssist") -and
+    -not $controller.Contains("GetEffectiveSailingAcceleration")) "runtime keeps no duplicate probe-only sailing formulas"
 Test-Gate ($controller.Contains("TideAuthoritativeOceanModel.Sample") -and
     -not $controller.Contains("TideOceanFieldModel.Sample")) "all runtime ocean consumers use the visible-and-physical composition"
 Test-Gate ($controller.Contains("GetOceanEventTimeSeconds") -and
@@ -154,11 +167,14 @@ Test-Gate ($coreProbe.Contains("ProbeForecastSnapshot")) "core gate covers forec
 Test-Gate ($coreProbe.Contains("ProbeWreckDismantle")) "core gate covers persistent work, footing, wave load, and part-specific durations"
 Test-Gate ($coreProbe.Contains("ProbeRepairWorkSession")) "core gate covers repair pause, retarget, and commit semantics"
 Test-Gate ($coreProbe.Contains("ProbeSailingDynamics")) "core gate covers the authoritative sailing dynamics state"
+Test-Gate ($coreProbe.Contains("ProbeBoatConditionPerformance")) "core gate proves component-specific boat repair feedback in the real integrator"
 Test-Gate ($coreProbe.Contains("ProbeVisibleWavePhysicalCoupling")) "core gate couples visible breakers to local ocean physics"
 Test-Gate ($coreProbe.Contains("ProbeSailingWaveHandling")) "core gate compares prepared and exposed wave handling"
 Test-Gate ($coreProbe.Contains("ProbeNetEncounter")) "core gate rejects preload, overtopping, stale contact, and skipped windows"
 Test-Gate ($coreProbe.Contains("ProbeWrackDeposit")) "core gate covers ebb deposit and refloat lifecycle"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"
+$repairProbe = Read-ProjectText "Assets/Editor/TideRepairSceneConvergenceProbe.cs"
+Test-Gate ($repairProbe.Contains("RunEditorBoatComponentHandlingFeedbackProbe")) "repair gate covers hull, sail, and cabin handling ownership"
 Test-Gate ($visualProbe.Contains("RunEditorBoatPassengerScaleProbe")) "visual gate covers complete boat passenger"
 Test-Gate ($visualProbe.Contains("RunEditorWalkSurfacePathContinuityProbe")) "visual gate covers authored walk surfaces"
 Test-Gate ($visualProbe.Contains("RunEditorFirstDayAutonomyProbe")) "visual gate covers first-day autonomy"

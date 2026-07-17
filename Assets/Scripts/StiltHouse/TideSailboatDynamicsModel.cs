@@ -31,12 +31,20 @@ public static class TideSailboatDynamicsModel
         float sampledSurfaceY,
         float sampledSurfaceSlope,
         float waveAgitation01,
-        float hullIntegrity01,
+        TideBoatConditionPerformanceSample boatPerformance,
         float localWaveContact01 = 0f)
     {
         float dt = Mathf.Max(0f, deltaSeconds);
-        state.SailRaised01 = Mathf.Clamp01(state.SailRaised01 + Mathf.Clamp(sailInput, -1f, 1f) * dt * 0.48f);
-        state.Ballast01 = Mathf.Clamp(state.Ballast01 + Mathf.Clamp(ballastInput, -1f, 1f) * dt * 0.65f, -1f, 1f);
+        state.SailRaised01 = Mathf.Clamp01(
+            state.SailRaised01 +
+            Mathf.Clamp(sailInput, -1f, 1f) * dt *
+            Mathf.Max(0f, boatPerformance.SailTrimRatePerSecond));
+        state.Ballast01 = Mathf.Clamp(
+            state.Ballast01 +
+            Mathf.Clamp(ballastInput, -1f, 1f) * dt *
+            Mathf.Max(0f, boatPerformance.BallastShiftRatePerSecond),
+            -1f,
+            1f);
 
         TideSailingWaveHandlingSample waveHandling =
             TideSailingWaveHandlingModel.Evaluate(
@@ -52,7 +60,7 @@ public static class TideSailboatDynamicsModel
 
         float manualAcceleration = Mathf.Clamp(pilotInput, -1f, 1f) * 0.46f;
         float sailDrive = signedWindMetersPerSecond * Mathf.SmoothStep(0f, 1f, state.SailRaised01) *
-            Mathf.Lerp(0.52f, 0.92f, Mathf.Clamp01(hullIntegrity01));
+            Mathf.Clamp01(boatPerformance.SailDriveEfficiency01);
         float currentCoupling = (signedCurrentMetersPerSecond - state.HorizontalVelocity) * 0.34f;
         float quadraticDrag = -Mathf.Sign(state.HorizontalVelocity) *
             state.HorizontalVelocity * state.HorizontalVelocity * 0.12f;
@@ -88,7 +96,7 @@ public static class TideSailboatDynamicsModel
             Mathf.Abs(state.HeaveVelocity) * 0.45f +
             waveAgitation01 * 0.55f +
             waveHandling.Slamming01 * 0.65f);
-        float leakRate = Mathf.Lerp(0.032f, 0.002f, Mathf.Clamp01(hullIntegrity01));
+        float leakRate = Mathf.Max(0f, boatPerformance.BaseLeakRatePerSecond);
         state.Ingress01 = Mathf.Clamp01(
             state.Ingress01 +
             leakRate * impact01 * waveHandling.IngressMultiplier * dt);
