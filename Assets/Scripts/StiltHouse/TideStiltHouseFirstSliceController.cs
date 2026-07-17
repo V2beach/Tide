@@ -433,6 +433,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     private SpriteRenderer sailingReefFoamRenderer;
     private SpriteRenderer sailingRangeBreakerRenderer;
     private SpriteRenderer boatIngressWaterRenderer;
+    private SpriteRenderer sailingWaveImpactRenderer;
     private SpriteRenderer sailingBailBucketRenderer;
     private SpriteRenderer sailingBailSplashRenderer;
     private SpriteRenderer routeVortexRenderer;
@@ -656,6 +657,8 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     private float sailingBailCycle;
     private float sailingTrimActionTimer;
     private float sailingTrimCycle;
+    private float sailingWaveImpactCueCooldown;
+    private float sailingPreviousWaveSlamming01;
     private float sailingBailedWaterThisTrip;
     private bool sailingBailing;
     private bool sailingIngressMidWarned;
@@ -1342,12 +1345,15 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingDynamics = new TideSailboatDynamicsState
         {
             HeaveY = sailingHomeY,
-            SailRaised01 = sailingSailTrim01
+            SailRaised01 = sailingSailTrim01,
+            WaveHandlingQuality01 = 1f
         };
         sailingBallastInput = 0f;
         sailingBailCycle = 0f;
         sailingTrimActionTimer = 0f;
         sailingTrimCycle = 0f;
+        sailingWaveImpactCueCooldown = 0f;
+        sailingPreviousWaveSlamming01 = 0f;
         sailingBailedWaterThisTrip = 0f;
         sailingBailing = false;
         sailingIngressMidWarned = false;
@@ -4471,7 +4477,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             ocean.SurfaceY,
             ocean.Slope,
             ocean.Agitation01,
-            Mathf.Clamp01(boatHullIntegrity / 3f));
+            Mathf.Clamp01(boatHullIntegrity / 3f),
+            ocean.LocalWaveContact01);
+        TickSailingWaveImpactFeedback(deltaTime);
 
         float effectiveMaxSpeed = GetEffectiveSailingMaxSpeed();
         sailingDynamics.HorizontalVelocity = Mathf.Clamp(
@@ -4543,6 +4551,23 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingBoatWorldVelocity = deltaTime > 0.0001f
             ? (sailingBoatX - boatXBeforeMove) / deltaTime
             : 0f;
+    }
+
+    private void TickSailingWaveImpactFeedback(float deltaTime)
+    {
+        sailingWaveImpactCueCooldown = Mathf.MoveTowards(
+            sailingWaveImpactCueCooldown,
+            0f,
+            Mathf.Max(0f, deltaTime));
+        float slamming01 = sailingDynamics.WaveSlamming01;
+        bool enteredHardContact = slamming01 >= 0.42f &&
+            sailingPreviousWaveSlamming01 < 0.42f;
+        if (enteredHardContact && sailingWaveImpactCueCooldown <= 0f)
+        {
+            TideAudioController.PlayWaveSlapCueInScene(slamming01);
+            sailingWaveImpactCueCooldown = 0.72f;
+        }
+        sailingPreviousWaveSlamming01 = slamming01;
     }
 
     private void ApplySailingBail(float deltaTime)
@@ -4864,12 +4889,15 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             HeaveY = launchOcean.SurfaceY,
             SailRaised01 = sailingSailTrim01,
-            Ingress01 = sailingWaterIngress01
+            Ingress01 = sailingWaterIngress01,
+            WaveHandlingQuality01 = 1f
         };
         sailingBallastInput = 0f;
         sailingBailCycle = 0f;
         sailingTrimActionTimer = 0f;
         sailingTrimCycle = 0f;
+        sailingWaveImpactCueCooldown = 0f;
+        sailingPreviousWaveSlamming01 = 0f;
         sailingBailedWaterThisTrip = 0f;
         sailingBailing = false;
         sailingIngressMidWarned = false;
@@ -9590,6 +9618,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         sailingReefFoamRenderer = EnsureRenderer("GeneratedStiltFirstSailingReefFoam", GetFormalSeaCurrentCrestSprite(), 9);
         sailingRangeBreakerRenderer = EnsureRenderer("GeneratedStiltFirstSailingRangeBreaker", GetFormalStiltWaveImpactSprite(), 2);
         boatIngressWaterRenderer = EnsureRenderer("GeneratedStiltFirstBoatIngressWater", GetFormalStiltWaveImpactSprite(), 6);
+        sailingWaveImpactRenderer = EnsureRenderer("GeneratedStiltFirstSailingWaveImpact", GetFormalStiltWaveImpactSprite(), 12);
         sailingBailBucketRenderer = EnsureRenderer("GeneratedStiltFirstSailingBailBucket", GetPrepBucketSprite(), 10);
         sailingBailSplashRenderer = EnsureRenderer("GeneratedStiltFirstSailingBailSplash", GetFormalStiltWaveImpactSprite(), 9);
         routeVortexRenderer = EnsureRenderer("GeneratedStiltFirstRouteVortex", GetVortexSprite(), -6);
@@ -10146,6 +10175,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         SetEnabled(sailingReefFoamRenderer, false);
         SetEnabled(sailingRangeBreakerRenderer, false);
         SetEnabled(boatIngressWaterRenderer, false);
+        SetEnabled(sailingWaveImpactRenderer, false);
         SetEnabled(sailingBailBucketRenderer, false);
         SetEnabled(sailingBailSplashRenderer, false);
         SetEnabled(sailingFlowCrests, false);
@@ -13197,6 +13227,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         SetEnabled(sailingReefFoamRenderer, false);
         SetEnabled(sailingRangeBreakerRenderer, false);
         SetEnabled(boatIngressWaterRenderer, false);
+        SetEnabled(sailingWaveImpactRenderer, false);
         SetEnabled(sailingBailBucketRenderer, false);
         SetEnabled(sailingBailSplashRenderer, false);
         SetEnabled(sailingFlowCrests, false);
@@ -13714,6 +13745,40 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                     0.9f,
                     0.1f + Mathf.Abs(speed01) * 0.3f),
                 sailingOcean.Slope * 5f);
+        }
+        float slamming01 = sailingDynamics.WaveSlamming01;
+        bool waveImpactVisible = slamming01 >= 0.16f &&
+            sailingOcean.LocalWaveContact01 > 0.08f;
+        SetEnabled(sailingWaveImpactRenderer, waveImpactVisible);
+        if (waveImpactVisible)
+        {
+            float relativeWaterVelocity = GetSailingLocalWaterVelocity(sailingOcean) -
+                sailingBoatVelocity;
+            float incomingSide = Mathf.Abs(relativeWaterVelocity) > 0.03f
+                ? -Mathf.Sign(relativeWaterVelocity)
+                : -Mathf.Sign(GetSailingWaveTravelSpeed());
+            if (Mathf.Abs(incomingSide) < 0.5f)
+            {
+                incomingSide = -1f;
+            }
+
+            sailingWaveImpactRenderer.sprite = GetFormalStiltWaveImpactSprite();
+            // 船艏拍浪是脱离水面的飞沫，必须位于前船舷和全宽前景深水之上；
+            // 它只在船艏短暂出现，不承担水线或碰撞。
+            sailingWaveImpactRenderer.sortingOrder = 12;
+            SetWorldSize(
+                sailingWaveImpactRenderer,
+                boatPosition + new Vector2(incomingSide * 0.82f, 0.04f),
+                new Vector2(
+                    Mathf.Lerp(0.3f, 0.82f, slamming01),
+                    Mathf.Lerp(0.16f, 0.58f, slamming01)),
+                new Color(
+                    0.76f,
+                    0.95f,
+                    0.94f,
+                    Mathf.Lerp(0.18f, 0.72f, slamming01)),
+                incomingSide < 0f ? 18f : -18f);
+            sailingWaveImpactRenderer.flipX = incomingSide > 0f;
         }
         SetEnabled(boatWaterlineOcclusionRenderer, false);
         SetEnabled(lighthouseChartClueRenderer, sailingRewardPending);
@@ -18323,6 +18388,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             : "饮水 未接入";
         string rescueManifestText = $"暴潮清单 在场0x{GetStormRescuePresentMask():X} · " +
             $"预留木{stormRescueReservedTimber}/柴{stormRescueReservedFuelBundles}/图{stormRescueReservedChartClues} · 干柴库存{dryFuelBundles}";
+        string waveHandlingText = viewMode == SliceViewMode.Sailing
+            ? $"浪控 接触{sailingDynamics.WaveSlamming01:0.00} · 处理{sailingDynamics.WaveHandlingQuality01:0.00} · " +
+              $"压舱{sailingDynamics.Ballast01:+0.00;-0.00;0.00} · 帆{sailingDynamics.SailRaised01:0.00}"
+            : "浪控 未在短航";
         return $"{BuildPlayerHudSummary(phase, storm01)}\n" +
             $"距天黑 {FormatDebugDuration(secondsToDark)} · 距天亮 {FormatDebugDuration(secondsToDawn)} · " +
             $"离家 {distanceFromHome:0.0}m · 画面 {outdoorScreen} · F3 隐藏\n" +
@@ -18331,6 +18400,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             $"路程{incomingHarvestTravel01:0.00} · 盐木 #{extraSaltWoodBatchId} {extraSaltWoodOwner} 路程{outerWreckTravel01:0.00}\n" +
             $"{waterText}\n" +
             $"{rescueManifestText}\n" +
+            $"{waveHandlingText}\n" +
             $"{heavyWreckText}\n" +
             $"开发循环：看潮 -> 布网 -> 回收实物 -> 修屋/修船 -> 短航 · 当前：{lastActionHint}";
     }
@@ -19345,6 +19415,21 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         return seatPosition + lift;
     }
 
+    private Vector2 GetSailingBallastVisualOffset(float boatRotationZ)
+    {
+        if (viewMode != SliceViewMode.Sailing)
+        {
+            return Vector2.zero;
+        }
+
+        float localX = sailingDynamics.Ballast01 * 0.11f *
+            (FormalBoatFacesRight ? 1f : -1f);
+        float radians = boatRotationZ * Mathf.Deg2Rad;
+        return new Vector2(
+            Mathf.Cos(radians) * localX,
+            Mathf.Sin(radians) * localX);
+    }
+
     private void ApplyV39PassengerPresentation(
         Vector2 waterlinePoint,
         Vector2 boatRootWorldPosition,
@@ -19367,7 +19452,8 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             TideV39BoatPresentationModel.SeatTopLeft,
             rotationZ,
             FormalBoatFacesRight);
-        Vector2 passengerPivot = GetBoatPassengerVisualPivot(seatPosition, rotationZ);
+        Vector2 passengerPivot = GetBoatPassengerVisualPivot(seatPosition, rotationZ) +
+            GetSailingBallastVisualOffset(rotationZ);
         if (TryGetV42SailingSurvivalFrame(
             waterlinePoint,
             passengerPivot,
@@ -19540,7 +19626,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 seatOffset,
                 rotationZ,
                 FormalBoatFacesRight,
-                uniformScale);
+                uniformScale) + GetSailingBallastVisualOffset(rotationZ);
             if (TryGetV42SailingSurvivalFrame(
                 waterlinePoint,
                 seatPosition,

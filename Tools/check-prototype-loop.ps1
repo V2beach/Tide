@@ -40,6 +40,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideMooringRopeModel.cs",
     "Assets/Scripts/StiltHouse/TideMooringRopeController.cs",
     "Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs",
+    "Assets/Scripts/StiltHouse/TideSailingWaveHandlingModel.cs",
     "Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs",
     "Assets/Scripts/StiltHouse/TideSailingReefModel.cs",
     "Assets/Scripts/StiltHouse/TideSailingReefController.cs",
@@ -71,6 +72,7 @@ $repairWork = Read-ProjectText "Assets/Scripts/StiltHouse/TideRepairWorkControll
 $barrenIsland = Read-ProjectText "Assets/Scripts/StiltHouse/TideBarrenIslandController.cs"
 $waveEvents = Read-ProjectText "Assets/Scripts/StiltHouse/TideWaveEventFieldModel.cs"
 $authoritativeOcean = Read-ProjectText "Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs"
+$waveHandling = Read-ProjectText "Assets/Scripts/StiltHouse/TideSailingWaveHandlingModel.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
 Test-Gate ($controller.Contains("TickDismantleNearestPart") -and
     $controller.Contains("wreckOcean.Agitation01")) "wreck dismantling consumes continuous input and the authoritative ocean sample"
@@ -111,6 +113,12 @@ Test-Gate ($waveEvents.Contains("EvaluateTravelFactor") -and
     $authoritativeOcean.Contains("slackWaterContinuous")) "local wave direction crosses slack water continuously"
 Test-Gate ($controller.Contains("GetSailingLocalWaterVelocity(ocean)") -and
     $controller.Contains("GetNaturalCurrentSpeed() + mooredOcean.HorizontalVelocity")) "boat and mooring consume local visible-wave push"
+Test-Gate ($controller.Contains("ocean.LocalWaveContact01") -and
+    $controller.Contains("TickSailingWaveImpactFeedback") -and
+    $controller.Contains("GetSailingBallastVisualOffset")) "sailing runtime turns visible wave contact and ballast into physical feedback"
+Test-Gate ($waveHandling.Contains("TideSailingWaveHandlingSample") -and
+    $waveHandling.Contains("MomentumDampingPerSecond") -and
+    $waveHandling.Contains("IngressMultiplier")) "wave handling is isolated as a pure readable model"
 Test-Gate ($controller.Contains("LocalWaveRendererCount = 9") -and
     $controller.Contains("LocalWaveRendererCount,")) "local wave renderer coverage includes wide-screen edge cells"
 Test-Gate ($controller.Contains("TideSailboatDynamicsState sailingDynamics") -and
@@ -147,6 +155,7 @@ Test-Gate ($coreProbe.Contains("ProbeWreckDismantle")) "core gate covers persist
 Test-Gate ($coreProbe.Contains("ProbeRepairWorkSession")) "core gate covers repair pause, retarget, and commit semantics"
 Test-Gate ($coreProbe.Contains("ProbeSailingDynamics")) "core gate covers the authoritative sailing dynamics state"
 Test-Gate ($coreProbe.Contains("ProbeVisibleWavePhysicalCoupling")) "core gate couples visible breakers to local ocean physics"
+Test-Gate ($coreProbe.Contains("ProbeSailingWaveHandling")) "core gate compares prepared and exposed wave handling"
 Test-Gate ($coreProbe.Contains("ProbeNetEncounter")) "core gate rejects preload, overtopping, stale contact, and skipped windows"
 Test-Gate ($coreProbe.Contains("ProbeWrackDeposit")) "core gate covers ebb deposit and refloat lifecycle"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"
@@ -157,6 +166,7 @@ Test-Gate ($visualProbe.Contains("RunEditorWreckDismantleTideWindowProbe")) "vis
 Test-Gate ($visualProbe.Contains("RunEditorArrivalSalvagePayoffProbe")) "visual gate covers six immediate arrival-salvage payoffs"
 Test-Gate ($visualProbe.Contains("RunEditorMixedSemidiurnalOpportunityProbe")) "visual gate covers unequal adjacent-tide opportunities"
 Test-Gate ($visualProbe.Contains("RunEditorLocalWaveEventFieldProbe")) "visual gate couples visible local waves to scene physics"
+Test-Gate ($visualProbe.Contains("RunEditorSailingWaveHandlingFeedbackProbe")) "visual gate covers wave-slap and ballast feedback"
 Test-Gate ($visualProbe.Contains("TideStormRescueTradeoffConvergenceProbe.Run")) "visual gate covers storm rescue tradeoff"
 Test-Gate ($visualProbe.Contains("RunEditorStormManifestOwnershipProbe")) "visual gate covers storm cargo conservation"
 Test-Gate ($visualProbe.Contains("RunEditorSailingTideContinuityProbe")) "visual gate covers authoritative sailing tide"

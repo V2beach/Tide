@@ -6,18 +6,27 @@ using UnityEngine;
 /// </summary>
 public readonly struct TideOceanSample
 {
-    public TideOceanSample(float surfaceY, float slope, float horizontalVelocity, float agitation01)
+    public TideOceanSample(
+        float surfaceY,
+        float slope,
+        float horizontalVelocity,
+        float agitation01,
+        float localWaveContact01 = 0f)
     {
         SurfaceY = surfaceY;
         Slope = slope;
         HorizontalVelocity = horizontalVelocity;
         Agitation01 = agitation01;
+        LocalWaveContact01 = Mathf.Clamp01(localWaveContact01);
     }
 
     public float SurfaceY { get; }
     public float Slope { get; }
     public float HorizontalVelocity { get; }
     public float Agitation01 { get; }
+    // 只表示同一权威海况中的可见局部浪在该坐标上的接触权重；连续浪谱
+    // 本身不伪造接触。操船和拆卸等技能可据此区分“海面粗糙”和“浪头命中”。
+    public float LocalWaveContact01 { get; }
 }
 
 /// <summary>

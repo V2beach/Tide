@@ -42,7 +42,8 @@ public static class TideAuthoritativeOceanModel
             continuous.SurfaceY + localEvent.HeightOffsetMeters,
             continuous.Slope + localEvent.SlopeOffset,
             continuous.HorizontalVelocity + localEvent.HorizontalVelocityOffset,
-            Mathf.Clamp01(agitation01));
+            Mathf.Clamp01(agitation01),
+            localEvent.StrongestVisibleWeight01);
     }
 
     public static bool ProbeVisibleWaveCoupling(out string reason)

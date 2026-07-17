@@ -23,8 +23,8 @@
 | 船上人物 | V32 空闲 + V37 动作 | 完整身体保留；位于后船体与前船舷之间，不裁腿 |
 | 船体 | V39 语义分层 + V67 Balanced 运行层 | 后索具、帆、后船体、舱底、前船舷、舵；不拥有人物和海水 |
 | 船体维修 | V52/V67 对应 Catalog | 当前阶段懒加载；不得恢复整包常驻或二态跳整船 |
-| 连续海体 | V56 Catalog + `TideOceanFieldModel` | 唯一水面、水位、坡度、水平流速和扰动；局部浪只拥有泡沫/浪脊 Alpha |
-| 海况/云 | V43 + `TideWaveEventFieldModel` | 长涌、风浪、暴潮透明层及云带；不创建第二水线 |
+| 连续海体 | V56 Catalog + `TideAuthoritativeOceanModel` | 运行唯一海况入口；内部合成连续水面与局部可见浪的高度、坡度、水平流速、扰动和接触权重 |
+| 海况/云 | V43 + `TideWaveEventFieldModel` | 长涌、风浪、暴潮透明层及云带；同一世界浪事件驱动物理接触，不创建第二水线 |
 | 侧视漩涡 | V70 Balanced | 三层 12 相；潮位、吸力、碰撞和船体受力仍由运行模型拥有 |
 | 瞭望/灯塔 | V44 | 未知、方位、已知共用同一海雾；禁止提示图标泄露位置 |
 | 潮带实物 | `ProductionTideBorneFindsV59/Runtime/High` / `V59TideFindCatalog.asset` | 12 件实物跨漂来、挂网、手持、暂放、冲失保持身份 |
@@ -36,7 +36,7 @@
 - 左侧岩礁岛当前由 `TideBarrenIslandController` 生成结构化占位表现；正式美术尚未通过原始 Game View。
 - 淡水由 `TideRainCisternModel` 拥有；雨槽、裂缝、蒸发和盐侵使用现实单位。
 - 泊位绳由 `TideMooringRopeModel` 拥有；船不会瞬移回岸。
-- 航行动力由 `TideSailboatDynamicsModel` 拥有；A/D、帆、风、流、压舱、浮沉和俯仰共用一个状态。
+- 航行动力由 `TideSailboatDynamicsModel` 拥有；A/D、帆、风、流、压舱、浮沉和俯仰共用一个状态。`TideSailingWaveHandlingModel` 只计算同一可见浪接触下的操船质量、动量损失和进水倍率，不拥有第二套海况。
 - 暴潮物资由 `TideStormRescueModel` 拥有；Renderer 只读取浮力、固定和冲失状态。
 
 ## Git 规则

@@ -11,7 +11,7 @@
 
 ## 当前架构门
 
-- `TideOceanFieldModel` 是潮位、浪坡、流速和扰动的唯一海况来源。
+- 运行消费者只读取 `TideAuthoritativeOceanModel`：内部合成 `TideOceanFieldModel` 的连续海体与 `TideWaveEventFieldModel` 的可见/物理同源局部浪；表现层不得另建水位、浪力或拍击随机数。
 - 纯 Model 不读取 `Input`、Renderer、Scene 或 `Time.time`。
 - Controller 只编排意图、模型和 presenter；不能维护第二套船位、潮位或可走面。
 - 可见物、交互点、碰撞和动画接触必须读取同一组世界锚点。

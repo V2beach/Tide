@@ -10,6 +10,8 @@ public struct TideSailboatDynamicsState
     public float SailRaised01;
     public float Ballast01;
     public float Ingress01;
+    public float WaveHandlingQuality01;
+    public float WaveSlamming01;
 }
 
 /// <summary>
@@ -29,11 +31,24 @@ public static class TideSailboatDynamicsModel
         float sampledSurfaceY,
         float sampledSurfaceSlope,
         float waveAgitation01,
-        float hullIntegrity01)
+        float hullIntegrity01,
+        float localWaveContact01 = 0f)
     {
         float dt = Mathf.Max(0f, deltaSeconds);
         state.SailRaised01 = Mathf.Clamp01(state.SailRaised01 + Mathf.Clamp(sailInput, -1f, 1f) * dt * 0.48f);
         state.Ballast01 = Mathf.Clamp(state.Ballast01 + Mathf.Clamp(ballastInput, -1f, 1f) * dt * 0.65f, -1f, 1f);
+
+        TideSailingWaveHandlingSample waveHandling =
+            TideSailingWaveHandlingModel.Evaluate(
+                localWaveContact01,
+                waveAgitation01,
+                sampledSurfaceSlope,
+                state.Ballast01,
+                state.SailRaised01,
+                state.HorizontalVelocity,
+                signedCurrentMetersPerSecond);
+        state.WaveHandlingQuality01 = waveHandling.HandlingQuality01;
+        state.WaveSlamming01 = waveHandling.Slamming01;
 
         float manualAcceleration = Mathf.Clamp(pilotInput, -1f, 1f) * 0.46f;
         float sailDrive = signedWindMetersPerSecond * Mathf.SmoothStep(0f, 1f, state.SailRaised01) *
@@ -41,7 +56,14 @@ public static class TideSailboatDynamicsModel
         float currentCoupling = (signedCurrentMetersPerSecond - state.HorizontalVelocity) * 0.34f;
         float quadraticDrag = -Mathf.Sign(state.HorizontalVelocity) *
             state.HorizontalVelocity * state.HorizontalVelocity * 0.12f;
-        state.HorizontalVelocity += (manualAcceleration + sailDrive + currentCoupling + quadraticDrag) * dt;
+        float waveMomentumDamping = -state.HorizontalVelocity *
+            waveHandling.MomentumDampingPerSecond;
+        state.HorizontalVelocity += (
+            manualAcceleration +
+            sailDrive +
+            currentCoupling +
+            quadraticDrag +
+            waveMomentumDamping) * dt;
         state.HorizontalVelocity = Mathf.Clamp(state.HorizontalVelocity, -2.8f, 2.8f);
 
         // Q/E 表示把现有压舱物沿船身前后移动，而不是凭空增加重量。
@@ -54,16 +76,22 @@ public static class TideSailboatDynamicsModel
         state.HeaveY += state.HeaveVelocity * dt;
 
         float slopePitch = Mathf.Atan(sampledSurfaceSlope) * Mathf.Rad2Deg;
-        float ballastPitch = -state.Ballast01 * 5.2f;
+        float ballastPitch = -state.Ballast01 *
+            TideSailingWaveHandlingModel.BallastCounterPitchDegrees;
         float targetPitch = Mathf.Clamp(slopePitch + ballastPitch, -12f, 12f);
         state.PitchDegrees = Mathf.Lerp(
             state.PitchDegrees,
             targetPitch,
             1f - Mathf.Exp(-3.2f * dt));
 
-        float impact01 = Mathf.Clamp01(Mathf.Abs(state.HeaveVelocity) * 0.45f + waveAgitation01 * 0.55f);
+        float impact01 = Mathf.Clamp01(
+            Mathf.Abs(state.HeaveVelocity) * 0.45f +
+            waveAgitation01 * 0.55f +
+            waveHandling.Slamming01 * 0.65f);
         float leakRate = Mathf.Lerp(0.032f, 0.002f, Mathf.Clamp01(hullIntegrity01));
-        state.Ingress01 = Mathf.Clamp01(state.Ingress01 + leakRate * impact01 * dt);
+        state.Ingress01 = Mathf.Clamp01(
+            state.Ingress01 +
+            leakRate * impact01 * waveHandling.IngressMultiplier * dt);
         return state;
     }
 }

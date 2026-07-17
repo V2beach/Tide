@@ -9952,6 +9952,69 @@ public partial class TideStiltHouseFirstSliceController
             : $"FAIL：局部浪事件的周期、镜头稳定性、局部物理或海面接入不符合合同。{modelReason}；物理={physicalReason}；{integrationReport}";
     }
 
+    public string RunEditorSailingWaveHandlingFeedbackProbe()
+    {
+        SetEditorSailingPreviewPose();
+        weatherClockSeconds = dayLengthSeconds * stormFrontArrivalDays;
+        sailingBoatX = sailingHomeX + 4.2f;
+        sailingBoatLaneY = GetSailingMeanWaterY();
+
+        float contactTime = -1f;
+        TideOceanSample contactOcean = default;
+        for (int i = 0; i < 720; i++)
+        {
+            float sampleTime = i * 0.2f;
+            oceanEventPreviewTimeSeconds = sampleTime;
+            TideOceanSample ocean = GetSailingOceanSample(sailingBoatX);
+            if (ocean.LocalWaveContact01 >= 0.32f)
+            {
+                contactTime = sampleTime;
+                contactOcean = ocean;
+                break;
+            }
+        }
+
+        if (contactTime < 0f)
+        {
+            ResetSlice();
+            return "FAIL：高能短航海况中没有找到可用于反馈验收的局部可见浪接触。";
+        }
+
+        sailingDynamics.WaveSlamming01 = 0.78f;
+        sailingDynamics.WaveHandlingQuality01 = 0.18f;
+        UpdateVisuals(contactTime);
+        Vector2 boatScreenPosition = GetSailingScreenPosition(GetSailingBoatBasePosition());
+        bool impactRegistered = sailingWaveImpactRenderer != null &&
+            sailingWaveImpactRenderer.enabled &&
+            sailingWaveImpactRenderer.sprite == GetFormalStiltWaveImpactSprite() &&
+            sailingWaveImpactRenderer.sortingOrder > boatPassengerGunwaleRenderer.sortingOrder &&
+            sailingWaveImpactRenderer.GetComponent<Collider2D>() == null &&
+            Vector2.Distance(sailingWaveImpactRenderer.transform.localPosition, boatScreenPosition) <= 1.2f;
+
+        sailingDynamics.WaveSlamming01 = 0f;
+        sailingDynamics.Ballast01 = -1f;
+        UpdateVisuals(contactTime);
+        Vector2 aftPivot = boatPassengerRenderer.transform.localPosition;
+        Vector3 aftScale = boatPassengerRenderer.transform.localScale;
+        sailingDynamics.Ballast01 = 1f;
+        UpdateVisuals(contactTime);
+        Vector2 forwardPivot = boatPassengerRenderer.transform.localPosition;
+        Vector3 forwardScale = boatPassengerRenderer.transform.localScale;
+        float ballastTravel = Vector2.Distance(aftPivot, forwardPivot);
+        bool ballastVisibleWithoutRescale = ballastTravel >= 0.19f &&
+            ballastTravel <= 0.24f &&
+            Vector3.Distance(aftScale, forwardScale) <= 0.0001f;
+
+        string evidence =
+            $"接触={contactOcean.LocalWaveContact01:F2}@{contactTime:F1}s；拍浪层={impactRegistered}；" +
+            $"压舱位移={ballastTravel:F2}m；缩放差={Vector3.Distance(aftScale, forwardScale):F4}";
+        bool passed = impactRegistered && ballastVisibleWithoutRescale;
+        ResetSlice();
+        return passed
+            ? $"PASS：同一可见浪接触产生船艏拍浪反馈，压舱移动人物而不缩放人物。{evidence}"
+            : $"FAIL：拍浪或压舱反馈仍未落在船体真实层级与座舱尺度内。{evidence}";
+    }
+
     public string RunEditorSailingTideContinuityProbe()
     {
         EnsureScene();

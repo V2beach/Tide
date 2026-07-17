@@ -13,6 +13,7 @@ public sealed class TideAudioController : MonoBehaviour
     private static AudioClip netLoadClip;
     private static AudioClip ropeBreakClip;
     private static AudioClip stormShelfBreakClip;
+    private static AudioClip waveSlapClip;
 
     private AudioSource seaSource;
     private AudioSource locomotionSource;
@@ -81,6 +82,15 @@ public sealed class TideAudioController : MonoBehaviour
             GetStormShelfBreakClip(),
             Mathf.Lerp(0.34f, 0.58f, Mathf.Clamp01(impact01)),
             Mathf.Lerp(0.94f, 0.82f, Mathf.Clamp01(impact01)));
+    }
+
+    public static void PlayWaveSlapCueInScene(float impact01)
+    {
+        TideAudioController controller = FindFirstObjectByType<TideAudioController>();
+        controller?.PlayCue(
+            GetWaveSlapClip(),
+            Mathf.Lerp(0.2f, 0.46f, Mathf.Clamp01(impact01)),
+            Mathf.Lerp(1.04f, 0.82f, Mathf.Clamp01(impact01)));
     }
 
     private void Update()
@@ -216,6 +226,15 @@ public sealed class TideAudioController : MonoBehaviour
             false);
         stormShelfBreakClip.SetData(data, 0);
         return stormShelfBreakClip;
+    }
+
+    private static AudioClip GetWaveSlapClip()
+    {
+        return waveSlapClip ??= CreateNoiseClip(
+            "TideWaveSlap",
+            0.22f,
+            0.62f,
+            0.72f);
     }
 
     private static AudioClip CreatePulseClip(string name, float seconds, float frequency, float gain)

@@ -34,6 +34,7 @@ public static class TideCoreLoopConvergenceProbe
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
         string visibleWavePhysics = ProbeVisibleWavePhysicalCoupling();
+        string waveHandling = ProbeSailingWaveHandling();
         string sailingReef = ProbeSailingReefClearance();
         string sailingReefRuntime = ProbeSailingReefRuntime();
         string sailingSalvageRuntime = ProbeSailingSalvageRuntime();
@@ -42,7 +43,7 @@ public static class TideCoreLoopConvergenceProbe
         string forecast = ProbeForecastSnapshot();
         string netEncounter = ProbeNetEncounter();
         string wrack = ProbeWrackDeposit();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {sailing} | {visibleWavePhysics} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {sailing} | {visibleWavePhysics} | {waveHandling} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
     }
 
     private static string ProbeWreckDismantle()
@@ -848,6 +849,49 @@ public static class TideCoreLoopConvergenceProbe
         bool passed = TideAuthoritativeOceanModel.ProbeVisibleWaveCoupling(out string reason);
         Require(passed, $"可见破浪与局部物理未同源：{reason}");
         return $"可见破浪={reason}";
+    }
+
+    private static string ProbeSailingWaveHandling()
+    {
+        TideSailingWaveHandlingSample calm = TideSailingWaveHandlingModel.Evaluate(
+            0f, 0.9f, 0.12f, -1f, 1f, 1.2f, 0.4f);
+        TideSailingWaveHandlingSample prepared = TideSailingWaveHandlingModel.Evaluate(
+            0.95f, 0.9f, 0.12f, 1f, 0.22f, 1.2f, 0.4f);
+        TideSailingWaveHandlingSample exposed = TideSailingWaveHandlingModel.Evaluate(
+            0.95f, 0.9f, 0.12f, -1f, 1f, 1.2f, 0.4f);
+        Require(calm.Slamming01 <= 0.0001f && calm.IngressMultiplier <= 1.0001f,
+            "没有局部浪接触时仍凭空产生拍击惩罚");
+        Require(prepared.HandlingQuality01 >= 0.75f && exposed.HandlingQuality01 <= 0.25f,
+            "收帆与顺坡压舱没有形成清晰可学的处理质量差");
+        Require(exposed.Slamming01 >= prepared.Slamming01 + 0.42f,
+            "同一浪头下错误帆量和压舱没有显著增加拍击");
+
+        TideSailboatDynamicsState preparedBoat = CreateBoatState();
+        preparedBoat.HorizontalVelocity = 1.2f;
+        preparedBoat.SailRaised01 = 0.22f;
+        preparedBoat.Ballast01 = 1f;
+        TideSailboatDynamicsState exposedBoat = CreateBoatState();
+        exposedBoat.HorizontalVelocity = 1.2f;
+        exposedBoat.SailRaised01 = 1f;
+        exposedBoat.Ballast01 = -1f;
+        for (int i = 0; i < 120; i++)
+        {
+            preparedBoat = TideSailboatDynamicsModel.Advance(
+                preparedBoat, 0.02f, 0f, 0f, 0f, 0f, 0.4f,
+                -1.18f, 0.12f, 0.9f, 0.35f, 0.95f);
+            exposedBoat = TideSailboatDynamicsModel.Advance(
+                exposedBoat, 0.02f, 0f, 0f, 0f, 0f, 0.4f,
+                -1.18f, 0.12f, 0.9f, 0.35f, 0.95f);
+        }
+
+        Require(preparedBoat.HorizontalVelocity >= exposedBoat.HorizontalVelocity + 0.16f,
+            "正确处理可见浪没有保住可辨认的航速");
+        Require(exposedBoat.Ingress01 >= preparedBoat.Ingress01 + 0.045f,
+            "错误处理可见浪没有产生可辨认的额外舱水");
+        return $"读浪=处理{prepared.HandlingQuality01:F2}/{exposed.HandlingQuality01:F2} " +
+            $"拍击{prepared.Slamming01:F2}/{exposed.Slamming01:F2} " +
+            $"速度{preparedBoat.HorizontalVelocity:F2}/{exposedBoat.HorizontalVelocity:F2} " +
+            $"进水{preparedBoat.Ingress01:F2}/{exposedBoat.Ingress01:F2}";
     }
 
     private static string ProbeSailingReefClearance()
