@@ -51,8 +51,8 @@ public sealed class TideMooringRopeController : MonoBehaviour
     {
         state.BoatOffsetMeters = Mathf.Clamp(
             boatOffsetMeters,
-            -TideMooringRopeModel.MaximumThrowReachMeters,
-            TideMooringRopeModel.MaximumThrowReachMeters);
+            -TideMooringRopeModel.MaximumBoatDriftMeters,
+            TideMooringRopeModel.MaximumBoatDriftMeters);
     }
 
     public TideMooringRopeInteractionResult HandleInteraction(

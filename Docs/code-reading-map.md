@@ -27,9 +27,11 @@
 ### 泊位绳
 
 - 纯规则：`TideMooringRopeModel`
+- 登船可达性：`TideMooredBoatAccessModel`；把可见跳板两端整理为长度/坡度，再与绳相、局部真实横流、海况扰动和昼夜合成唯一阻断原因。它不读取平均潮位，也不假设不可见泥滩
 - 运行编排/表现：`TideMooringRopeController`；独立拥有输入占用、当前绳状态、收绳意图、断绳/靠稳一次性结果和贝塞尔绳形
-- 主控制器边界：`HandleMooringRopeInput` 只转发按键并消费交互结果，`TickMooredBoatCurrent` 只传统一潮流/风场并消费环境结果，`UpdateMooringRopeVisuals` 只传人物手、码头与船艉锚点
+- 主控制器边界：`HandleMooringRopeInput` 只转发按键并消费交互结果，`TickMooredBoatCurrent` 只传统一潮流/风场并消费环境结果，`GetMooredBoatAccessSample` 注入可见跳板两端与权威海况，`UpdateBoatLandingGangplank` 消费同一几何样本，`UpdateMooringRopeVisuals` 只传人物手、码头与船艉锚点
 - 状态：Loose -> Swinging -> Attached/Reeling -> Secured；张力过载回 Loose
+- 泊位尺度：固定木路到静水船艉约 `1.70m`；引缆最大抛距 `3.60m`，船体自然漂移边界 `1.68m`，两者不得重新合成同一个无余量常量
 
 ### 借潮牵引重物
 

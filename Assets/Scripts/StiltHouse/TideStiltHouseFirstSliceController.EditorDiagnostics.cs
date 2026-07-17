@@ -1505,9 +1505,16 @@ public partial class TideStiltHouseFirstSliceController
 
         playerPosition = new Vector2(GetBoatBoardingX(), GetPlayerLaneY(playerLane));
         currentWaterY = lowWaterY + 0.66f;
+        float firstLoopMooringSeconds = 0f;
+        bool firstLoopMooringSecured = AdvanceProbeMooringUntilSecured(
+            0.05f,
+            12f,
+            false,
+            ref firstLoopMooringSeconds);
         TryBoardBoat();
         TickBoatViewTransition(boatViewTransitionSeconds + 0.02f);
-        bool boardedThroughTransition = viewMode == SliceViewMode.Sailing && sailTripActive &&
+        bool boardedThroughTransition = firstLoopMooringSecured &&
+            viewMode == SliceViewMode.Sailing && sailTripActive &&
             boatViewTransition == BoatViewTransition.None;
 
         // 让“船艉位于浮木下流侧约 0.72m”成为测试条件。旧常量按整船中心
@@ -2765,8 +2772,15 @@ public partial class TideStiltHouseFirstSliceController
         currentWaterY = lowWaterY + 0.66f;
         playerLane = WalkLane.TideFlat;
         playerPosition = new Vector2(GetBoatBoardingX(), GetPlayerLaneY(playerLane));
+        float uninspectedMooringSeconds = 0f;
+        bool uninspectedMooringSecured = AdvanceProbeMooringUntilSecured(
+            0.05f,
+            12f,
+            false,
+            ref uninspectedMooringSeconds);
         TryBoardBoat();
-        bool canBoardBeforeInspection = boatViewTransition == BoatViewTransition.Boarding;
+        bool canBoardBeforeInspection = uninspectedMooringSecured &&
+            boatViewTransition == BoatViewTransition.Boarding;
 
         string evidence = $"检查残骸前：潮钟 {tideBefore:F2}->{tideAfterNaturalTick:F2}，" +
             $"昼夜钟 {dayBefore:F2}->{dayAfterNaturalTick:F2}，" +
@@ -6782,8 +6796,15 @@ public partial class TideStiltHouseFirstSliceController
 
         playerLane = WalkLane.TideFlat;
         playerPosition = new Vector2(GetBoatBoardingX(), GetPlayerLaneY(playerLane));
+        float cargoMooringSeconds = 0f;
+        bool cargoMooringSecured = AdvanceProbeMooringUntilSecured(
+            0.05f,
+            12f,
+            false,
+            ref cargoMooringSeconds);
         TryBoardBoat();
-        bool freedBoatCanBoard = boatViewTransition == BoatViewTransition.Boarding &&
+        bool freedBoatCanBoard = cargoMooringSecured &&
+            boatViewTransition == BoatViewTransition.Boarding &&
             extraSaltWoodOwner == ExtraSaltWoodOwner.StagedAtMooring;
 
         boatViewTransition = BoatViewTransition.None;
@@ -8135,6 +8156,29 @@ public partial class TideStiltHouseFirstSliceController
                 ref breakSeconds);
         }
 
+        bool mooringSecured = AdvanceProbeMooringUntilSecured(
+            stepSeconds,
+            18f,
+            true,
+            ref elapsed);
+        int remainingNaturalSteps = Mathf.Max(
+            0,
+            maximumNaturalSteps - Mathf.CeilToInt(elapsed / stepSeconds));
+        for (int step = 0;
+             step < remainingNaturalSteps && mooringSecured &&
+             !IsBoatBoardWindowOpen() && !netBrokeThisTide;
+             step++)
+        {
+            TickState(stepSeconds);
+            elapsed += stepSeconds;
+            ObserveFirstTideVoyageMilestones(
+                elapsed,
+                ref routeLockSeconds,
+                ref sailingEntrySeconds,
+                ref tierThreeSeconds,
+                ref breakSeconds);
+        }
+        TideMooredBoatAccessSample accessBeforeBoard = GetMooredBoatAccessSample();
         TryBoardBoat();
         bool boardingStarted = boatViewTransition == BoatViewTransition.Boarding;
         for (int step = 0; step < 40 && boatViewTransition != BoatViewTransition.None; step++)
@@ -8149,7 +8193,7 @@ public partial class TideStiltHouseFirstSliceController
                 ref tierThreeSeconds,
                 ref breakSeconds);
         }
-        if (boardingStarted && viewMode == SliceViewMode.Sailing)
+        if (mooringSecured && boardingStarted && viewMode == SliceViewMode.Sailing)
         {
             boardedSeconds = elapsed;
         }
@@ -8296,6 +8340,9 @@ public partial class TideStiltHouseFirstSliceController
             $"礁控{reefDecisionSeconds:F1}s/舀水{reefReturnBailedWater:F2}/" +
             $"船木={sailingBoatX:F2}/{sailingSalvageWorldX:F2}m 速={sailingBoatWorldVelocity:F2}/{sailingSalvageVelocity:F2} " +
             $"相对={GetSailingSalvageRelativeSpeed():F2} owner={extraSaltWoodOwner}/" +
+            $"系泊={mooringSecured}/{mooringRope.Phase}/阻断={accessBeforeBoard.BlockReason}/" +
+            $"跳板={accessBeforeBoard.Gangplank.LengthMeters:F2}m,{accessBeforeBoard.Gangplank.SlopeDegrees:F1}°/" +
+            $"流浪={accessBeforeBoard.LocalWaterVelocityMetersPerSecond:F2},{accessBeforeBoard.LocalAgitation01:F2}/" +
             $"三档{tierThreeSeconds:F1}/断网{breakSeconds:F1}/余量{returnMarginSeconds:F1}s/批次{expectedSaltWoodBatch}->{extraSaltWoodBatchId}";
         bool passed = naturalSequence && returnedBeforeBreak && returnedSameBatch && readableDeepPressure;
         if (!stopAfterReturn)
@@ -10490,6 +10537,51 @@ public partial class TideStiltHouseFirstSliceController
         return (Vector2)boatHullRenderer.transform.localPosition + rotatedAnchor;
     }
 
+    private bool AdvanceProbeMooringUntilSecured(
+        float stepSeconds,
+        float maximumSeconds,
+        bool advanceNaturalWorld,
+        ref float elapsedSeconds)
+    {
+        float dt = Mathf.Max(0.02f, stepSeconds);
+        int maximumSteps = Mathf.CeilToInt(Mathf.Max(dt, maximumSeconds) / dt);
+        for (int step = 0; step < maximumSteps; step++)
+        {
+            if (mooringRope.Phase == TideMooringRopePhase.Secured)
+            {
+                return true;
+            }
+
+            bool pressed = mooringRope.Phase == TideMooringRopePhase.Loose;
+            bool held = mooringRope.Phase == TideMooringRopePhase.Swinging
+                ? mooringRope.State.ThrowCharge01 < 0.47f
+                : (mooringRope.Phase == TideMooringRopePhase.Attached ||
+                   mooringRope.Phase == TideMooringRopePhase.Reeling) &&
+                  mooringRope.State.Tension01 < 0.78f;
+            bool released = mooringRope.Phase == TideMooringRopePhase.Swinging && !held;
+            mooringRope.HandleInteraction(true, pressed, held, released, dt);
+
+            if (advanceNaturalWorld)
+            {
+                TickState(dt);
+            }
+            else
+            {
+                TideOceanSample ocean = GetOceanSample(GetMooredBoatPosition().x);
+                mooringRope.AdvanceEnvironment(
+                    dt,
+                    GetNaturalCurrentSpeed() + ocean.HorizontalVelocity,
+                    GetNaturalSailingWindSpeed(),
+                    false);
+                mooredBoatOffsetFallback = mooringRope.BoatOffsetMeters;
+            }
+
+            elapsedSeconds += dt;
+        }
+
+        return mooringRope.Phase == TideMooringRopePhase.Secured;
+    }
+
     public string RunEditorBoardingAvailabilityProbe()
     {
         SliceState[] boardableStates =
@@ -10513,8 +10605,14 @@ public partial class TideStiltHouseFirstSliceController
             harvestPhysicalState = HarvestPhysicalState.None;
             playerLane = WalkLane.TideFlat;
             playerPosition = new Vector2(GetBoatBoardingX(), GetPlayerLaneY(playerLane));
+            float mooringSeconds = 0f;
+            bool secured = AdvanceProbeMooringUntilSecured(
+                0.05f,
+                12f,
+                false,
+                ref mooringSeconds);
             TryBoardBoat();
-            bool boarded = boatViewTransition == BoatViewTransition.Boarding;
+            bool boarded = secured && boatViewTransition == BoatViewTransition.Boarding;
             allNaturalPhasesBoard &= boarded;
             phaseEvidence += $"{boardableStates[i]}={boarded}" +
                 (i < boardableStates.Length - 1 ? "/" : string.Empty);
@@ -10530,8 +10628,15 @@ public partial class TideStiltHouseFirstSliceController
         harvestPhysicalState = HarvestPhysicalState.Carried;
         playerLane = WalkLane.TideFlat;
         playerPosition = new Vector2(GetBoatBoardingX(), GetPlayerLaneY(playerLane));
+        float cargoBlockMooringSeconds = 0f;
+        bool cargoBlockMooringSecured = AdvanceProbeMooringUntilSecured(
+            0.05f,
+            12f,
+            false,
+            ref cargoBlockMooringSeconds);
         TryBoardBoat();
-        bool looseCargoBlocksBoarding = boatViewTransition == BoatViewTransition.None;
+        bool looseCargoBlocksBoarding = cargoBlockMooringSecured &&
+            boatViewTransition == BoatViewTransition.None;
 
         ResetSlice();
         arrivalInspected = true;
@@ -10540,8 +10645,15 @@ public partial class TideStiltHouseFirstSliceController
         currentWaterY = lowWaterY + 0.82f;
         playerLane = WalkLane.TideFlat;
         playerPosition = new Vector2(GetBoatBoardingX(), GetPlayerLaneY(playerLane));
+        float nightMooringSeconds = 0f;
+        bool nightMooringSecured = AdvanceProbeMooringUntilSecured(
+            0.05f,
+            12f,
+            false,
+            ref nightMooringSeconds);
         TryBoardBoat();
-        bool nightBlocksNewDeparture = boatViewTransition == BoatViewTransition.None;
+        bool nightBlocksNewDeparture = nightMooringSecured &&
+            boatViewTransition == BoatViewTransition.None;
 
         ResetSlice();
         arrivalInspected = true;
@@ -10551,7 +10663,8 @@ public partial class TideStiltHouseFirstSliceController
         playerLane = WalkLane.TideFlat;
         playerPosition = new Vector2(GetBoatBoardingX(), GetPlayerLaneY(playerLane));
         TryBoardBoat();
-        bool groundedBoatBlocksBoarding = boatViewTransition == BoatViewTransition.None;
+        bool unsecuredBoatBlocksBoarding = boatViewTransition == BoatViewTransition.None &&
+            mooringRope.Phase != TideMooringRopePhase.Secured;
 
         ResetSlice();
         arrivalInspected = true;
@@ -10564,11 +10677,11 @@ public partial class TideStiltHouseFirstSliceController
             repairAtHull == RepairChoice.Hull;
 
         string evidence = $"阶段={phaseEvidence}；散货拦截={looseCargoBlocksBoarding}；夜间拦截={nightBlocksNewDeparture}；" +
-            $"搁浅拦截={groundedBoatBlocksBoarding}；登船/修船分离={hullAnchorIsSeparate}";
+            $"未系稳拦截={unsecuredBoatBlocksBoarding}；登船/修船分离={hullAnchorIsSeparate}";
         bool passed = allNaturalPhasesBoard && looseCargoBlocksBoarding && nightBlocksNewDeparture &&
-            groundedBoatBlocksBoarding && hullAnchorIsSeparate;
+            unsecuredBoatBlocksBoarding && hullAnchorIsSeparate;
         return passed
-            ? $"PASS：上船由真实海况和携货状态决定，不再被潮汐流程阶段硬锁。{evidence}"
+            ? $"PASS：上船由系缆、可见跳板、真实局部海况和携货状态决定，不再被潮汐阶段或伪泥滩硬锁。{evidence}"
             : $"FAIL：至少一个自然阶段仍被状态机锁船，或登船点与维修点冲突。{evidence}";
     }
 

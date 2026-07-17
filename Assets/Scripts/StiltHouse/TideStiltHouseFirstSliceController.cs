@@ -22,11 +22,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     // every boat, swimmer and floating object and made them visibly hover in the air.
     private const float FormalWaterAverageCrestOffset = 1.30f;
     private const bool FormalBoatFacesRight = true;
-    // The fixed pier must stop far enough from the moving stern to leave a shallow
-    // working gangplank. A 0.12 m horizontal gap combined with the normal 0.4 m
-    // water-level difference turned the plank almost vertical, so it read as an
-    // unexplained post instead of a surface a person could actually cross.
-    private const float PierToRestingSternGap = 0.78f;
+    // 固定栈桥与随潮升沉的船艉之间需要一块真正的潮汐跳板。不到一米的旧跨度
+    // 在正常潮差下会长期超过 35 度；1.70m 让它仍随潮改变坡度，但在平流窗口
+    // 保持成人可以谨慎通行的角度。泊位绳按更远的抛缆距离单独校准。
+    private const float PierToRestingSternGap = 1.70f;
     // 归处与泊位属于同一连续世界。固定木路按两段 V53 原生跨度铺设，
     // 船艉位于第二段末端之外，最后只留一块会随船升沉的活动跳板。
     private const float OutdoorBoatAnchorX = 9.65f;
@@ -4854,13 +4853,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return;
         }
 
-        if (!IsBoatBoardWindowOpen())
+        TideMooredBoatAccessSample access = GetMooredBoatAccessSample();
+        if (!access.IsOpen)
         {
-            lastActionHint = dayNightPhase == DayNightPhase.Night
-                ? "夜里看不清浮标，不能再出船；回屋点灯、整理收获或休息到黎明。"
-                : currentWaterY < lowWaterY + 0.38f
-                    ? "船还搁在泥滩上，等潮水自己把它托起来。"
-                    : "水流太急，短航窗口关了；等潮势转缓。";
+            lastActionHint = GetMooredBoatAccessBlockHint(access);
             return;
         }
 
@@ -9335,18 +9331,47 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return false;
         }
 
-        bool boatFloating = currentWaterY >= lowWaterY + 0.38f;
-        if (IsDepartureReady())
-        {
-            return boatFloating;
-        }
+        return GetMooredBoatAccessSample().IsOpen;
+    }
 
-        if (dayNightPhase == DayNightPhase.Night)
-        {
-            return false;
-        }
+    private TideMooredBoatAccessSample GetMooredBoatAccessSample()
+    {
+        Vector2 pierTip = new Vector2(
+            GetTideFlatVisiblePathRight(),
+            GetPlayerStandingFeetY(WalkLane.TideFlat));
+        Vector2 sternFoot = GetMooredBoatSternStepPosition() -
+            Vector2.up * (TideV20CharacterPresentationModel.BodyWorldLength * 0.5f);
+        TideMooringGangplankSample gangplank =
+            TideMooredBoatAccessModel.EvaluateGangplank(pierTip, sternFoot);
+        TideOceanSample ocean = GetOceanSample(GetMooredBoatPosition().x);
+        return TideMooredBoatAccessModel.Evaluate(
+            mooringRope.Phase,
+            gangplank,
+            GetNaturalCurrentSpeed() + ocean.HorizontalVelocity,
+            ocean.Agitation01,
+            dayNightPhase == DayNightPhase.Night,
+            IsDepartureReady());
+    }
 
-        return boatFloating && currentWaterY <= lowWaterY + 1.7f;
+    private static string GetMooredBoatAccessBlockHint(TideMooredBoatAccessSample access)
+    {
+        switch (access.BlockReason)
+        {
+            case TideMooredBoatAccessBlockReason.RopeUnsecured:
+                return "船艉还在离岸漂动。先甩绳套住系缆点，再把船拉到跳板旁。";
+            case TideMooredBoatAccessBlockReason.GangplankDisconnected:
+                return "船艉离固定木路太远，跳板够不到；先收绳把船拉近。";
+            case TideMooredBoatAccessBlockReason.GangplankTooSteep:
+                return "船艉与木路高差太大，跳板现在无法安全通行；等潮面改变后再上船。";
+            case TideMooredBoatAccessBlockReason.Night:
+                return "夜里看不清浮标，不能再出船；回屋点灯、整理收获或休息到黎明。";
+            case TideMooredBoatAccessBlockReason.StrongCurrent:
+                return "船边的水还在快速横移，跳板和船艉无法保持稳定；等平流窗口。";
+            case TideMooredBoatAccessBlockReason.RoughSea:
+                return "浪头正反复拍到船艉，跳板无法站稳；等这一组浪过去。";
+            default:
+                return string.Empty;
+        }
     }
 
     private bool IsNearshoreWorkWindowOpen()
@@ -10468,10 +10493,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         {
             SetWorldSize(windowGlowRenderer, houseAnchor + new Vector2(-0.18f, 0.38f), new Vector2(1.45f + houseWarmth * 0.08f, 0.56f), lamp, 0f);
         }
-        float boatBob = Mathf.Sin(time * 1.4f) * 0.035f;
         bool playerOnBoat = sailTripActive || state == SliceState.FinalDeparture;
         Vector2 playerDrawPosition = playerOnBoat
-            ? GetMooredBoatPosition() + GetBoatTripOffset() + new Vector2(-0.12f, 0.34f + boatBob)
+            ? GetMooredBoatPosition() + GetBoatTripOffset() + new Vector2(-0.12f, 0.34f)
             : playerPosition;
 
         EnsureV20CharacterResourcesLoaded();
@@ -16120,8 +16144,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         Vector2 sternFoot = GetMooredBoatSternStepPosition() -
             Vector2.up * (TideV20CharacterPresentationModel.BodyWorldLength * 0.5f);
         Vector2 bridge = sternFoot - pierTip;
-        float length = bridge.magnitude;
-        if (length <= 0.02f || length > 2.4f)
+        TideMooringGangplankSample gangplank =
+            TideMooredBoatAccessModel.EvaluateGangplank(pierTip, sternFoot);
+        if (!gangplank.CanSpan)
         {
             SetEnabled(boatLandingWalkwayRenderer, false);
             return;
@@ -16135,7 +16160,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         SetWorldSize(
             boatLandingWalkwayRenderer,
             (pierTip + sternFoot) * 0.5f,
-            new Vector2(length + 0.12f, 0.16f),
+            new Vector2(gangplank.LengthMeters + 0.12f, 0.16f),
             gangplankColor,
             Mathf.Atan2(bridge.y, bridge.x) * Mathf.Rad2Deg);
     }
@@ -16172,7 +16197,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return;
         }
 
-        float bob = Mathf.Sin(time * 1.4f) * 0.035f;
         Vector2 mooredBase = GetMooredBoatPosition();
         Vector2 tripOffset = GetBoatTripOffset();
         Sprite formalBoatVisual = boatSailIntegrity <= 0
@@ -16224,7 +16248,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             Vector2 formalSize = GetAspectPreservingWorldSize(formalBoatVisual, 2.08f);
             SetWorldSize(
                 boatHullRenderer,
-                mooredBase + tripOffset + new Vector2(0f, 0.56f + bob),
+                mooredBase + tripOffset + new Vector2(0f, 0.56f),
                 formalSize,
                 formalBoatTint,
                 0f);
@@ -16238,8 +16262,8 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         else if (!useContractBoat)
         {
             SetEnabled(boatBackRigRenderer, false);
-            SetWorldSize(boatHullRenderer, mooredBase + tripOffset + new Vector2(0f, bob), new Vector2(1.18f + boatReadiness * 0.08f, 0.38f), new Color(0.62f, 0.39f, 0.23f, 1f), 0f);
-            SetWorldSize(boatSailRenderer, mooredBase + tripOffset + new Vector2(0.22f, 0.48f + bob), new Vector2(0.66f + boatReadiness * 0.04f, 0.82f), new Color(0.9f, 0.85f, 0.68f, 0.96f), -3f);
+            SetWorldSize(boatHullRenderer, mooredBase + tripOffset, new Vector2(1.18f + boatReadiness * 0.08f, 0.38f), new Color(0.62f, 0.39f, 0.23f, 1f), 0f);
+            SetWorldSize(boatSailRenderer, mooredBase + tripOffset + new Vector2(0.22f, 0.48f), new Vector2(0.66f + boatReadiness * 0.04f, 0.82f), new Color(0.9f, 0.85f, 0.68f, 0.96f), -3f);
         }
         // 泊位没有航速，因此不存在船尾迹。船体浸水由整片外景海面负责，
         // 禁止回退资源重新生成一块跟船移动的局部水贴片。
@@ -16255,11 +16279,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
         for (int i = 0; i < boatRigging.Count && !useFormalBoat; i++)
         {
-            float ropeBob = bob + Mathf.Sin(time * 1.1f + i) * 0.012f;
             Vector2 offset = i == 0 ? new Vector2(0.03f, 0.52f) : i == 1 ? new Vector2(0.42f, 0.38f) : new Vector2(-0.18f, 0.24f);
             Vector2 scale = i == 0 ? new Vector2(0.68f, 0.05f) : new Vector2(0.5f, 0.045f);
             float rotation = i == 0 ? 57f : i == 1 ? -42f : 12f;
-            Set(boatRigging[i], mooredBase + tripOffset + offset + new Vector2(0f, ropeBob), scale, new Color(0.65f, 0.68f, 0.55f, 0.86f), rotation);
+            Set(boatRigging[i], mooredBase + tripOffset + offset, scale, new Color(0.65f, 0.68f, 0.55f, 0.86f), rotation);
         }
 
         for (int i = 0; i < boatPatchStitches.Count; i++)
@@ -16307,7 +16330,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                     patchSize.x *= Mathf.Lerp(0.2f, 1f, reveal01);
                     SetWorldSize(
                         boatPatchStitches[i],
-                        mooredBase + tripOffset + patchOffset + new Vector2(0f, bob),
+                        mooredBase + tripOffset + patchOffset,
                         patchSize,
                         new Color(1f, 1f, 1f, Mathf.Lerp(0.22f, 1f, reveal01)),
                         hullPatch ? -4f + i * 3f : sailPatch ? -18f + i * 5f : 0f);
@@ -16316,7 +16339,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 {
                     Vector2 offset = new Vector2(0.31f + (i % 2) * 0.11f, 0.58f - i * 0.055f);
                     Vector2 patchSize = new Vector2(0.13f * Mathf.Lerp(0.2f, 1f, reveal01), 0.055f);
-                    Set(boatPatchStitches[i], mooredBase + tripOffset + offset + new Vector2(0f, bob), patchSize, new Color(0.78f, 0.62f, 0.38f, 0.2f + reveal01 * 0.72f), -18f + i * 7f);
+                    Set(boatPatchStitches[i], mooredBase + tripOffset + offset, patchSize, new Color(0.78f, 0.62f, 0.38f, 0.2f + reveal01 * 0.72f), -18f + i * 7f);
                 }
             }
         }

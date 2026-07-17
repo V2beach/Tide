@@ -32,6 +32,7 @@ public static class TideCoreLoopConvergenceProbe
         string repairSession = ProbeRepairWorkSession();
         string heavyWreck = ProbeHeavyWreckTidalLift();
         string rope = ProbeMooringRope();
+        string mooredBoatAccess = ProbeMooredBoatAccess();
         string sailing = ProbeSailingDynamics();
         string boatRepairs = ProbeBoatConditionPerformance();
         string visibleWavePhysics = ProbeVisibleWavePhysicalCoupling();
@@ -44,7 +45,7 @@ public static class TideCoreLoopConvergenceProbe
         string forecast = ProbeForecastSnapshot();
         string netEncounter = ProbeNetEncounter();
         string wrack = ProbeWrackDeposit();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {sailing} | {boatRepairs} | {visibleWavePhysics} | {waveHandling} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {mooredBoatAccess} | {sailing} | {boatRepairs} | {visibleWavePhysics} | {waveHandling} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
     }
 
     private static string ProbeWreckDismantle()
@@ -777,6 +778,13 @@ public static class TideCoreLoopConvergenceProbe
             Require(Mathf.Abs(rope.BoatOffsetMeters) <=
                 TideMooringRopeModel.SecuredOffsetMeters + 0.02f,
                 "固定后船仍离跳板过远");
+            TideMooringRopeState edge = TideMooringRopeModel.CreateLoose(
+                TideMooringRopeModel.MaximumBoatDriftMeters);
+            edge = TideMooringRopeModel.BeginSwing(edge);
+            edge = TideMooringRopeModel.AdvanceSwing(edge, 0.5f, true);
+            edge = TideMooringRopeModel.ReleaseThrow(edge);
+            Require(edge.Phase == TideMooringRopePhase.Attached,
+                "船漂到自然边界后仍要求甩绳在数学峰值单帧松手");
             return $"绳相={rope.Phase}/离岸{rope.BoatOffsetMeters:F2}m/张力{rope.State.Tension01:F2}/组件结果={finalOutcome}";
         }
         finally
@@ -791,6 +799,46 @@ public static class TideCoreLoopConvergenceProbe
                 UnityEngine.Object.DestroyImmediate(probeTexture);
             }
         }
+    }
+
+    private static string ProbeMooredBoatAccess()
+    {
+        Vector2 pier = Vector2.zero;
+        TideMooringGangplankSample connected =
+            TideMooredBoatAccessModel.EvaluateGangplank(pier, new Vector2(1.1f, 0.18f));
+        TideMooringGangplankSample steep =
+            TideMooredBoatAccessModel.EvaluateGangplank(pier, new Vector2(0.42f, 0.72f));
+        TideMooringGangplankSample disconnected =
+            TideMooredBoatAccessModel.EvaluateGangplank(pier, new Vector2(2.7f, 0.1f));
+        Require(connected.CanSpan && connected.IsWalkable,
+            "可见跳板已经平缓接上船艉，却仍被判为不可通行");
+        Require(steep.CanSpan && !steep.IsWalkable && disconnected.CanSpan == false,
+            "跳板过陡与根本够不到仍没有形成两种不同物理结果");
+
+        TideMooredBoatAccessSample unsecured = TideMooredBoatAccessModel.Evaluate(
+            TideMooringRopePhase.Loose, connected, 0.04f, 0.08f, false, false);
+        TideMooredBoatAccessSample slack = TideMooredBoatAccessModel.Evaluate(
+            TideMooringRopePhase.Secured, connected, 0.04f, 0.08f, false, false);
+        TideMooredBoatAccessSample sameHeightFastCurrent = TideMooredBoatAccessModel.Evaluate(
+            TideMooringRopePhase.Secured, connected, 0.86f, 0.08f, false, false);
+        TideMooredBoatAccessSample roughSea = TideMooredBoatAccessModel.Evaluate(
+            TideMooringRopePhase.Secured, connected, 0.04f, 0.92f, false, false);
+        TideMooredBoatAccessSample night = TideMooredBoatAccessModel.Evaluate(
+            TideMooringRopePhase.Secured, connected, 0.04f, 0.08f, true, false);
+        TideMooredBoatAccessSample finalNight = TideMooredBoatAccessModel.Evaluate(
+            TideMooringRopePhase.Secured, connected, 0.04f, 0.08f, true, true);
+
+        Require(unsecured.BlockReason == TideMooredBoatAccessBlockReason.RopeUnsecured,
+            "未系稳的船仍能绕过甩绳与收绳直接登船");
+        Require(slack.IsOpen,
+            "绳已固定、跳板接通且处于平流时仍不能登船");
+        Require(sameHeightFastCurrent.BlockReason == TideMooredBoatAccessBlockReason.StrongCurrent,
+            "相同水位下真实横流变快却没有关闭登船窗口");
+        Require(roughSea.BlockReason == TideMooredBoatAccessBlockReason.RoughSea,
+            "局部浪况已经危险却仍能从跳板登船");
+        Require(night.BlockReason == TideMooredBoatAccessBlockReason.Night && finalNight.IsOpen,
+            "普通夜航与剧情最终离开没有保持既定差异");
+        return $"登船=系稳>{connected.LengthMeters:F2}m/{connected.SlopeDegrees:F1}°跳板>平流，流急/破浪/断板分别拦截";
     }
 
     private static string ProbeSailingDynamics()

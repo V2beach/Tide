@@ -27,7 +27,13 @@ public struct TideMooringRopeState
 /// </summary>
 public static class TideMooringRopeModel
 {
-    public const float MaximumThrowReachMeters = 1.85f;
+    // 玩家站在长潮汐跳板的岸端甩的是轻质引缆，不是把整根系缆抛过去。
+    // 3.6m 足以覆盖 1.70m 跳板、初始离岸量和自然漂移边界。
+    public const float MaximumThrowReachMeters = 3.6f;
+    // 漂移硬边界必须小于理论最大抛距，否则船停在边界时只有甩绳正好经过
+    // 数学峰值的单帧才能套中。抛缆距离与漂移边界分开，让一次接近完整的绳圈
+    // 在真实输入帧率下仍可命中，同时船依旧会明显离开跳板。
+    public const float MaximumBoatDriftMeters = 1.68f;
     public const float SecuredOffsetMeters = 0.14f;
     public const float ReelSpeedMetersPerSecond = 0.42f;
 
@@ -147,8 +153,8 @@ public static class TideMooringRopeModel
         state.BoatVelocityMetersPerSecond *= Mathf.Exp(-0.18f * dt);
         state.BoatOffsetMeters = Mathf.Clamp(
             state.BoatOffsetMeters + state.BoatVelocityMetersPerSecond * dt,
-            -MaximumThrowReachMeters,
-            MaximumThrowReachMeters);
+            -MaximumBoatDriftMeters,
+            MaximumBoatDriftMeters);
         return state;
     }
 }
