@@ -9426,6 +9426,19 @@ public partial class TideStiltHouseFirstSliceController
             Mathf.Abs(lowTidePosition.y - lowTideOcean.SurfaceY) <= 0.001f;
         mooringScreenActive = true;
         UpdateBoatVisuals(2.17f);
+        Vector2 dockCoilPoint = new Vector2(
+            GetBoatBoardingX() - 0.1f,
+            GetPlayerStandingFeetY(WalkLane.TideFlat) + 0.12f);
+        Vector2 looseBoatTiePoint = GetMooredBoatPosition() + new Vector2(-0.48f, 0.24f);
+        bool looseRopeGroundedAtDock = mooringRope.Phase == TideMooringRopePhase.Loose &&
+            mooringRopeEndRenderer.enabled &&
+            Vector2.Distance(mooringRopeEndRenderer.bounds.center, dockCoilPoint) <= 0.38f &&
+            Vector2.Distance(mooringRopeEndRenderer.bounds.center, looseBoatTiePoint) >= 0.65f;
+        for (int i = 0; i < mooringRopeSegments.Count; i++)
+        {
+            looseRopeGroundedAtDock &= mooringRopeSegments[i].enabled &&
+                Mathf.Abs(mooringRopeSegments[i].bounds.center.y - dockCoilPoint.y) <= 0.13f;
+        }
         float lowTideWaterlineError = float.PositiveInfinity;
         if (HasCompleteV39BoatPresentation() && boatHullRenderer != null && boatHullRenderer.enabled)
         {
@@ -9481,11 +9494,12 @@ public partial class TideStiltHouseFirstSliceController
         bool returnTracksSternBeforeLanding =
             Vector2.Distance(boatViewTransitionStartPosition, movingReturnStern) <= 0.01f;
 
-        string evidence = $"低潮贴水={lowTideNeverUsesInvisibleFloor}({lowTidePosition.y:F2}/{lowTideOcean.SurfaceY:F2})/画面误差={lowTideWaterlineError:F3}m；" +
+        string evidence = $"待用绳落码头={looseRopeGroundedAtDock}；低潮贴水={lowTideNeverUsesInvisibleFloor}({lowTidePosition.y:F2}/{lowTideOcean.SurfaceY:F2})/画面误差={lowTideWaterlineError:F3}m；" +
             $"系泊偏移={mooredBoatOffsetX:F2}/浮高={mooredPosition.y:F2}；" +
             $"船艉={expectedSternStep.x:F2}；上船贴艉={boardingTargetsCurrentStern}/{boardingTracksSternDuringApproach}；" +
             $"返航贴艉={returnStartsAtCurrentStern}/{returnTracksSternBeforeLanding}";
-        return lowTideNeverUsesInvisibleFloor && lowTideRenderedAtOcean && boatMovesWithWater &&
+        return looseRopeGroundedAtDock && lowTideNeverUsesInvisibleFloor &&
+               lowTideRenderedAtOcean && boatMovesWithWater &&
                boardingTargetsCurrentStern &&
                boardingTracksSternDuringApproach &&
                returnStartsAtCurrentStern &&

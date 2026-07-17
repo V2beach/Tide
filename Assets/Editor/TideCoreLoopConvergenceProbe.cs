@@ -758,6 +758,31 @@ public static class TideCoreLoopConvergenceProbe
             Require(presentationBound,
                 "泊位组件推进了状态，但没有把同一状态绑定到连续绳段与船艉端点");
 
+            TideMooringRopeController looseRope = new GameObject(
+                "TideLooseMooringRopePresentationProbe").AddComponent<TideMooringRopeController>();
+            looseRope.transform.SetParent(root.transform, false);
+            looseRope.ResetRuntime(1.08f);
+            Vector2 dockCoilPoint = new Vector2(-0.1f, 0.12f);
+            looseRope.UpdatePresentation(
+                segments,
+                ropeEnd,
+                true,
+                Vector2.zero,
+                dockCoilPoint,
+                expectedTie,
+                probeSprite,
+                0f);
+            bool looseCoilGrounded = ropeEnd.enabled &&
+                Vector2.Distance(ropeEnd.transform.localPosition, dockCoilPoint) <= 0.38f &&
+                Vector2.Distance(ropeEnd.transform.localPosition, expectedTie) >= 0.65f;
+            for (int i = 0; i < segments.Length; i++)
+            {
+                looseCoilGrounded &= segments[i].enabled &&
+                    Mathf.Abs(segments[i].transform.localPosition.y - dockCoilPoint.y) <= 0.13f;
+            }
+            Require(looseCoilGrounded,
+                "Loose 引缆仍然不可见，或被误画成已经连接船艉的绳");
+
             TideMooringRopeEnvironmentOutcome finalOutcome = TideMooringRopeEnvironmentOutcome.None;
             for (int i = 0; i < 1200 && rope.Phase != TideMooringRopePhase.Secured; i++)
             {

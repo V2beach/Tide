@@ -171,11 +171,37 @@ public sealed class TideMooringRopeController : MonoBehaviour
         Sprite ropeEndSprite,
         float visualZ)
     {
-        bool visible = worldVisible && state.Phase != TideMooringRopePhase.Loose;
+        bool visible = worldVisible;
         SetEnabled(segments, visible);
         SetEnabled(ropeEndRenderer, visible);
         if (!visible || segments == null || segments.Count == 0 || ropeEndRenderer == null)
         {
+            return;
+        }
+
+        if (state.Phase == TideMooringRopePhase.Loose)
+        {
+            // 待用引缆必须作为世界实物留在码头，而不是等玩家猜中 F 后才出现。
+            // 六段现有绳线围成一个低矮绳圈；起手后同一批 renderer 立即转为
+            // 手持甩绳，不创建提示图标、第二份绳或额外贴图。
+            Vector2 coilCenter = securedDockPoint + new Vector2(-0.08f, 0.035f);
+            Vector2 loosePrevious = EvaluateLooseCoilPoint(coilCenter, 0f);
+            for (int i = 0; i < segments.Count; i++)
+            {
+                float t = (i + 1f) / segments.Count;
+                Vector2 point = EvaluateLooseCoilPoint(coilCenter, t);
+                SetThinRopeSegment(segments[i], loosePrevious, point, visualZ);
+                loosePrevious = point;
+            }
+
+            ropeEndRenderer.sprite = ropeEndSprite;
+            SetWorldSize(
+                ropeEndRenderer,
+                loosePrevious,
+                new Vector2(0.065f, 0.085f),
+                new Color(0.47f, 0.4f, 0.3f, 0.96f),
+                0f,
+                visualZ);
             return;
         }
 
@@ -218,6 +244,14 @@ public sealed class TideMooringRopeController : MonoBehaviour
             new Color(0.47f, 0.4f, 0.3f, 0.96f),
             0f,
             visualZ);
+    }
+
+    private static Vector2 EvaluateLooseCoilPoint(Vector2 center, float t)
+    {
+        float angle = Mathf.Clamp01(t) * Mathf.PI * 2f;
+        return center + new Vector2(
+            Mathf.Cos(angle) * 0.22f,
+            Mathf.Sin(angle) * 0.07f);
     }
 
     private static Vector2 EvaluateQuadraticBezier(

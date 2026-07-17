@@ -9374,6 +9374,44 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         }
     }
 
+    private static string GetDebugMooringActionText(TideMooringRopePhase phase)
+    {
+        switch (phase)
+        {
+            case TideMooringRopePhase.Loose:
+                return "按住 F 甩引缆";
+            case TideMooringRopePhase.Swinging:
+                return "松开 F 抛向船艉";
+            case TideMooringRopePhase.Attached:
+            case TideMooringRopePhase.Reeling:
+                return "按住 F 收缆 · 张力高时松手";
+            default:
+                return string.Empty;
+        }
+    }
+
+    private static string GetDebugMooringBlockText(
+        TideMooredBoatAccessBlockReason blockReason)
+    {
+        switch (blockReason)
+        {
+            case TideMooredBoatAccessBlockReason.GangplankDisconnected:
+                return "泊位：跳板未接上";
+            case TideMooredBoatAccessBlockReason.GangplankTooSteep:
+                return "泊位：跳板坡度过大";
+            case TideMooredBoatAccessBlockReason.Night:
+                return "泊位：夜间不新出航";
+            case TideMooredBoatAccessBlockReason.StrongCurrent:
+                return "泊位：横流过快";
+            case TideMooredBoatAccessBlockReason.RoughSea:
+                return "泊位：船艉拍浪";
+            case TideMooredBoatAccessBlockReason.RopeUnsecured:
+                return "泊位：船艉未系稳";
+            default:
+                return string.Empty;
+        }
+    }
+
     private bool IsNearshoreWorkWindowOpen()
     {
         return state == SliceState.TideRising && currentWaterY <= lowWaterY + shoreWorkMaxWaterOffset;
@@ -9562,7 +9600,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         EnsureList(
             mooringRopeSegments,
             "GeneratedStiltFirstMooringRopeSegment",
-            3,
+            6,
             GetNetLineSprite(),
             13);
         mooringRopeEndRenderer = EnsureRenderer(
@@ -17980,12 +18018,39 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return;
         }
 
+        if (viewMode == SliceViewMode.Shelter && IsPlayerNearBoat() &&
+            mooringRope.Phase != TideMooringRopePhase.Secured)
+        {
+            boatBoardPromptText.text = GetDebugMooringActionText(mooringRope.Phase);
+            boatBoardPromptText.color = new Color(0.86f, 0.78f, 0.6f, 0.94f);
+            boatBoardPromptText.transform.localPosition = new Vector3(
+                GetBoatBoardingX(),
+                GetPlayerLaneY(WalkLane.TideFlat) + 0.72f,
+                visualZ - 0.35f);
+            return;
+        }
+
         if (viewMode == SliceViewMode.Shelter && IsPlayerNearBoat() && HasReturnedSailingCargoAtBoat())
         {
             boatBoardPromptText.text = "F 卸货";
             boatBoardPromptText.color = new Color(1f, 0.86f, 0.44f, 0.96f);
             boatBoardPromptText.transform.localPosition = new Vector3(GetBoatBoardingX(), boatAnchor.y + 1.05f, visualZ - 0.35f);
             return;
+        }
+
+        if (viewMode == SliceViewMode.Shelter && IsPlayerNearBoat())
+        {
+            TideMooredBoatAccessSample access = GetMooredBoatAccessSample();
+            if (!access.IsOpen)
+            {
+                boatBoardPromptText.text = GetDebugMooringBlockText(access.BlockReason);
+                boatBoardPromptText.color = new Color(0.84f, 0.74f, 0.62f, 0.9f);
+                boatBoardPromptText.transform.localPosition = new Vector3(
+                    GetBoatBoardingX(),
+                    GetPlayerLaneY(WalkLane.TideFlat) + 0.72f,
+                    visualZ - 0.35f);
+                return;
+            }
         }
 
         if (viewMode == SliceViewMode.Shelter && IsPlayerNearBoat() && HasUnsecuredHarvestForBoarding())
@@ -18089,11 +18154,26 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             return $"A/D 走动   右侧梯口 W 上生活层   {prepHint}\n{lastActionHint}";
         }
 
-        string boatHint = IsDepartureReady()
-            ? (IsPlayerNearBoat() ? "F 离开" : "去船边 F 离开")
-            : IsPlayerNearBoat()
-                ? HasUnsecuredHarvestForBoarding() ? "先安置潮获" : "F 短航"
-                : "靠近船可 F 短航";
+        string boatHint;
+        if (!IsPlayerNearBoat())
+        {
+            boatHint = IsDepartureReady() ? "去船边准备离开" : "靠近泊位可操作引缆或短航";
+        }
+        else if (mooringRope.Phase != TideMooringRopePhase.Secured)
+        {
+            boatHint = GetDebugMooringActionText(mooringRope.Phase);
+        }
+        else if (HasUnsecuredHarvestForBoarding())
+        {
+            boatHint = "先安置潮获";
+        }
+        else
+        {
+            TideMooredBoatAccessSample access = GetMooredBoatAccessSample();
+            boatHint = access.IsOpen
+                ? IsDepartureReady() ? "F 离开" : "F 短航"
+                : GetDebugMooringBlockText(access.BlockReason);
+        }
         if (state == SliceState.LowTidePlanning)
         {
             if (dayNightPhase == DayNightPhase.Night)
