@@ -42,8 +42,21 @@ public static class TideNetCatchPresentationModel
         switch (material)
         {
             case TideNetCatchMaterial.Fish:
-                anchor.y += index == 1 ? 0.035f : -0.01f;
-                return new Pose(anchor, index % 2 == 0 ? -7f : 6f, 0.82f, (index & 1) == 1);
+                // Fish enter the mesh from stable, visibly different water layers.
+                // Their anchors therefore cannot be re-packed around the center every
+                // time another fish arrives; doing so made the first catch jump and hid
+                // the physical reason why a deeper net held more of the same school.
+                if (index <= 0)
+                {
+                    return new Pose(new Vector2(0.34f, 0.38f), -7f, 0.82f, false);
+                }
+
+                if (index == 1)
+                {
+                    return new Pose(new Vector2(0.55f, 0.59f), 6f, 0.82f, true);
+                }
+
+                return new Pose(new Vector2(0.7f, 0.84f), -5f, 0.82f, false);
             case TideNetCatchMaterial.Wood:
                 anchor.y += index == 1 ? -0.035f : 0.035f;
                 return new Pose(anchor, index == 0 ? -7f : index == 1 ? 9f : -3f, count >= 2 ? 0.86f : 0.94f, false);

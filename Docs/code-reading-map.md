@@ -65,7 +65,8 @@
 
 ### 潮汐观察
 
-- 网口相遇：`TideNetEncounterModel`；漂物到达前的湿网只累计水阻，只有实物水路线段进入网口且吃水带与网面重叠才累计缠挂。浅/深网、漫顶漏过、低帧率跨窗和擦网清零共用同一模型；可见导流索可以把指定盐木压入网面，自由漂物没有隐藏下压力。
+- 网口相遇：`TideNetEncounterModel`；漂物到达前的湿网只累计水阻，只有实物水路线段进入网口且吃水带与网面重叠才累计缠挂。首潮同一鱼群的三名成员沿不同水层先后进入，浅/中/深网形成 `1/2/3` 件真实捕获；盐木和纸包仍是单件，等待不能复制。浅/深网、漫顶漏过、低帧率跨窗和擦网清零共用同一模型；可见导流索可以把指定盐木压入网面，自由漂物没有隐藏下压力。
+- 后续批次成员：`AdvanceNaturalCatchTrain` 只负责把纯模型声明的后续成员接入同一 `TideDriftBatch`、实际潮流和网口；`netNaturalPieceCursor` 是已处理成员游标，`netCatchVisualPieceCount/netCatchBundleTier` 只记录真正挂住的实物。`TideNetCatchPresentationModel` 保持鱼在网内的浅中深锚点稳定，不能按件数重排导致旧鱼跳位。
 - 预报区间：`TideNetForecastModel.HighWaterBand`；粗观潮保留 `±0.22m` 不确定性，修复海图潮尺后缩窄到 `±0.08m`，但不选择网深。
 - 网深预报：`GetPredictedNetEncounterSeconds` 前向推进下一天文潮次的同一 `TideDriftBatch`、实际潮流和网面相遇，再由 `TideNetForecastModel.NetChoice` 整理有效接触与网压；不能恢复成整潮泡水秒数或统一深网奖励。
 - 观测生命周期：`TideForecastSnapshotModel`；使用连续天文潮次冻结观测当刻的上下界。后续天气只改变真实水位，不反向改写旧绳结；目标高潮一过，快照自然失效。这里不能使用睡眠或故事轮次 `tideRound`。

@@ -65,6 +65,17 @@ public static class TideNetEncounterModel
 
     public static MaterialProfile GetProfile(TideDriftMaterial material)
     {
+        return GetProfile(material, 0);
+    }
+
+    /// <summary>
+    /// 返回同一潮源批次中第 <paramref name="pieceIndex"/> 件实物的真实吃水带。
+    /// 鱼群会沿不同水层通过；这改变网面能否碰到它们，却不会改变批次身份、
+    /// 材质或来源。木料和纸包仍是单件实物，不能靠深网复制。
+    /// </summary>
+    public static MaterialProfile GetProfile(TideDriftMaterial material, int pieceIndex)
+    {
+        int index = Mathf.Max(0, pieceIndex);
         switch (material)
         {
             case TideDriftMaterial.SaltWood:
@@ -75,11 +86,63 @@ public static class TideNetEncounterModel
                 return new MaterialProfile(0.055f, 0.055f, 0.22f, 0.78f);
             case TideDriftMaterial.TangledDebris:
                 // 缠结废网竖向范围大、容易挂住，但会显著增加后续水阻。
-                return new MaterialProfile(0.19f, 0.19f, 0.12f, 0.72f);
+                return index <= 0
+                    ? new MaterialProfile(0.19f, 0.19f, 0.12f, 0.72f)
+                    : new MaterialProfile(0.31f, 0.17f, 0.16f, 0.82f);
             default:
-                // 首潮鱼群在水面下通过。浅网只擦到鱼群上缘，深网才提供稳定覆盖。
+                // 同一鱼群分三层通过：浅层鱼让任何合理布网都有保底，中层鱼要求
+                // 中网，最深一尾只有深网能碰到。收益与风险因此都来自可见网面。
+                if (index == 1)
+                {
+                    return new MaterialProfile(1f, 0.15f, 0.3f, 1.04f);
+                }
+
+                if (index >= 2)
+                {
+                    return new MaterialProfile(1.38f, 0.15f, 0.34f, 1.12f);
+                }
+
                 return new MaterialProfile(0.43f, 0.17f, 0.28f, 0.96f);
         }
+    }
+
+    /// <summary>
+    /// 一次潮源批次中最多存在多少件可独立看见、独立碰网的实物。
+    /// 单根木料和单个纸包不能因为等待更久而增殖；鱼群和风暴缠结物才有后续成员。
+    /// </summary>
+    public static int GetNaturalPieceCount(TideDriftMaterial material)
+    {
+        switch (material)
+        {
+            case TideDriftMaterial.Fish:
+                return 3;
+            case TideDriftMaterial.TangledDebris:
+                return 2;
+            default:
+                return 1;
+        }
+    }
+
+    /// <summary>
+    /// 首件挂网后，后续成员抵达近岸可见水路前需要经历的湿网秒数。
+    /// 这表示鱼群在流向上的真实间距，不是直接增加奖励的隐藏计时器。
+    /// </summary>
+    public static float GetFollowupReleaseExposureSeconds(
+        TideDriftMaterial material,
+        int pieceIndex)
+    {
+        int index = Mathf.Max(0, pieceIndex);
+        if (index <= 0)
+        {
+            return 0f;
+        }
+
+        if (material == TideDriftMaterial.Fish)
+        {
+            return index == 1 ? 5.8f : 13.2f;
+        }
+
+        return material == TideDriftMaterial.TangledDebris ? 8.6f : float.PositiveInfinity;
     }
 
     /// <summary>
@@ -149,9 +212,10 @@ public static class TideNetEncounterModel
         float surfaceWorldY,
         float netIntegrity01,
         TideDriftMaterial material,
-        float guidedSubmergenceMeters = 0f)
+        float guidedSubmergenceMeters = 0f,
+        int pieceIndex = 0)
     {
-        MaterialProfile profile = GetProfile(material);
+        MaterialProfile profile = GetProfile(material, pieceIndex);
         if (guidedSubmergenceMeters > 0f)
         {
             // A visible boom/guide rope can press a floating object below its free-drift

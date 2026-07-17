@@ -7919,7 +7919,9 @@ public partial class TideStiltHouseFirstSliceController
             out float shallowTierThree,
             out float shallowFray,
             out float shallowBreak,
-            out float shallowEbb);
+            out float shallowEbb,
+            out float shallowTierTwoSurfaceDepth,
+            out float shallowTierThreeSurfaceDepth);
         MeasureNaturalNetExcursionTiming(
             0.5f,
             out float middleTouch,
@@ -7928,7 +7930,9 @@ public partial class TideStiltHouseFirstSliceController
             out float middleTierThree,
             out float middleFray,
             out float middleBreak,
-            out float middleEbb);
+            out float middleEbb,
+            out float middleTierTwoSurfaceDepth,
+            out float middleTierThreeSurfaceDepth);
         MeasureNaturalNetExcursionTiming(
             0.82f,
             out float deepTouch,
@@ -7937,7 +7941,9 @@ public partial class TideStiltHouseFirstSliceController
             out float deepTierThree,
             out float deepFray,
             out float deepBreak,
-            out float deepEbb);
+            out float deepEbb,
+            out float deepTierTwoSurfaceDepth,
+            out float deepTierThreeSurfaceDepth);
 
         // The first useful away job is the physical routing boom beside the house.
         // It includes walking from the net and back, fully moving the boom once, and a
@@ -7952,15 +7958,19 @@ public partial class TideStiltHouseFirstSliceController
 
         bool firstCatchAllowsExcursion = middleCatch > 0f && middleTouch > 0f &&
             middleCatch - middleTouch >= minimumExcursionSeconds;
-        bool middleShowsAllChoices = middleTierTwo > middleCatch + 6f &&
-            middleTierThree > middleTierTwo + 6f &&
-            (middleFray < 0f || middleFray > middleTierThree) &&
-            (middleBreak < 0f || middleBreak > middleTierThree + 20f);
+        bool shallowKeepsOneSafeCatch = shallowCatch > 0f &&
+            shallowTierTwo < 0f && shallowTierThree < 0f && shallowBreak < 0f;
+        bool middleKeepsSecondLayer = middleTierTwo > middleCatch + 6f &&
+            middleTierThree < 0f &&
+            (middleFray < 0f || middleFray > middleTierTwo + 20f) &&
+            (middleBreak < 0f || middleBreak > middleTierTwo + 30f);
         bool deepRiskIsReadable = deepTierThree > deepTierTwo &&
             deepFray > deepTierThree && deepBreak > deepFray &&
             deepBreak - deepTierThree >= 4f;
-        bool depthChangesRisk = shallowBreak < 0f && middleBreak > 0f && deepBreak > 0f &&
-            deepBreak < middleBreak && shallowEbb > shallowTierThree;
+        bool depthChangesYieldAndRisk = deepTierTwo > deepCatch + 6f &&
+            deepTierThree > deepTierTwo + 4f &&
+            shallowBreak < 0f && middleBreak > 0f && deepBreak > 0f &&
+            deepBreak < middleBreak;
         bool oneNaturalTide = Mathf.Abs(shallowEbb - middleEbb) <= 0.11f &&
             Mathf.Abs(middleEbb - deepEbb) <= 0.11f;
 
@@ -7969,12 +7979,14 @@ public partial class TideStiltHouseFirstSliceController
             $"浅 触{shallowTouch:F1}/获{shallowCatch:F1}/二{shallowTierTwo:F1}/三{shallowTierThree:F1}/断{shallowBreak:F1}；" +
             $"中 触{middleTouch:F1}/获{middleCatch:F1}/二{middleTierTwo:F1}/三{middleTierThree:F1}/崩{middleFray:F1}/断{middleBreak:F1}；" +
             $"深 触{deepTouch:F1}/获{deepCatch:F1}/二{deepTierTwo:F1}/三{deepTierThree:F1}/崩{deepFray:F1}/断{deepBreak:F1}；" +
+            $"水面高于网首 二={shallowTierTwoSurfaceDepth:F2}/{middleTierTwoSurfaceDepth:F2}/{deepTierTwoSurfaceDepth:F2}m " +
+            $"三={shallowTierThreeSurfaceDepth:F2}/{middleTierThreeSurfaceDepth:F2}/{deepTierThreeSurfaceDepth:F2}m；" +
             $"退潮={shallowEbb:F1}/{middleEbb:F1}/{deepEbb:F1}";
         ResetSlice();
-        return firstCatchAllowsExcursion && middleShowsAllChoices && deepRiskIsReadable &&
-            depthChangesRisk && oneNaturalTide
-            ? $"PASS：第一潮允许离桩做事，中网形成逐级增载选择，只有深网较早进入可抢救断裂窗口。{evidence}"
-            : $"FAIL：第一潮仍迫使玩家守网，或深浅风险没有形成可读的时间差。{evidence}";
+        return firstCatchAllowsExcursion && shallowKeepsOneSafeCatch && middleKeepsSecondLayer &&
+            deepRiskIsReadable && depthChangesYieldAndRisk && oneNaturalTide
+            ? $"PASS：第一潮允许离桩做事；同一鱼群在浅/中/深网形成 1/2/3 件真实收益，深网较早进入可抢救断裂窗口。{evidence}"
+            : $"FAIL：第一潮仍迫使玩家守网，或浅/中/深网没有形成可见的 1/2/3 件收益风险取舍。{evidence}";
     }
 
     public string RunEditorFirstTideRouteChoiceProbe()
@@ -8009,7 +8021,8 @@ public partial class TideStiltHouseFirstSliceController
         bool feedBranchReachesSameNet = feedLock > 0f && feedPrimaryCatch > feedLock &&
             feedSaltWoodCatch > feedPrimaryCatch && feedEverBundled &&
             feedSailingEntry >= feedBreak - 0.11f;
-        bool feedTradesSafetyForCargo = feedTierThree + 6f < openTierThree &&
+        bool feedTradesSafetyForCargo = openTierThree < 0f &&
+            feedTierThree > feedSaltWoodCatch + 6f &&
             feedBreak + 6f < openBreak;
         bool stableBatchIdentity = openPrimaryBatch > 0 && openSaltWoodBatch > 0 &&
             openPrimaryBatch == feedPrimaryBatch && openSaltWoodBatch == feedSaltWoodBatch &&
@@ -8754,7 +8767,9 @@ public partial class TideStiltHouseFirstSliceController
         out float tierThreeSeconds,
         out float fraySeconds,
         out float breakSeconds,
-        out float ebbSeconds)
+        out float ebbSeconds,
+        out float tierTwoSurfaceDepthMeters,
+        out float tierThreeSurfaceDepthMeters)
     {
         ConfigureNaturalFirstTideNet(depth01);
 
@@ -8765,6 +8780,8 @@ public partial class TideStiltHouseFirstSliceController
         fraySeconds = -1f;
         breakSeconds = -1f;
         ebbSeconds = -1f;
+        tierTwoSurfaceDepthMeters = -1f;
+        tierThreeSurfaceDepthMeters = -1f;
 
         const float stepSeconds = 0.1f;
         const int maximumSteps = 2200;
@@ -8783,10 +8800,12 @@ public partial class TideStiltHouseFirstSliceController
             if (tierTwoSeconds < 0f && netCatchBundleTier >= 2)
             {
                 tierTwoSeconds = elapsed;
+                tierTwoSurfaceDepthMeters = GetNetOceanSample().SurfaceY - GetNetHeadLineY();
             }
             if (tierThreeSeconds < 0f && netCatchBundleTier >= 3)
             {
                 tierThreeSeconds = elapsed;
+                tierThreeSurfaceDepthMeters = GetNetOceanSample().SurfaceY - GetNetHeadLineY();
             }
             if (fraySeconds < 0f && netFraying01 > 0.01f)
             {

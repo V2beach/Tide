@@ -231,7 +231,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     [SerializeField] private float netRigHoldSeconds = 0.8f;
     [SerializeField] private float netLoweringSeconds = 1.35f;
     [SerializeField] private float netHaulSeconds = 3.4f;
-    [SerializeField] private float netPostCatchFullLoadSeconds = 24f;
     [SerializeField] private float liveNetDepthAdjustSpeed = 0.22f;
     [SerializeField] private float tidePrepHoldSeconds = 1.15f;
     [SerializeField] private float contextDistance = 0.72f;
@@ -612,6 +611,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     private int netCatchVisualPieceCount;
     private float incomingHarvestTravel01;
     private float addedHarvestPieceTravel01;
+    private float addedHarvestPieceCaptureProgress01;
+    private int netNaturalPieceCursor;
+    private bool addedHarvestPieceInTransit;
     private int washedAwayHarvestPieceCount;
     private float washedAwayHarvestTimer;
     private float washedAwayHarvestDriftX;
@@ -1319,6 +1321,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         netCatchVisualPieceCount = 0;
         incomingHarvestTravel01 = 0f;
         addedHarvestPieceTravel01 = 0f;
+        addedHarvestPieceCaptureProgress01 = 0f;
+        netNaturalPieceCursor = 0;
+        addedHarvestPieceInTransit = false;
         washedAwayHarvestPieceCount = 0;
         washedAwayHarvestTimer = 0f;
         washedAwayHarvestDriftX = 0f;
@@ -5731,6 +5736,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         washedAwayHarvestTimer = 0f;
         washedAwayHarvestDriftX = 0f;
         addedHarvestPieceTravel01 = 0f;
+        addedHarvestPieceCaptureProgress01 = 0f;
+        netNaturalPieceCursor = 0;
+        addedHarvestPieceInTransit = false;
         netCatchVisualPieceCount = 0;
         netTouched = false;
         netCatchResolved = false;
@@ -5838,32 +5846,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 TryLockContinuousRoutingDecision(previousOuterTravel01, outerWreckTravel01);
                 TryCatchRoutedSaltWoodInResolvedNet(deltaTime);
             }
-        }
-
-        if (harvestPhysicalState == HarvestPhysicalState.CaughtInNet &&
-            netDeployed &&
-            netCatchVisualPieceCount < netCatchBundleTier)
-        {
-            // Each later load tier is another physical object arriving from the
-            // current, rather than a number changing and an item popping into the net.
-            float relativePhysicalCurrent = TideDriftSourceModel.EvaluateRelativePhysicalCurrent(
-                -GetNaturalCurrentSpeed(),
-                GetReferenceFloodCurrentSpeed());
-            addedHarvestPieceTravel01 = Mathf.Clamp01(
-                addedHarvestPieceTravel01 + deltaTime * relativePhysicalCurrent / 2.1f);
-            if (addedHarvestPieceTravel01 >= 0.999f)
-            {
-                netCatchVisualPieceCount++;
-                addedHarvestPieceTravel01 = 0f;
-                TideAudioController.PlayNetLoadCueInScene(netCatchVisualPieceCount, false);
-                lastActionHint = netCatchVisualPieceCount >= 3
-                    ? $"最后一件{GetHarvestName()}真正压进网眼，实物负载已满 3/3；继续留网只会增加断裂风险。"
-                    : $"又一件{GetHarvestName()}顺着水路挂稳，网里现在有 {netCatchVisualPieceCount}/3 件实物。";
-            }
-        }
-        else if (netCatchVisualPieceCount >= netCatchBundleTier)
-        {
-            addedHarvestPieceTravel01 = 0f;
         }
 
         if (harvestPhysicalState == HarvestPhysicalState.PlacedAtWork)
@@ -6201,11 +6183,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         }
 
         netPostCatchExposureSeconds += deltaTime * contact01;
-
-        int previousTier = netCatchBundleTier;
-        float load01 = GetNetCatchLoad01();
-        int timedTier = load01 >= 0.82f ? 3 : load01 >= 0.38f ? 2 : 1;
-        netCatchBundleTier = Mathf.Min(3, timedTier + (HasRoutedLoadBonus() ? 1 : 0));
+        AdvanceNaturalCatchTrain(deltaTime);
 
         TickNetFraying(deltaTime, IsActivelyHaulingNet());
         if (netBrokeThisTide)
@@ -6221,23 +6199,100 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 : "旧绳开始一股股崩开。继续留网会恶化；回网桩抬网或按住 F 收住它。";
         }
 
-        else if (netCatchBundleTier != previousTier)
+    }
+
+    private void AdvanceNaturalCatchTrain(float deltaTime)
+    {
+        TideDriftMaterial material = GetCurrentPrimaryDriftMaterial();
+        int naturalPieceCount = TideNetEncounterModel.GetNaturalPieceCount(material);
+        if (!netDeployed ||
+            harvestPhysicalState != HarvestPhysicalState.CaughtInNet ||
+            netCatchVisualPieceCount >= 3 ||
+            netNaturalPieceCursor >= naturalPieceCount)
         {
-            lastActionHint = netCatchBundleTier >= 3
-                ? $"水路里又出现了{GetHarvestName()}，正朝网面逼近；等它真正挂稳才算满载，继续留网也会增加断裂风险。"
-                : $"潮里又带来一件{GetHarvestName()}，它还在贴近网面；真正挂住前不会只改一个负载数字。";
+            addedHarvestPieceInTransit = false;
+            addedHarvestPieceTravel01 = 0f;
+            addedHarvestPieceCaptureProgress01 = 0f;
+            return;
+        }
+
+        float releaseExposureSeconds = TideNetEncounterModel.GetFollowupReleaseExposureSeconds(
+            material,
+            netNaturalPieceCursor);
+        if (!addedHarvestPieceInTransit)
+        {
+            if (netPostCatchExposureSeconds < releaseExposureSeconds)
+            {
+                return;
+            }
+
+            // The member already belongs to the same visible school. It enters at the
+            // right edge of the nearshore shot, then consumes the same current and water
+            // gate as the leading member instead of being spawned directly on the mesh.
+            addedHarvestPieceInTransit = true;
+            addedHarvestPieceTravel01 = TideDriftSourceModel.FollowupVisibleEntryTravel01;
+            addedHarvestPieceCaptureProgress01 = 0f;
+        }
+
+        EnsureCurrentTideDriftField();
+        TideDriftBatch batch = currentTideDriftField.NearshoreBatch;
+        float previousTravel01 = addedHarvestPieceTravel01;
+        float waterGate01 = Mathf.InverseLerp(lowWaterY + 0.12f, lowWaterY + 1.18f, currentWaterY);
+        addedHarvestPieceTravel01 = TideDriftSourceModel.AdvanceNearshoreTravel01(
+            addedHarvestPieceTravel01,
+            deltaTime,
+            -GetNaturalCurrentSpeed(),
+            GetReferenceFloodCurrentSpeed(),
+            waterGate01,
+            batch,
+            CalculateTideStrength(OpeningMoonAgeDays),
+            GetStormPressure01());
+
+        TideOceanSample netOcean = GetNetOceanSample();
+        TideNetEncounterModel.Step encounter = TideNetEncounterModel.Advance(
+            addedHarvestPieceCaptureProgress01,
+            deltaTime,
+            previousTravel01,
+            addedHarvestPieceTravel01,
+            GetNetHeadLineY(),
+            GetSelectedNetY(),
+            netOcean.SurfaceY,
+            netIntegrity / 4f,
+            material,
+            0f,
+            netNaturalPieceCursor);
+        addedHarvestPieceCaptureProgress01 = encounter.Progress01;
+        if (encounter.Captured)
+        {
+            netCatchVisualPieceCount = Mathf.Min(3, netCatchVisualPieceCount + 1);
+            netCatchBundleTier = netCatchVisualPieceCount;
+            netNaturalPieceCursor++;
+            addedHarvestPieceInTransit = false;
+            addedHarvestPieceTravel01 = 0f;
+            addedHarvestPieceCaptureProgress01 = 0f;
+            TideAudioController.PlayNetLoadCueInScene(netCatchVisualPieceCount, false);
+            lastActionHint = netCatchVisualPieceCount >= 3
+                ? $"同一批水路里的最后一件{GetHarvestName()}真正压进网眼；实物已满，继续留网只会增加断裂风险。"
+                : $"同一批水路里的另一件{GetHarvestName()}在自己的深度挂稳；网里现在有 {netCatchVisualPieceCount}/3 件实物。";
+            return;
+        }
+
+        if (encounter.ContactLost || TideDriftSourceModel.HasExitedNearshore(addedHarvestPieceTravel01))
+        {
+            netNaturalPieceCursor++;
+            addedHarvestPieceInTransit = false;
+            addedHarvestPieceTravel01 = 0f;
+            addedHarvestPieceCaptureProgress01 = 0f;
+            lastActionHint = "后续实物沿自己的水层穿过了网口；网面没有覆盖到它，它继续随潮离岸。";
         }
     }
 
     private float GetNetCatchLoad01()
     {
-        // Older scenes still serialize the prototype's 5.4 second value. Keep the
-        // gameplay contract in code so an already-open scene cannot silently restore
-        // the impossible reaction window after a domain reload.
-        float pace = GetHarvestLoadPaceMultiplier(currentHarvest);
-        return Mathf.Clamp01(
-            netPostCatchExposureSeconds * pace /
-            Mathf.Max(24f, netPostCatchFullLoadSeconds));
+        // Cargo load follows the count of physical objects already held by the mesh.
+        // Time in water still accumulates drag and fatigue, but it can no longer turn
+        // one fish or one parcel into a three-piece reward.
+        return Mathf.InverseLerp(1f, 3f, Mathf.Clamp(netCatchBundleTier, 1, 3));
     }
 
     private float AdvanceNetLoadLedger(
@@ -6288,6 +6343,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         // window with this catch is not enough: its own waterline/mesh overlap is advanced
         // by TryCatchRoutedSaltWoodInResolvedNet before it can join the bundle.
         netCatchBundleTier = 1;
+        netNaturalPieceCursor = 1;
+        addedHarvestPieceInTransit = false;
+        addedHarvestPieceTravel01 = 0f;
+        addedHarvestPieceCaptureProgress01 = 0f;
         HarvestKind reachedHarvest = GetIncomingTideCarryKind();
         ApplyNetStress();
         if (netBrokeThisTide)
@@ -6343,6 +6402,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         netCatchBundleTier = 1;
         netCatchVisualPieceCount = 1;
         addedHarvestPieceTravel01 = 0f;
+        addedHarvestPieceCaptureProgress01 = 0f;
+        netNaturalPieceCursor = TideNetEncounterModel.GetNaturalPieceCount(
+            TideDriftMaterial.TangledDebris);
+        addedHarvestPieceInTransit = false;
     }
 
     private void TickShelterTideStress()
@@ -7828,6 +7891,21 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         }
     }
 
+    private static TideDriftMaterial ToDriftMaterial(HarvestKind harvest)
+    {
+        switch (harvest)
+        {
+            case HarvestKind.Wood:
+                return TideDriftMaterial.SaltWood;
+            case HarvestKind.Relic:
+                return TideDriftMaterial.ChartParcel;
+            case HarvestKind.Trash:
+                return TideDriftMaterial.TangledDebris;
+            default:
+                return TideDriftMaterial.Fish;
+        }
+    }
+
     private TideDriftMaterial GetCurrentPrimaryDriftMaterial()
     {
         if (tideDriftFieldInitialized && currentTideDriftField.NearshoreBatch.IsValid)
@@ -7900,31 +7978,6 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         return TideNetLoadLedgerModel.EvaluateFatigue01(
             netAccumulatedTension,
             netPeakTension01);
-    }
-
-    private float GetHarvestLoadPaceMultiplier(HarvestKind harvest)
-    {
-        if (harvest == HarvestKind.Fish)
-        {
-            return 1.08f;
-        }
-
-        if (harvest == HarvestKind.Wood)
-        {
-            return 0.82f;
-        }
-
-        if (harvest == HarvestKind.Relic)
-        {
-            return 0.7f;
-        }
-
-        if (harvest == HarvestKind.Trash)
-        {
-            return 0.9f;
-        }
-
-        return 1f;
     }
 
     private float GetHarvestLoadTensionMultiplier(HarvestKind harvest, float time)
@@ -8921,6 +8974,11 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         netDepthAdjustmentDirection = 0f;
         netPostCatchExposureSeconds = 0f;
         netCatchBundleTier = 1;
+        netCatchVisualPieceCount = 0;
+        addedHarvestPieceTravel01 = 0f;
+        addedHarvestPieceCaptureProgress01 = 0f;
+        netNaturalPieceCursor = 0;
+        addedHarvestPieceInTransit = false;
         netOverloadStressApplied = 0;
         netSecuredEarly = false;
         playerPosition = GetHomePlayerPosition();
@@ -15430,7 +15488,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         bool initialDrift = primaryDrift || outerWreckDrift;
         bool addedPieceCanFreeDrift = !TryGetV59FindSpec(
                 currentHarvest,
-                netCatchVisualPieceCount,
+                netNaturalPieceCursor,
                 currentHarvestBatchId,
                 false,
                 out TideV59FindSpec addedPieceSpec) ||
@@ -15440,7 +15498,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             netDeployed &&
             netCatchResolved &&
             harvestPhysicalState == HarvestPhysicalState.CaughtInNet &&
-            netCatchVisualPieceCount < netCatchBundleTier &&
+            addedHarvestPieceInTransit &&
             addedPieceCanFreeDrift;
         bool visible = initialDrift || addedPieceDrift;
         SetEnabled(incomingTideCarryItems, visible);
@@ -15473,7 +15531,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             bool isExtraSaltWood = showExtraSaltWood && (!showPrimarySource || objectIndex == objectCount - 1);
             int physicalPieceIndex = initialDrift
                 ? isExtraSaltWood ? 0 : objectIndex
-                : netCatchVisualPieceCount;
+                : netNaturalPieceCursor;
             HarvestKind pieceKind = isExtraSaltWood ? HarvestKind.Wood : incomingKind;
             int pieceBatchId = isExtraSaltWood
                 ? extraSaltWoodBatchId
@@ -15488,12 +15546,16 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                     pieceBatchId,
                     true);
 
-            float carry01 = initialDrift
+            float sourceTravel01 = initialDrift
                 ? isExtraSaltWood ? outerWreckTravel01 : incomingHarvestTravel01
                 : addedHarvestPieceTravel01;
+            float carry01 = initialDrift
+                ? sourceTravel01
+                : RemapFollowupVisibleTravel01(sourceTravel01);
             float delay = initialDrift && showPrimarySource && showExtraSaltWood && isExtraSaltWood ? 0.04f : 0f;
             float staggered01 = Mathf.Max(0f, carry01 - delay);
             float physicalTravel01 = staggered01;
+            float encounterTravel01 = initialDrift ? staggered01 : sourceTravel01;
             // Spawn outside the camera's right edge, then let the authored wake enter first.
             // Starting inside the playable pier made every catch visibly pop into existence.
             float startX = GetTideFlatVisiblePathRight() + 1.65f + objectIndex * 0.42f;
@@ -15560,19 +15622,16 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             Vector2 worldSize = waterRipple
                 ? new Vector2(Mathf.Max(0.54f, objectSize.x * 1.35f), 0.13f)
                 : objectSize;
+            float primaryCaptureProgress01 = initialDrift
+                ? netCaptureProgress01
+                : addedHarvestPieceCaptureProgress01;
             float settleIntoMesh01 = isExtraSaltWood
                 ? saltWoodFeedsNet && netDeployed
                     ? Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(TideContinuousRoutingModel.DecisionTravel01, 1f, physicalTravel01))
                     : 0f
-                : netDeployed && netCaptureProgress01 >= 0.999f &&
-                  TideDriftSourceModel.IsInsideNetCaptureWindow(staggered01)
-                    ? Mathf.SmoothStep(
-                        0f,
-                        1f,
-                        Mathf.InverseLerp(
-                            TideDriftSourceModel.NetCaptureEntryTravel01,
-                            TideDriftSourceModel.NetIntersectionTravel01,
-                            staggered01))
+                : netDeployed &&
+                  TideDriftSourceModel.IsInsideNetCaptureWindow(encounterTravel01)
+                    ? Mathf.SmoothStep(0f, 1f, primaryCaptureProgress01)
                     : 0f;
             int pieceMotionIndex = isExtraSaltWood ? 0 : physicalPieceIndex;
             float freeDrift01 = 1f - settleIntoMesh01;
@@ -15580,14 +15639,20 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             // wake now read the exact wave that is visibly beneath their final X.
             x += GetHarvestDriftSurge(pieceKind, time, pieceMotionIndex) * freeDrift01;
             TideOceanSample carryOcean = GetOceanSample(x);
-            float surfaceY = carryOcean.SurfaceY +
-                (waterRipple ? -0.012f : GetHarvestSurfaceOffset(pieceKind));
+            TideDriftMaterial driftMaterial = ToDriftMaterial(pieceKind);
+            TideNetEncounterModel.MaterialProfile driftProfile = TideNetEncounterModel.GetProfile(
+                driftMaterial,
+                physicalPieceIndex);
+            float freeObjectY = pieceKind == HarvestKind.Fish
+                ? carryOcean.SurfaceY - driftProfile.CenterDepthBelowSurfaceMeters
+                : carryOcean.SurfaceY + GetHarvestSurfaceOffset(pieceKind);
+            float surfaceY = waterRipple ? carryOcean.SurfaceY - 0.012f : freeObjectY;
             int targetPieceCount = initialDrift
                 ? Mathf.Clamp(objectCount, 1, 3)
-                : Mathf.Clamp(netCatchVisualPieceCount + 1, 1, 3);
+                : Mathf.Clamp(netNaturalPieceCursor + 1, 1, 3);
             int targetPieceIndex = initialDrift
                 ? Mathf.Clamp(objectIndex, 0, targetPieceCount - 1)
-                : targetPieceCount - 1;
+                : Mathf.Clamp(netNaturalPieceCursor, 0, targetPieceCount - 1);
             TideNetCatchPresentationModel.Pose targetPose =
                 TideNetCatchPresentationModel.GetInNetPose(
                     ToNetCatchMaterial(pieceKind),
@@ -15619,6 +15684,19 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 // 尾纹属于水面，不属于网内。实物压进网眼时尾纹在原水面淡出，
                 // 禁止跟着货物一起沉到网底形成一条悬空亮线。
                 alpha *= 1f - Mathf.SmoothStep(0f, 1f, settleIntoMesh01);
+                if (pieceKind == HarvestKind.Fish)
+                {
+                    // A submerged school does not tow the same bright surface wake as
+                    // timber. The shallow leader leaves only a faint disturbance and
+                    // deeper members are read from their bodies and the moving mesh.
+                    alpha *= Mathf.Lerp(
+                        0.28f,
+                        0.05f,
+                        Mathf.InverseLerp(
+                            0.35f,
+                            1.2f,
+                            driftProfile.CenterDepthBelowSurfaceMeters));
+                }
             }
             bool formalCarry = IsUsingFormalHarvestSprite(pieceKind);
             Color carryColor = GetIncomingTideCarryColor(pieceKind);
@@ -15642,7 +15720,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                     out TideV59FindSpec driftSpec))
                 {
                     Vector2 freeCenter = TideV59FindPresentationModel.GetSpriteCenterForWaterline(
-                        new Vector2(pathX, carryOcean.SurfaceY),
+                        new Vector2(
+                            pathX,
+                            pieceKind == HarvestKind.Fish ? freeObjectY : carryOcean.SurfaceY),
                         driftSpec,
                         rotation);
                     freeCenter.y += GetHarvestDriftBob(pieceKind, time, pieceMotionIndex);
@@ -15668,6 +15748,21 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     {
         float waterReach01 = Mathf.InverseLerp(lowWaterY + 0.18f, targetY + 0.28f, currentWaterY);
         return Mathf.Clamp01(waterReach01);
+    }
+
+    private static float RemapFollowupVisibleTravel01(float sourceTravel01)
+    {
+        if (sourceTravel01 <= TideDriftSourceModel.NetIntersectionTravel01)
+        {
+            return Mathf.InverseLerp(
+                TideDriftSourceModel.FollowupVisibleEntryTravel01,
+                TideDriftSourceModel.NetIntersectionTravel01,
+                sourceTravel01);
+        }
+
+        // Preserve the ordinary 1.00 -> 1.24 exit segment after the member reaches
+        // the net, so a miss visibly continues left instead of disappearing on contact.
+        return 1f + sourceTravel01 - TideDriftSourceModel.NetIntersectionTravel01;
     }
 
     private HarvestKind GetIncomingTideCarryKind()

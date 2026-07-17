@@ -95,6 +95,9 @@ public static class TideDriftSourceModel
     public const float NetIntersectionTravel01 = 1f;
     public const float NetCaptureExitTravel01 = 1.08f;
     public const float NearshoreExitTravel01 = 1.24f;
+    // A following member of the same batch becomes visible from the right edge here.
+    // It still has to travel through the ordinary capture window under real current.
+    public const float FollowupVisibleEntryTravel01 = 0.8f;
     // The outer wreck lane forks away from the net before reaching the nearshore main
     // line. An open boom therefore enters the short-sailing water shortly after the
     // 0.72 fork decision; it must not be forced through the net's 0.94-1.08 window.

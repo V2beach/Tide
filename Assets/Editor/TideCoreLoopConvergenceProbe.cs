@@ -123,11 +123,19 @@ public static class TideCoreLoopConvergenceProbe
     private static string ProbeNetEncounter()
     {
         const float headY = 1f;
-        const float surfaceY = 1f;
+        const float surfaceY = 1.2f;
         float shallowBottomY = headY - 0.34f;
-        float deepBottomY = headY - 1.2f;
-        TideNetEncounterModel.MaterialProfile fish = TideNetEncounterModel.GetProfile(
-            TideDriftMaterial.Fish);
+        float middleBottomY = headY - 0.86f;
+        float deepBottomY = headY - 1.38f;
+        TideNetEncounterModel.MaterialProfile leadFish = TideNetEncounterModel.GetProfile(
+            TideDriftMaterial.Fish,
+            0);
+        TideNetEncounterModel.MaterialProfile middleFish = TideNetEncounterModel.GetProfile(
+            TideDriftMaterial.Fish,
+            1);
+        TideNetEncounterModel.MaterialProfile deepFish = TideNetEncounterModel.GetProfile(
+            TideDriftMaterial.Fish,
+            2);
 
         TideNetEncounterModel.Step noArrivalPreload = TideNetEncounterModel.Advance(
             0f, 8f, 0.4f, 0.4f, headY, deepBottomY, surfaceY, 1f, TideDriftMaterial.Fish);
@@ -136,12 +144,39 @@ public static class TideCoreLoopConvergenceProbe
 
         TideNetEncounterModel.Step shallow = TideNetEncounterModel.Advance(
             0f, 1.2f, 0.95f, 1.02f, headY, shallowBottomY, surfaceY, 1f, TideDriftMaterial.Fish);
-        TideNetEncounterModel.Step deep = TideNetEncounterModel.Advance(
-            0f, 1.2f, 0.95f, 1.02f, headY, deepBottomY, surfaceY, 1f, TideDriftMaterial.Fish);
-        Require(shallow.MeshCoverage01 < fish.MinimumCoverage01 && !shallow.Captured,
-            "浅网没有从网底漏过低走鱼群，网深失去物理意义");
-        Require(deep.MeshCoverage01 > 0.99f && deep.Captured,
-            "深网完整覆盖鱼群后仍不能在同一次可见相遇中挂稳");
+        TideNetEncounterModel.Step shallowMissesMiddle = TideNetEncounterModel.Advance(
+            0f, 2f, 0.95f, 1.02f, headY, shallowBottomY, surfaceY, 1f,
+            TideDriftMaterial.Fish, 0f, 1);
+        TideNetEncounterModel.Step middleCatchesMiddle = TideNetEncounterModel.Advance(
+            0f, 2f, 0.95f, 1.02f, headY, middleBottomY, surfaceY, 1f,
+            TideDriftMaterial.Fish, 0f, 1);
+        TideNetEncounterModel.Step middleMissesDeep = TideNetEncounterModel.Advance(
+            0f, 1.4f, 0.95f, 1.02f, headY, middleBottomY, surfaceY, 1f,
+            TideDriftMaterial.Fish, 0f, 2);
+        TideNetEncounterModel.Step deepCatchesDeep = TideNetEncounterModel.Advance(
+            0f, 1.4f, 0.95f, 1.02f, headY, deepBottomY, surfaceY, 1f,
+            TideDriftMaterial.Fish, 0f, 2);
+        Require(shallow.MeshCoverage01 > leadFish.MinimumCoverage01 && shallow.Captured,
+            "浅网没有留下同一鱼群的可见保底，浅档成为纯错误答案");
+        Require(!shallowMissesMiddle.Captured && middleCatchesMiddle.Captured,
+            "中层鱼没有让浅网与中网形成真实覆盖差异");
+        Require(!middleMissesDeep.Captured && deepCatchesDeep.Captured,
+            "深层鱼没有让中网与深网形成真实覆盖差异");
+        Require(TideNetEncounterModel.GetNaturalPieceCount(TideDriftMaterial.Fish) == 3 &&
+            TideNetEncounterModel.GetNaturalPieceCount(TideDriftMaterial.SaltWood) == 1 &&
+            TideNetEncounterModel.GetNaturalPieceCount(TideDriftMaterial.ChartParcel) == 1,
+            "单根木料或单个纸包仍会按等待时间复制成多件奖励");
+        TideNetCatchPresentationModel.Pose leadPose = TideNetCatchPresentationModel.GetInNetPose(
+            TideNetCatchMaterial.Fish, 0, 1);
+        TideNetCatchPresentationModel.Pose middlePose = TideNetCatchPresentationModel.GetInNetPose(
+            TideNetCatchMaterial.Fish, 1, 2);
+        TideNetCatchPresentationModel.Pose deepPose = TideNetCatchPresentationModel.GetInNetPose(
+            TideNetCatchMaterial.Fish, 2, 3);
+        Require(leadFish.CenterDepthBelowSurfaceMeters < middleFish.CenterDepthBelowSurfaceMeters &&
+            middleFish.CenterDepthBelowSurfaceMeters < deepFish.CenterDepthBelowSurfaceMeters &&
+            leadPose.AnchorTopLeft01.y < middlePose.AnchorTopLeft01.y &&
+            middlePose.AnchorTopLeft01.y < deepPose.AnchorTopLeft01.y,
+            "鱼群物理水层与网内可见锚点次序不一致");
 
         TideNetEncounterModel.Step overtoppedParcel = TideNetEncounterModel.Advance(
             0f, 1.2f, 0.95f, 1.02f, headY, deepBottomY, headY + 0.28f, 1f,
@@ -170,7 +205,9 @@ public static class TideCoreLoopConvergenceProbe
         float lowFrameOverlap = TideNetEncounterModel.EvaluateWindowOverlap01(0.82f, 1.2f);
         Require(lowFrameOverlap > 0.3f && lowFrameOverlap < 0.4f,
             "低帧率一步跨过网口时没有积分真实线段重叠");
-        return $"网遭遇=不预充/鱼覆盖{shallow.MeshCoverage01:F2}->{deep.MeshCoverage01:F2}/纸包越顶/盐木导压{freeSaltWood.MeshCoverage01:F2}->{guidedSaltWood.MeshCoverage01:F2}/擦过清零/跨帧{lowFrameOverlap:F2}";
+        return $"网遭遇=不预充/鱼层浅中深={shallow.MeshCoverage01:F2},{middleCatchesMiddle.MeshCoverage01:F2},{deepCatchesDeep.MeshCoverage01:F2}/" +
+            $"浅漏中{shallowMissesMiddle.MeshCoverage01:F2}/中漏深{middleMissesDeep.MeshCoverage01:F2}/" +
+            $"纸包越顶/盐木导压{freeSaltWood.MeshCoverage01:F2}->{guidedSaltWood.MeshCoverage01:F2}/单件不复制/擦过清零/跨帧{lowFrameOverlap:F2}";
     }
 
     private static string ProbeWrackDeposit()

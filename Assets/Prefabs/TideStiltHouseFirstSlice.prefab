@@ -75,7 +75,6 @@ MonoBehaviour:
   netRigHoldSeconds: 0.8
   netLoweringSeconds: 1.35
   netHaulSeconds: 3.4
-  netPostCatchFullLoadSeconds: 24
   liveNetDepthAdjustSpeed: 0.22
   tidePrepHoldSeconds: 1.15
   contextDistance: 0.72
