@@ -133,6 +133,8 @@ Test-Gate ($editorDiagnostics.Contains("RunEditorStormManifestOwnershipProbe") -
     $editorDiagnostics.Contains("RunEditorStormRestIntegrityProbe")) "storm cargo diagnostics stay editor-only"
 Test-Gate (-not $controller.Contains("RunEditor") -and
     -not $controller.Contains("GetEditor")) "runtime controller contains no editor probe entry points"
+Test-Gate ($controller.Contains("private static Vector2 GetBoatPassengerVisualPivot") -and
+    -not $editorDiagnostics.Contains("private static Vector2 GetBoatPassengerVisualPivot")) "runtime boat passenger geometry stays available outside UNITY_EDITOR"
 Test-Gate ($controller.Contains("KeyCode.F3")) "debug HUD remains bound to F3"
 Test-Gate ($controller.Contains("forecastTideNotches.UpdatePresentation")) "forecast is projected onto physical stilt notches"
 Test-Gate ($controller.Contains("TideForecastSnapshotModel.Capture")) "forecast observations are immutable astronomical-cycle snapshots"

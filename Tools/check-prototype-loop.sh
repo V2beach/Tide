@@ -108,6 +108,8 @@ gate grep -q '#if UNITY_EDITOR' "$editor_diagnostics"
 gate grep -q 'public partial class TideStiltHouseFirstSliceController' "$editor_diagnostics"
 if grep -q SetEditorNetRigHoldPreviewPose "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 if grep -qE 'RunEditor|GetEditor' "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
+gate grep -q 'private static Vector2 GetBoatPassengerVisualPivot' "$controller"
+if grep -q 'private static Vector2 GetBoatPassengerVisualPivot' "$editor_diagnostics"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
 gate grep -q ProbeForecastSnapshot "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeWreckDismantle "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeRepairWorkSession "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"

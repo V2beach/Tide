@@ -19331,6 +19331,20 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         return true;
     }
 
+    private static Vector2 GetBoatPassengerVisualPivot(Vector2 seatPosition, float boatRotationZ)
+    {
+        // SeatTopLeft is the physical seat pin. V32/V37's custom sprite pivot is lower
+        // than the hip, so the correction rotates with the hull and preserves contact.
+        // This is runtime geometry: player builds use it on every sailing frame.
+        float radians = boatRotationZ * Mathf.Deg2Rad;
+        Vector2 lift = new Vector2(
+            Mathf.Cos(radians) * BoatPassengerSeatForward -
+                Mathf.Sin(radians) * BoatPassengerSeatLift,
+            Mathf.Sin(radians) * BoatPassengerSeatForward +
+                Mathf.Cos(radians) * BoatPassengerSeatLift);
+        return seatPosition + lift;
+    }
+
     private void ApplyV39PassengerPresentation(
         Vector2 waterlinePoint,
         Vector2 boatRootWorldPosition,

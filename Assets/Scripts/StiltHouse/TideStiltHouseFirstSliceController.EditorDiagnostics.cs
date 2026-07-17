@@ -5860,20 +5860,6 @@ public partial class TideStiltHouseFirstSliceController
         return horizontallyInside && verticallySeated;
     }
 
-    private static Vector2 GetBoatPassengerVisualPivot(Vector2 seatPosition, float boatRotationZ)
-    {
-        // SeatTopLeft is the physical seat pin. V32/V37's custom sprite pivot is lower
-        // than the hip, so placing that pivot directly on the pin buries the ribcage in
-        // the gunwale. Rotate the correction with the hull to keep contact while bobbing.
-        float radians = boatRotationZ * Mathf.Deg2Rad;
-        Vector2 lift = new Vector2(
-            Mathf.Cos(radians) * BoatPassengerSeatForward -
-                Mathf.Sin(radians) * BoatPassengerSeatLift,
-            Mathf.Sin(radians) * BoatPassengerSeatForward +
-                Mathf.Cos(radians) * BoatPassengerSeatLift);
-        return seatPosition + lift;
-    }
-
     private static bool IsV37ActionFrame(Sprite current, Sprite[] frames)
     {
         if (current == null || frames == null)
