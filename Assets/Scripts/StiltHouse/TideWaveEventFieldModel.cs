@@ -1,8 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// A wave event is a short-lived visible crest or breaker layered over the continuous
-/// ocean body. It never owns mean water level, collision, buoyancy or tide timing.
+/// A wave event is a short-lived local crest or breaker layered over the continuous
+/// ocean body. It never owns mean water level or tide timing; the authoritative ocean
+/// projects this same event into local buoyancy, slope and push.
 /// </summary>
 public enum TideWaveEventKind
 {
@@ -12,7 +13,7 @@ public enum TideWaveEventKind
 }
 
 /// <summary>
-/// Deterministic presentation data for one world-space wave event.
+/// Deterministic world-space source data for one visible and physical wave event.
 /// </summary>
 public readonly struct TideWaveEventSample
 {
@@ -59,19 +60,46 @@ public readonly struct TideWaveEventSample
 }
 
 /// <summary>
+/// 同一可见浪组在一个世界坐标上的局部物理投影。它只提供相对连续海面的
+/// 增量，不拥有平均潮位；住所、船、人和漂物可把它叠到同一个基础海况上。
+/// </summary>
+public readonly struct TideWaveEventPhysicalSample
+{
+    public TideWaveEventPhysicalSample(
+        float heightOffsetMeters,
+        float slopeOffset,
+        float horizontalVelocityOffset,
+        float agitation01,
+        float strongestVisibleWeight01)
+    {
+        HeightOffsetMeters = heightOffsetMeters;
+        SlopeOffset = slopeOffset;
+        HorizontalVelocityOffset = horizontalVelocityOffset;
+        Agitation01 = agitation01;
+        StrongestVisibleWeight01 = strongestVisibleWeight01;
+    }
+
+    public float HeightOffsetMeters { get; }
+    public float SlopeOffset { get; }
+    public float HorizontalVelocityOffset { get; }
+    public float Agitation01 { get; }
+    public float StrongestVisibleWeight01 { get; }
+}
+
+/// <summary>
 /// World-space field for intermittent visible wave events.
 ///
-/// The continuous sea and all physical objects still sample <see cref="TideOceanFieldModel"/>.
-/// This model only decides where a transparent V43 crest forms and fades. Events are
-/// keyed by world cell and cycle rather than renderer index or camera position, so a
-/// camera pan cannot reroll the water. Time is raw real seconds; the compressed game
-/// day and macro tide clocks are deliberately not inputs.
+/// Events are keyed by world cell and cycle rather than renderer index or camera
+/// position, so a camera pan cannot reroll the water. The same event drives the V43
+/// crest and <see cref="SamplePhysicalInfluence"/>; time is raw real seconds, while the
+/// compressed game day and macro tide clocks are deliberately not inputs.
 /// </summary>
 public static class TideWaveEventFieldModel
 {
     public const float CellWidthMeters = 3.2f;
     public const float MinimumCycleSeconds = 8.2f;
     public const float MaximumCycleSeconds = 14.8f;
+    public const float FullTravelResponseSpeedMetersPerSecond = 0.65f;
 
     public static TideWaveEventSample Sample(
         int slotIndex,
@@ -80,8 +108,7 @@ public static class TideWaveEventFieldModel
         float worldTimeSeconds,
         float travelDirection,
         float wind01,
-        float storm01,
-        float agitation01)
+        float storm01)
     {
         int safeSlotCount = Mathf.Max(1, slotCount);
         int clampedSlot = Mathf.Clamp(slotIndex, 0, safeSlotCount - 1);
@@ -113,12 +140,13 @@ public static class TideWaveEventFieldModel
 
         float clampedWind = Mathf.Clamp01(wind01);
         float clampedStorm = Mathf.Clamp01(storm01);
-        float clampedAgitation = Mathf.Clamp01(agitation01);
+        // 事件身份只能取决于全局海况和世界时空。若把“已经叠加局部事件后的
+        // 扰动”再喂回来，同一个浪会因为采样位置不同而改变是否存在，造成
+        // 视觉与物理互相放大的自反馈。
         float seaEnergy01 = Mathf.Clamp01(
-            0.12f +
-            clampedWind * 0.42f +
-            clampedStorm * 0.76f +
-            clampedAgitation * 0.24f);
+            0.14f +
+            clampedWind * 0.5f +
+            clampedStorm * 0.84f);
         float eventThreshold01 = Mathf.Lerp(
             0.08f,
             0.84f,
@@ -138,12 +166,10 @@ public static class TideWaveEventFieldModel
             0.34f,
             1.08f,
             Hash01(cellIndex, cycleIndex, 227));
-        float signedDirection = Mathf.Abs(travelDirection) <= 0.01f
-            ? 1f
-            : Mathf.Sign(travelDirection);
+        float travelFactor = EvaluateTravelFactor(travelDirection);
         float easedTravel01 = Mathf.SmoothStep(0f, 1f, life01);
         float worldX = cellCenterX + formationOffsetX +
-            signedDirection * (easedTravel01 - 0.5f) * driftDistance;
+            travelFactor * (easedTravel01 - 0.5f) * driftDistance;
 
         float shapeVariation01 = Hash01(cellIndex, cycleIndex, 269);
         float widthScale = Mathf.Lerp(0.78f, 1.18f, shapeVariation01) *
@@ -171,17 +197,93 @@ public static class TideWaveEventFieldModel
             kind);
     }
 
+    /// <summary>
+    /// 把当前及相邻世界 cell 的可见浪组投影到任意世界坐标。事件仍由
+    /// <see cref="Sample"/> 唯一生成，因此镜头平移不会重掷，物理也不会
+    /// 在没有白浪的另一处凭空增加一股“隐藏破浪”。
+    /// </summary>
+    public static TideWaveEventPhysicalSample SamplePhysicalInfluence(
+        float worldX,
+        float worldTimeSeconds,
+        float travelDirection,
+        float wind01,
+        float storm01)
+    {
+        int centerCell = Mathf.FloorToInt(worldX / CellWidthMeters);
+        float heightOffset = 0f;
+        float slopeOffset = 0f;
+        float horizontalVelocityOffset = 0f;
+        float combinedAgitation = 0f;
+        float strongestVisibleWeight = 0f;
+
+        // 事件最多在本 cell 内漂移约 1.34m，物理半宽不超过约 1.45m；
+        // 因此只需当前 cell 与左右邻居，不随对象数量或镜头宽度增长。
+        for (int cellOffset = -1; cellOffset <= 1; cellOffset++)
+        {
+            int cellIndex = centerCell + cellOffset;
+            float cellCenterX = (cellIndex + 0.5f) * CellWidthMeters;
+            TideWaveEventSample waveEvent = Sample(
+                0,
+                1,
+                cellCenterX,
+                worldTimeSeconds,
+                travelDirection,
+                wind01,
+                storm01);
+            if (!waveEvent.Visible || waveEvent.Opacity01 <= 0f)
+            {
+                continue;
+            }
+
+            float halfWidthMeters = CellWidthMeters * 0.34f * waveEvent.WidthScale;
+            float normalizedOffset = (worldX - waveEvent.WorldX) /
+                Mathf.Max(0.1f, halfWidthMeters);
+            float absoluteOffset = Mathf.Abs(normalizedOffset);
+            if (absoluteOffset >= 1f)
+            {
+                continue;
+            }
+
+            // (1-u²)² 在边缘高度和一阶导数都归零，不会出现看不见的台阶力。
+            float oneMinusSquare = 1f - normalizedOffset * normalizedOffset;
+            float spatialProfile = oneMinusSquare * oneMinusSquare;
+            float spatialDerivative = -4f * normalizedOffset * oneMinusSquare /
+                Mathf.Max(0.1f, halfWidthMeters);
+            float visibleWeight = waveEvent.Opacity01 * spatialProfile;
+            float heightAmplitude = GetPhysicalHeightAmplitudeMeters(waveEvent.Kind) *
+                waveEvent.HeightScale * waveEvent.Opacity01;
+            float velocityAmplitude = GetPhysicalVelocityAmplitude(waveEvent.Kind) *
+                waveEvent.Opacity01;
+            float agitationAmplitude = GetPhysicalAgitation(waveEvent.Kind) * visibleWeight;
+            float travelFactor = EvaluateTravelFactor(travelDirection);
+
+            heightOffset += heightAmplitude * spatialProfile;
+            slopeOffset += heightAmplitude * spatialDerivative;
+            horizontalVelocityOffset += travelFactor * velocityAmplitude * spatialProfile;
+            combinedAgitation = 1f -
+                (1f - combinedAgitation) * (1f - Mathf.Clamp01(agitationAmplitude));
+            strongestVisibleWeight = Mathf.Max(strongestVisibleWeight, visibleWeight);
+        }
+
+        return new TideWaveEventPhysicalSample(
+            heightOffset,
+            slopeOffset,
+            horizontalVelocityOffset,
+            Mathf.Clamp01(combinedAgitation),
+            Mathf.Clamp01(strongestVisibleWeight));
+    }
+
     public static bool ProbeNaturalCadence(out string reason)
     {
         const int slotCount = 5;
-        TideWaveEventSample deterministicA = Sample(2, slotCount, 0.2f, 37.25f, 1f, 0.4f, 0.2f, 0.32f);
-        TideWaveEventSample deterministicB = Sample(2, slotCount, 0.2f, 37.25f, 1f, 0.4f, 0.2f, 0.32f);
+        TideWaveEventSample deterministicA = Sample(2, slotCount, 0.2f, 37.25f, 1f, 0.4f, 0.2f);
+        TideWaveEventSample deterministicB = Sample(2, slotCount, 0.2f, 37.25f, 1f, 0.4f, 0.2f);
         bool deterministic = SameEvent(deterministicA, deterministicB);
 
         // Cell zero is slot 2 while the camera is in cell zero, then slot 1 after the
         // camera crosses into cell one. Its event must remain bit-for-bit identical.
-        TideWaveEventSample beforePan = Sample(2, slotCount, 0.2f, 37.25f, 1f, 0.4f, 0.2f, 0.32f);
-        TideWaveEventSample afterPan = Sample(1, slotCount, 3.3f, 37.25f, 1f, 0.4f, 0.2f, 0.32f);
+        TideWaveEventSample beforePan = Sample(2, slotCount, 0.2f, 37.25f, 1f, 0.4f, 0.2f);
+        TideWaveEventSample afterPan = Sample(1, slotCount, 3.3f, 37.25f, 1f, 0.4f, 0.2f);
         bool cameraStable = beforePan.CellIndex == 0 && afterPan.CellIndex == 0 &&
             SameEvent(beforePan, afterPan);
 
@@ -201,8 +303,8 @@ public static class TideWaveEventFieldModel
             float time = sampleIndex * timeStep;
             for (int slot = 0; slot < slotCount; slot++)
             {
-                TideWaveEventSample calm = Sample(slot, slotCount, 0.2f, time, 1f, 0.08f, 0.03f, 0.1f);
-                TideWaveEventSample storm = Sample(slot, slotCount, 0.2f, time, 1f, 0.9f, 0.92f, 0.88f);
+                TideWaveEventSample calm = Sample(slot, slotCount, 0.2f, time, 1f, 0.08f, 0.03f);
+                TideWaveEventSample storm = Sample(slot, slotCount, 0.2f, time, 1f, 0.9f, 0.92f);
                 calmWeight += calm.Opacity01;
                 stormWeight += storm.Opacity01;
                 minimumPeriod = Mathf.Min(minimumPeriod, calm.CycleDurationSeconds);
@@ -261,6 +363,43 @@ public static class TideWaveEventFieldModel
         }
 
         return TideWaveEventKind.LongSwell;
+    }
+
+    private static float GetPhysicalHeightAmplitudeMeters(TideWaveEventKind kind)
+    {
+        if (kind == TideWaveEventKind.StormBreaker)
+        {
+            return 0.14f;
+        }
+        return kind == TideWaveEventKind.WindWave ? 0.065f : 0.026f;
+    }
+
+    private static float GetPhysicalVelocityAmplitude(TideWaveEventKind kind)
+    {
+        if (kind == TideWaveEventKind.StormBreaker)
+        {
+            return 0.58f;
+        }
+        return kind == TideWaveEventKind.WindWave ? 0.24f : 0.08f;
+    }
+
+    private static float GetPhysicalAgitation(TideWaveEventKind kind)
+    {
+        if (kind == TideWaveEventKind.StormBreaker)
+        {
+            return 1f;
+        }
+        return kind == TideWaveEventKind.WindWave ? 0.58f : 0.24f;
+    }
+
+    private static float EvaluateTravelFactor(float travelSpeedMetersPerSecond)
+    {
+        // 流速过零时必须连续经过静水，不能让同一浪组从左侧瞬间镜像到右侧，
+        // 也不能把满额推力从 -1 一帧翻成 +1。
+        return Mathf.Clamp(
+            travelSpeedMetersPerSecond / FullTravelResponseSpeedMetersPerSecond,
+            -1f,
+            1f);
     }
 
     private static bool SameEvent(TideWaveEventSample a, TideWaveEventSample b)

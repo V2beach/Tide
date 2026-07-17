@@ -40,6 +40,7 @@ $required = @(
     "Assets/Scripts/StiltHouse/TideMooringRopeModel.cs",
     "Assets/Scripts/StiltHouse/TideMooringRopeController.cs",
     "Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs",
+    "Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs",
     "Assets/Scripts/StiltHouse/TideSailingReefModel.cs",
     "Assets/Scripts/StiltHouse/TideSailingReefController.cs",
     "Assets/Scripts/StiltHouse/TideContinuousSalvageModel.cs",
@@ -68,6 +69,8 @@ $editorDiagnostics = Read-ProjectText "Assets/Scripts/StiltHouse/TideStiltHouseF
 $repairRecipe = Read-ProjectText "Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs"
 $repairWork = Read-ProjectText "Assets/Scripts/StiltHouse/TideRepairWorkController.cs"
 $barrenIsland = Read-ProjectText "Assets/Scripts/StiltHouse/TideBarrenIslandController.cs"
+$waveEvents = Read-ProjectText "Assets/Scripts/StiltHouse/TideWaveEventFieldModel.cs"
+$authoritativeOcean = Read-ProjectText "Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs"
 Test-Gate ($controller.Contains("TickBarrenIslandNaturalState")) "island natural state is integrated"
 Test-Gate ($controller.Contains("TickDismantleNearestPart") -and
     $controller.Contains("wreckOcean.Agitation01")) "wreck dismantling consumes continuous input and the authoritative ocean sample"
@@ -94,6 +97,22 @@ Test-Gate ($barrenIsland.Contains("CisternWaterSurface") -and
 Test-Gate ($controller.Contains("HandleMooringRopeInput")) "physical mooring input is integrated"
 Test-Gate ($controller.Contains("mooringRope.AdvanceEnvironment")) "mooring runtime orchestration is extracted"
 Test-Gate ($controller.Contains("TideSailboatDynamicsModel.Advance")) "sailing uses the dynamics model"
+Test-Gate ($controller.Contains("TideAuthoritativeOceanModel.Sample") -and
+    -not $controller.Contains("TideOceanFieldModel.Sample")) "all runtime ocean consumers use the visible-and-physical composition"
+Test-Gate ($controller.Contains("GetOceanEventTimeSeconds") -and
+    $controller.Contains("worldElapsedRealSeconds") -and
+    $controller.Contains("? Mathf.Max(0f, worldElapsedRealSeconds)")) "ocean event time has an explicit real-second runtime authority"
+Test-Gate ($authoritativeOcean.Contains("TideOceanFieldModel.Sample") -and
+    $authoritativeOcean.Contains("TideWaveEventFieldModel.SamplePhysicalInfluence")) "authoritative ocean combines continuous sea and local visible waves"
+Test-Gate ($waveEvents.Contains("TideWaveEventPhysicalSample") -and
+    $waveEvents.Contains("SamplePhysicalInfluence")) "visible wave events expose deterministic local physics"
+Test-Gate (-not $waveEvents.Contains("clampedAgitation")) "local wave identity does not feed its own composed agitation back into generation"
+Test-Gate ($waveEvents.Contains("EvaluateTravelFactor") -and
+    $authoritativeOcean.Contains("slackWaterContinuous")) "local wave direction crosses slack water continuously"
+Test-Gate ($controller.Contains("GetSailingLocalWaterVelocity(ocean)") -and
+    $controller.Contains("GetNaturalCurrentSpeed() + mooredOcean.HorizontalVelocity")) "boat and mooring consume local visible-wave push"
+Test-Gate ($controller.Contains("LocalWaveRendererCount = 9") -and
+    $controller.Contains("LocalWaveRendererCount,")) "local wave renderer coverage includes wide-screen edge cells"
 Test-Gate ($controller.Contains("TideSailboatDynamicsState sailingDynamics") -and
     $controller.Contains("get => sailingDynamics.HorizontalVelocity") -and
     $controller.Contains("get => sailingDynamics.HeaveY") -and
@@ -125,6 +144,7 @@ Test-Gate ($coreProbe.Contains("ProbeForecastSnapshot")) "core gate covers forec
 Test-Gate ($coreProbe.Contains("ProbeWreckDismantle")) "core gate covers persistent work, footing, wave load, and part-specific durations"
 Test-Gate ($coreProbe.Contains("ProbeRepairWorkSession")) "core gate covers repair pause, retarget, and commit semantics"
 Test-Gate ($coreProbe.Contains("ProbeSailingDynamics")) "core gate covers the authoritative sailing dynamics state"
+Test-Gate ($coreProbe.Contains("ProbeVisibleWavePhysicalCoupling")) "core gate couples visible breakers to local ocean physics"
 Test-Gate ($coreProbe.Contains("ProbeNetEncounter")) "core gate rejects preload, overtopping, stale contact, and skipped windows"
 Test-Gate ($coreProbe.Contains("ProbeWrackDeposit")) "core gate covers ebb deposit and refloat lifecycle"
 $visualProbe = Read-ProjectText "Assets/Editor/TideVisualSceneConvergenceProbe.cs"
@@ -134,6 +154,7 @@ Test-Gate ($visualProbe.Contains("RunEditorFirstDayAutonomyProbe")) "visual gate
 Test-Gate ($visualProbe.Contains("RunEditorWreckDismantleTideWindowProbe")) "visual gate covers physical wreck dismantling in a tide window"
 Test-Gate ($visualProbe.Contains("RunEditorArrivalSalvagePayoffProbe")) "visual gate covers six immediate arrival-salvage payoffs"
 Test-Gate ($visualProbe.Contains("RunEditorMixedSemidiurnalOpportunityProbe")) "visual gate covers unequal adjacent-tide opportunities"
+Test-Gate ($visualProbe.Contains("RunEditorLocalWaveEventFieldProbe")) "visual gate couples visible local waves to scene physics"
 Test-Gate ($visualProbe.Contains("TideStormRescueTradeoffConvergenceProbe.Run")) "visual gate covers storm rescue tradeoff"
 Test-Gate ($visualProbe.Contains("RunEditorStormManifestOwnershipProbe")) "visual gate covers storm cargo conservation"
 Test-Gate ($visualProbe.Contains("RunEditorSailingTideContinuityProbe")) "visual gate covers authoritative sailing tide"

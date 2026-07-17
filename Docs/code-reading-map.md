@@ -5,8 +5,9 @@
 1. `Assets/Scenes/Tide_StiltHouse_FirstSlice.unity`
 2. `Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.cs`
 3. `Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceController.EditorDiagnostics.cs`（只在追预览姿态或自动 Scene 探针时读；全部 `RunEditor*`/`GetEditor*` 入口都在这个 `UNITY_EDITOR` partial，玩家运行主文件不得再承载探针）
-4. `Assets/Scripts/StiltHouse/TideOceanFieldModel.cs`
-5. 本页下面列出的独立纯模型
+4. `Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs`
+5. `Assets/Scripts/StiltHouse/TideOceanFieldModel.cs`、`TideWaveEventFieldModel.cs`
+6. 本页下面列出的独立纯模型
 
 `TideStiltHouseFirstSliceController` 仍然过大，但约一万行编辑器预览/探针已隔离到 `UNITY_EDITOR` partial，不进入玩家构建。阅读运行逻辑时不要打开诊断 partial，也不要从第一行顺序看到底；先按“输入 -> 状态 -> 表现”追一条完整链。
 
@@ -42,6 +43,9 @@
 
 ### 短航
 
+- 权威海况入口：`TideAuthoritativeOceanModel`；把 `TideOceanFieldModel` 的连续浪谱与 `TideWaveEventFieldModel` 的局部浪组合成为同一个 `TideOceanSample`。住所、船、人物、漂物、重残骸和暴潮破口不得直接绕过它读取基础海况
+- 局部浪组：由世界 cell、真实经过秒、风和暴潮压力唯一确定，周期约 `8.2-14.8s`；V43 可见浪脊与同位置的水面抬升、坡度、水平推力和扰动共用事件身份。它不读取压缩昼夜，也不把自身叠加后的扰动再反馈到事件生成；平潮过零连续减速而非瞬间翻向
+- 船体动力与系泊：均把权威海况中的局部水平速度叠到天文潮流；暴潮破口也读取相同事件时钟和有符号风。9 个浪脊槽只复用既有 V43 帧，用于覆盖宽屏边缘仍可能影响物理的邻格浪
 - 船体动力：`TideSailboatDynamicsModel`
 - 航行运动状态：主控制器中的单一 `TideSailboatDynamicsState` 同时拥有水平速度、浮沉、俯仰、帆高、压舱和舱水；旧速度/水位/帆高镜像字段已退役，碰礁、舀水、打捞和表现都通过同一状态读写
 - 浅礁净空：`TideSailingReefModel`；固定礁顶、瞬时物理水位、舱水、拖载和高速浅水下沉共同决定吃水、搁浅与撞击
@@ -92,7 +96,7 @@
 ## 既有核心
 
 - 天文水位/潮流：`TideMixedSemidiurnalModel`、`TideAstronomicalCurrentModel`
-- 连续海况：`TideOceanFieldModel`、`TideWaveEventFieldModel`
+- 连续海况：运行消费者只读 `TideAuthoritativeOceanModel`；其内部合成 `TideOceanFieldModel` 连续浪谱与 `TideWaveEventFieldModel` 可见/物理同源的局部浪组
 - 天气：`TideContinuousWeatherModel`
 - 潮源/实物：`TideDriftSourceModel` 使用连续天文潮次生成不可变批次；不能再使用睡眠/故事轮次 `tideRound`。`TideWrackDepositModel` 与 `TideWrackLineController` 让未捕获且仍在近岸的同一批次在退潮后贴岩搁浅、再浸卷走，拾取不重新开奖；单件外观继续复用 `TideV59FindPresentationModel` 与 V59 Catalog。
 - 网具：`TideNetForecastModel`、`TideNetLoadLedgerModel`、`TideNetHaulModel`、`TideV54NetPresentationModel`

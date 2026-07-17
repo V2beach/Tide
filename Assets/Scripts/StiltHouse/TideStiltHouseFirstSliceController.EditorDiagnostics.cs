@@ -76,6 +76,7 @@ public partial class TideStiltHouseFirstSliceController
                 sampleWeatherClock,
                 dayLengthSeconds,
                 stormFrontArrivalDays);
+            float signedStormWind = GetStormAdjustedWindSpeed(0f, pressure01);
             float waterY = EvaluateNaturalWaterY(sampleTideClock, sampleWeatherClock);
             float localDepth = EvaluateStormRescueLocalWaterDepth(
                 waterY,
@@ -87,6 +88,8 @@ public partial class TideStiltHouseFirstSliceController
                 CurrentSpeedMetersPerSecond = EvaluateStormRescueLocalCurrentSpeed(
                     sampleTideClock,
                     sampleWeatherClock,
+                    sampleWeatherClock,
+                    signedStormWind,
                     localDepth)
             };
         }
@@ -9779,6 +9782,9 @@ public partial class TideStiltHouseFirstSliceController
         tideClockSeconds = tideCycleSeconds * 0.18f;
         weatherClockSeconds = dayLengthSeconds * 0.43f;
         currentWaterY = EvaluateNaturalWaterY(tideClockSeconds);
+        // 先让连续镜头落到当前人物所在分屏，再以该世界中心寻找浪组。
+        // 否则探针会拿上一场景的旧相机中心预测这一帧的浪。
+        UpdateVisuals(0f);
         float shelterViewCenterX = GetActiveCameraCenterX();
         float shelterStorm01 = GetStormPressure01();
         float shelterWind01 = Mathf.Clamp01(
@@ -9789,11 +9795,10 @@ public partial class TideStiltHouseFirstSliceController
             shelterViewCenterX,
             shelterDirection,
             shelterWind01,
-            shelterStorm01,
-            shelterCenterOcean.Agitation01);
+            shelterStorm01);
         UpdateVisuals(shelterSampleTime);
 
-        bool shelterCrestsRegistered = true;
+        bool shelterCrestsRegistered = waveStrips.Count == LocalWaveRendererCount;
         float shelterMaxHeightError = 0f;
         float shelterMaxSlopeError = 0f;
         int expectedVisibleShelterCrests = 0;
@@ -9809,8 +9814,7 @@ public partial class TideStiltHouseFirstSliceController
                 shelterSampleTime,
                 shelterDirection,
                 shelterWind01,
-                shelterStorm01,
-                shelterCenterOcean.Agitation01);
+                shelterStorm01);
             bool shouldBeVisible = waveEvent.Visible;
             expectedVisibleShelterCrests += shouldBeVisible ? 1 : 0;
             if (!shouldBeVisible)
@@ -9853,6 +9857,7 @@ public partial class TideStiltHouseFirstSliceController
         EnterSailingScene();
         sailingBoatX = sailingHomeX + 8.4f;
         sailingBoatLaneY = sailingHomeY;
+        UpdateVisuals(0f);
         float cameraWorldX = GetSailingCameraWorldX();
         float sailingStorm01 = GetStormPressure01();
         float sailingWind01 = Mathf.Clamp01(
@@ -9863,8 +9868,7 @@ public partial class TideStiltHouseFirstSliceController
             cameraWorldX,
             sailingDirection,
             sailingWind01,
-            sailingStorm01,
-            sailingCenterOcean.Agitation01);
+            sailingStorm01);
         UpdateVisuals(sailingSampleTime);
 
         bool sailingCrestsRegistered = true;
@@ -9881,8 +9885,7 @@ public partial class TideStiltHouseFirstSliceController
                 sailingSampleTime,
                 sailingDirection,
                 sailingWind01,
-                sailingStorm01,
-                sailingCenterOcean.Agitation01);
+                sailingStorm01);
             bool blockedByVortex = IsVortexBlockingRoute() &&
                 Mathf.Abs(waveEvent.WorldX - routeVortexX) < 2.25f;
             bool shouldBeVisible = waveEvent.Visible && !blockedByVortex;
@@ -9939,7 +9942,7 @@ public partial class TideStiltHouseFirstSliceController
         shelterCrestsRegistered &= expectedVisibleShelterCrests > 0 &&
             actualVisibleShelterCrests == expectedVisibleShelterCrests;
         string evidence =
-            $"近岸浪脊={actualVisibleShelterCrests}/{expectedVisibleShelterCrests} 高差/坡差={shelterMaxHeightError:F3}m/{shelterMaxSlopeError:F2}°；" +
+            $"槽位={waveStrips.Count}/{LocalWaveRendererCount}；近岸浪脊={actualVisibleShelterCrests}/{expectedVisibleShelterCrests} 高差/坡差={shelterMaxHeightError:F3}m/{shelterMaxSlopeError:F2}°；" +
             $"远航浪脊={visibleSailingCrests}/{expectedVisibleSailingCrests} 合格={sailingCrestsRegistered} 高差={sailingMaxHeightError:F3}m；" +
             $"流向浪脊={visibleFlowCrests} 高差={flowMaxHeightError:F3}m";
         bool spectralVariation = TideOceanFieldModel.ProbeSpectralVariation(out string spectralReason);
@@ -9954,11 +9957,13 @@ public partial class TideStiltHouseFirstSliceController
     public string RunEditorLocalWaveEventFieldProbe()
     {
         bool pureModelPassed = TideWaveEventFieldModel.ProbeNaturalCadence(out string modelReason);
+        bool physicalCouplingPassed =
+            TideAuthoritativeOceanModel.ProbeVisibleWaveCoupling(out string physicalReason);
         string integrationReport = RunEditorOceanSurfaceReadabilityProbe();
         bool integrationPassed = integrationReport.StartsWith("PASS", StringComparison.Ordinal);
-        return pureModelPassed && integrationPassed
-            ? $"PASS：局部浪事件使用现实秒、世界分格和连续海况，未生成第二水面。{modelReason}；{integrationReport}"
-            : $"FAIL：局部浪事件的周期、镜头稳定性或海面接入不符合合同。{modelReason}；{integrationReport}";
+        return pureModelPassed && physicalCouplingPassed && integrationPassed
+            ? $"PASS：局部浪事件使用现实秒、世界分格和连续海况；同一可见浪组驱动局部浮力与推力，且未生成第二水面。{modelReason}；物理={physicalReason}；{integrationReport}"
+            : $"FAIL：局部浪事件的周期、镜头稳定性、局部物理或海面接入不符合合同。{modelReason}；物理={physicalReason}；{integrationReport}";
     }
 
     public string RunEditorSailingTideContinuityProbe()
@@ -10107,8 +10112,7 @@ public partial class TideStiltHouseFirstSliceController
         float viewCenterWorldX,
         float travelDirection,
         float wind01,
-        float storm01,
-        float agitation01)
+        float storm01)
     {
         for (int sampleIndex = 0; sampleIndex < 240; sampleIndex++)
         {
@@ -10122,8 +10126,7 @@ public partial class TideStiltHouseFirstSliceController
                     sampleTime,
                     travelDirection,
                     wind01,
-                    storm01,
-                    agitation01);
+                    storm01);
                 if (waveEvent.Visible)
                 {
                     return sampleTime;

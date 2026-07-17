@@ -12,6 +12,7 @@ using RepairChoice = TideRepairTarget;
 [DisallowMultipleComponent]
 public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 {
+    private const int LocalWaveRendererCount = 9;
     private const string FirstSliceResourceRoot = "StiltFirstSlice/";
     private const string FormalAiResourceRoot = "StiltFirstSliceAI/";
     // TideWaterBodyHDChromaV1 keeps transparent sky in the upper ~47% of its canvas.
@@ -532,6 +533,9 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     private float dayClockSeconds = 9.5f;
     private float weatherClockSeconds;
     private float worldElapsedRealSeconds;
+    // 运行时浪组严格读取真实经过秒；编辑器探针可显式指定同一秒点，避免
+    // 把压缩昼夜或 Unity 会话启动时间混进局部海浪相位。
+    private float oceanEventPreviewTimeSeconds;
     private float moonAgeDays = OpeningMoonAgeDays;
     private float tideStrength = 0.55f;
     private int tideRound;
@@ -1226,6 +1230,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         tideClockSeconds = tideCycleSeconds * OpeningTidePhase01;
         weatherClockSeconds = 0f;
         worldElapsedRealSeconds = 0f;
+        oceanEventPreviewTimeSeconds = 0f;
         currentWaterY = EvaluateNaturalWaterY(tideClockSeconds);
         tideCurrentlyRising = true;
         dayProgress01 = 0.4f;
@@ -2891,12 +2896,16 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         return EvaluateStormRescueLocalCurrentSpeed(
             tideClockSeconds,
             weatherClockSeconds,
+            GetOceanEventTimeSeconds(),
+            GetNaturalSailingWindSpeed(),
             GetStormRescueLocalWaterDepth());
     }
 
     private float EvaluateStormRescueLocalCurrentSpeed(
         float sampleTideClock,
         float sampleWeatherClock,
+        float sampleOceanEventClock,
+        float signedWindSpeed,
         float localWaterDepthMeters)
     {
         float pressure01 = TideContinuousWeatherModel.EvaluatePressure01(
@@ -2907,14 +2916,18 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             OpeningMoonAgeDays + sampleWeatherClock / Mathf.Max(30f, dayLengthSeconds),
             29.53f);
         float sampleTideStrength = CalculateTideStrength(sampleMoonAgeDays);
-        float wind01 = TideContinuousWeatherModel.EvaluateStormOnshoreWind01(pressure01);
-        TideOceanSample outsideSea = TideOceanFieldModel.Sample(
+        float wind01 = Mathf.Clamp01(
+            Mathf.Abs(signedWindSpeed) / Mathf.Max(0.01f, sailingWindMaxSpeed));
+        float signedWaveTravel = EvaluateNaturalCurrentSpeed(sampleTideClock) +
+            signedWindSpeed * 0.35f;
+        TideOceanSample outsideSea = TideAuthoritativeOceanModel.Sample(
             0f,
             houseAnchor.x,
-            sampleWeatherClock,
+            sampleOceanEventClock,
             sampleTideStrength,
             pressure01,
-            wind01);
+            wind01,
+            signedWaveTravel);
 
         // The astronomical current slows near high water, but a breached wall still
         // admits the orbital push and pull of each storm wave. The opening accelerates
@@ -4454,7 +4467,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
             sailInput * sailingTrimSpeed / 0.48f,
             ballastInput,
             GetNaturalSailingWindSpeed(),
-            GetNaturalCurrentSpeed(),
+            GetSailingLocalWaterVelocity(ocean),
             ocean.SurfaceY,
             ocean.Slope,
             ocean.Agitation01,
@@ -6814,13 +6827,36 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     {
         float wind01 = Mathf.Clamp01(Mathf.Abs(GetNaturalSailingWindSpeed()) /
             Mathf.Max(0.01f, sailingWindMaxSpeed));
-        return TideOceanFieldModel.Sample(
+        return TideAuthoritativeOceanModel.Sample(
             currentWaterY,
             worldX,
-            weatherClockSeconds,
+            GetOceanEventTimeSeconds(),
             tideStrength,
             GetStormPressure01(),
-            wind01);
+            wind01,
+            GetShelterWaveTravelSpeed());
+    }
+
+    private float GetSailingLocalWaterVelocity(TideOceanSample ocean)
+    {
+        return GetNaturalCurrentSpeed() + ocean.HorizontalVelocity;
+    }
+
+    private float GetShelterWaveTravelSpeed()
+    {
+        return GetNaturalCurrentSpeed() + GetNaturalSailingWindSpeed() * 0.35f;
+    }
+
+    private float GetOceanEventTimeSeconds()
+    {
+        return Application.isPlaying
+            ? Mathf.Max(0f, worldElapsedRealSeconds)
+            : Mathf.Max(0f, oceanEventPreviewTimeSeconds);
+    }
+
+    private float GetSailingWaveTravelSpeed()
+    {
+        return GetSailingSurfaceFlowSpeed() + GetNaturalSailingWindSpeed() * 0.35f;
     }
 
     private TideOceanSample GetNetOceanSample()
@@ -7262,9 +7298,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void TickMooredBoatCurrent(float deltaTime)
     {
+        TideOceanSample mooredOcean = GetOceanSample(GetMooredBoatPosition().x);
         TideMooringRopeEnvironmentOutcome outcome = mooringRope.AdvanceEnvironment(
             deltaTime,
-            GetNaturalCurrentSpeed(),
+            GetNaturalCurrentSpeed() + mooredOcean.HorizontalVelocity,
             GetNaturalSailingWindSpeed(),
             sailTripActive);
         mooredBoatOffsetFallback = mooringRope.BoatOffsetMeters;
@@ -9610,7 +9647,14 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         EnsureList(harvestCarryItems, "GeneratedStiltFirstHarvestCarryItem", 3, GetFishSprite(), 15);
         EnsureList(washedAwayHarvestItems, "GeneratedStiltFirstWashedAwayHarvest", 3, GetFishSprite(), 14);
         EnsureList(netDamageMarkers, "GeneratedStiltFirstNetDamageMarker", 3, GetRepairPatchSprite(), 15);
-        EnsureList(waveStrips, "GeneratedStiltFirstWaveStrip", 5, GetFoamSprite(), -17);
+        // 九个槽覆盖 16:9、21:9 及常见自由比例下仍可能影响屏幕边缘的
+        // 邻格浪组；只复用同一 Sprite，不增加贴图或逐帧资源。
+        EnsureList(
+            waveStrips,
+            "GeneratedStiltFirstWaveStrip",
+            LocalWaveRendererCount,
+            GetFoamSprite(),
+            -17);
         EnsureList(houseRepairMarks, "GeneratedStiltFirstHouseRepairPatch", 4, GetRepairPatchSprite(), 10);
         EnsureList(houseSaltStreaks, "GeneratedStiltFirstHouseSaltStreak", 6, GetHouseSaltStreakSprite(), 10);
         EnsureList(shelterTideZoneWearRenderers, "GeneratedStiltFirstTideZonePostWear", 4, GetFormalStiltTideZoneWearSprite(), 12);
@@ -9876,6 +9920,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
 
     private void UpdateVisuals(float time)
     {
+        if (!Application.isPlaying)
+        {
+            oceanEventPreviewTimeSeconds = Mathf.Max(0f, time);
+        }
         UpdateShelterCameraFraming();
         float presentationCenterX = GetActiveCameraCenterX();
         float pulse = Mathf.Sin(time * 2.2f) * 0.5f + 0.5f;
@@ -13449,19 +13497,17 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         bool useFormalCrests = useFormalWater && formalCrest != null;
         float sailingWind01 = Mathf.Clamp01(
             Mathf.Abs(GetNaturalSailingWindSpeed()) / Mathf.Max(0.01f, sailingWindMaxSpeed));
-        float sailingWaveDirection = GetSailingSurfaceFlowSpeed() +
-            GetNaturalSailingWindSpeed() * 0.35f;
+        float sailingWaveDirection = GetSailingWaveTravelSpeed();
         for (int i = 0; i < waveStrips.Count; i++)
         {
             TideWaveEventSample waveEvent = TideWaveEventFieldModel.Sample(
                 i,
                 waveStrips.Count,
                 GetSailingCameraWorldX(),
-                time,
+                GetOceanEventTimeSeconds(),
                 sailingWaveDirection,
                 sailingWind01,
-                storm01,
-                sailingCenterOcean.Agitation01);
+                storm01);
             if (!waveEvent.Visible)
             {
                 SetEnabled(waveStrips[i], false);
@@ -13483,7 +13529,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 ? TideV43SeaWeatherPresentationModel.EvaluateWaveFrame(
                     formalV43SeaWeatherCatalog,
                     v43Kind,
-                    time,
+                    GetOceanEventTimeSeconds(),
                     waveEvent.FramePhase01,
                     waveEvent.FrameSpeedScale)
                 : null;
@@ -16369,8 +16415,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
         float shelterViewCenterX = GetActiveCameraCenterX();
         float shelterWind01 = Mathf.Clamp01(
             Mathf.Abs(GetNaturalSailingWindSpeed()) / Mathf.Max(0.01f, sailingWindMaxSpeed));
-        float shelterWaveDirection = GetNaturalCurrentSpeed() +
-            GetNaturalSailingWindSpeed() * 0.35f;
+        float shelterWaveDirection = GetShelterWaveTravelSpeed();
         TideOceanSample shelterCenterOcean = GetOceanSample(shelterViewCenterX);
         bool useFormalMoon = GetFormalSprite(ref formalMoonSprite, "AIMoon") != null;
         Vector2 moonScale = useFormalMoon ? new Vector2(0.92f, 0.92f) : new Vector2(0.76f, 0.76f);
@@ -16483,11 +16528,10 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 i,
                 waveStrips.Count,
                 shelterViewCenterX,
-                time,
+                GetOceanEventTimeSeconds(),
                 shelterWaveDirection,
                 shelterWind01,
-                storm01,
-                shelterCenterOcean.Agitation01);
+                storm01);
             if (!waveEvent.Visible)
             {
                 SetEnabled(waveStrips[i], false);
@@ -16505,7 +16549,7 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
                 ? TideV43SeaWeatherPresentationModel.EvaluateWaveFrame(
                     formalV43SeaWeatherCatalog,
                     v43Kind,
-                    time,
+                    GetOceanEventTimeSeconds(),
                     waveEvent.FramePhase01,
                     waveEvent.FrameSpeedScale)
                 : null;
@@ -19671,13 +19715,14 @@ public partial class TideStiltHouseFirstSliceController : MonoBehaviour
     {
         float wind01 = Mathf.Clamp01(Mathf.Abs(GetNaturalSailingWindSpeed()) /
             Mathf.Max(0.01f, sailingWindMaxSpeed));
-        return TideOceanFieldModel.Sample(
+        return TideAuthoritativeOceanModel.Sample(
             GetSailingMeanWaterY(),
             sailingWorldX,
-            weatherClockSeconds,
+            GetOceanEventTimeSeconds(),
             tideStrength,
             GetStormPressure01(),
-            wind01);
+            wind01,
+            GetSailingWaveTravelSpeed());
     }
 
     private float GetSailingMeanWaterY()

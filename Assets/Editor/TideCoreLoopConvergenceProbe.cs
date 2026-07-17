@@ -33,6 +33,7 @@ public static class TideCoreLoopConvergenceProbe
         string heavyWreck = ProbeHeavyWreckTidalLift();
         string rope = ProbeMooringRope();
         string sailing = ProbeSailingDynamics();
+        string visibleWavePhysics = ProbeVisibleWavePhysicalCoupling();
         string sailingReef = ProbeSailingReefClearance();
         string sailingReefRuntime = ProbeSailingReefRuntime();
         string sailingSalvageRuntime = ProbeSailingSalvageRuntime();
@@ -41,7 +42,7 @@ public static class TideCoreLoopConvergenceProbe
         string forecast = ProbeForecastSnapshot();
         string netEncounter = ProbeNetEncounter();
         string wrack = ProbeWrackDeposit();
-        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {sailing} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
+        return $"TIDE_CORE_LOOP_PROBE PASS | {cistern} | {wreckWork} | {island} | {context} | {salvage} | {repairPhases} | {repairSession} | {heavyWreck} | {rope} | {sailing} | {visibleWavePhysics} | {sailingReef} | {sailingReefRuntime} | {sailingSalvageRuntime} | {storm} | {stormRuntime} | {forecast} | {netEncounter} | {wrack}";
     }
 
     private static string ProbeWreckDismantle()
@@ -811,6 +812,25 @@ public static class TideCoreLoopConvergenceProbe
         }
         Require(windDriven.HorizontalVelocity > 0.2f, "升帆后没有读取有符号风场");
 
+        TideSailboatDynamicsState localBreakerDriven = CreateBoatState();
+        for (int i = 0; i < 80; i++)
+        {
+            localBreakerDriven = TideSailboatDynamicsModel.Advance(
+                localBreakerDriven,
+                0.02f,
+                0f,
+                0f,
+                0f,
+                0f,
+                0.58f,
+                -1.18f,
+                0f,
+                0.9f,
+                0.7f);
+        }
+        Require(localBreakerDriven.HorizontalVelocity > 0.14f,
+            "权威海况提供局部浪推力后，帆船动力仍把它丢在当前耦合之外");
+
         TideSailboatDynamicsState neutral = CreateBoatState();
         TideSailboatDynamicsState trimmed = CreateBoatState();
         for (int i = 0; i < 160; i++)
@@ -820,7 +840,14 @@ public static class TideCoreLoopConvergenceProbe
         }
         Require(Mathf.Abs(trimmed.PitchDegrees) < Mathf.Abs(neutral.PitchDegrees),
             "移动压舱物不能抵消当前浪坡纵倾");
-        return $"静风左右{left.HorizontalVelocity:F2}/{right.HorizontalVelocity:F2}m/s/顺风{windDriven.HorizontalVelocity:F2}/压舱{neutral.PitchDegrees:F1}->{trimmed.PitchDegrees:F1}deg";
+        return $"静风左右{left.HorizontalVelocity:F2}/{right.HorizontalVelocity:F2}m/s/顺风{windDriven.HorizontalVelocity:F2}/破浪推移{localBreakerDriven.HorizontalVelocity:F2}/压舱{neutral.PitchDegrees:F1}->{trimmed.PitchDegrees:F1}deg";
+    }
+
+    private static string ProbeVisibleWavePhysicalCoupling()
+    {
+        bool passed = TideAuthoritativeOceanModel.ProbeVisibleWaveCoupling(out string reason);
+        Require(passed, $"可见破浪与局部物理未同源：{reason}");
+        return $"可见破浪={reason}";
     }
 
     private static string ProbeSailingReefClearance()

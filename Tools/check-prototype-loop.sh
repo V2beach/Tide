@@ -33,6 +33,7 @@ required=(
   Assets/Scripts/StiltHouse/TideMooringRopeModel.cs
   Assets/Scripts/StiltHouse/TideMooringRopeController.cs
   Assets/Scripts/StiltHouse/TideSailboatDynamicsModel.cs
+  Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs
   Assets/Scripts/StiltHouse/TideSailingReefModel.cs
   Assets/Scripts/StiltHouse/TideSailingReefController.cs
   Assets/Scripts/StiltHouse/TideContinuousSalvageModel.cs
@@ -59,6 +60,8 @@ editor_diagnostics="$root/Assets/Scripts/StiltHouse/TideStiltHouseFirstSliceCont
 repair_recipe="$root/Assets/Scripts/StiltHouse/TideRepairRecipeModel.cs"
 repair_work="$root/Assets/Scripts/StiltHouse/TideRepairWorkController.cs"
 barren_island="$root/Assets/Scripts/StiltHouse/TideBarrenIslandController.cs"
+wave_events="$root/Assets/Scripts/StiltHouse/TideWaveEventFieldModel.cs"
+authoritative_ocean="$root/Assets/Scripts/StiltHouse/TideAuthoritativeOceanModel.cs"
 for token in TickBarrenIslandNaturalState TickDismantleNearestPart wreckOcean.Agitation01 heavyWreckSalvage.IsCarryingPiece GetRepairStagedPartMask HandleMooringRopeInput mooringRope.AdvanceEnvironment TideSailboatDynamicsModel.Advance sailingReef.ResolveMovement sailingReef.UpdatePresentation sailingSalvage.Advance stormRescue.Advance KeyCode.F3 forecastTideNotches.UpdatePresentation TideForecastSnapshotModel.Capture TideNetEncounterModel.Advance tideDriftFieldCycleOrdinal wrackLine.TrySettle; do
   gate grep -q "$token" "$controller"
 done
@@ -76,6 +79,20 @@ gate grep -q 'public void Begin' "$repair_work"
 gate grep -q 'public bool Advance' "$repair_work"
 gate grep -q 'public void Complete' "$repair_work"
 gate grep -q TideSailboatDynamicsState "$controller"
+gate grep -q TideAuthoritativeOceanModel.Sample "$controller"
+if grep -q TideOceanFieldModel.Sample "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
+gate grep -q GetOceanEventTimeSeconds "$controller"
+gate grep -q worldElapsedRealSeconds "$controller"
+gate grep -q TideOceanFieldModel.Sample "$authoritative_ocean"
+gate grep -q TideWaveEventFieldModel.SamplePhysicalInfluence "$authoritative_ocean"
+gate grep -q TideWaveEventPhysicalSample "$wave_events"
+gate grep -q SamplePhysicalInfluence "$wave_events"
+if grep -q clampedAgitation "$wave_events"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
+gate grep -q EvaluateTravelFactor "$wave_events"
+gate grep -q slackWaterContinuous "$authoritative_ocean"
+gate grep -q 'GetSailingLocalWaterVelocity(ocean)' "$controller"
+gate grep -q 'GetNaturalCurrentSpeed() + mooredOcean.HorizontalVelocity' "$controller"
+gate grep -q 'LocalWaveRendererCount = 9' "$controller"
 gate grep -q 'get => sailingDynamics.HorizontalVelocity' "$controller"
 gate grep -q 'get => sailingDynamics.HeaveY' "$controller"
 gate grep -q 'get => sailingDynamics.Ingress01' "$controller"
@@ -94,6 +111,7 @@ if grep -qE 'RunEditor|GetEditor' "$controller"; then failures=$((failures + 1))
 gate grep -q ProbeForecastSnapshot "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeWreckDismantle "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeRepairWorkSession "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
+gate grep -q ProbeVisibleWavePhysicalCoupling "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeNetEncounter "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 gate grep -q ProbeWrackDeposit "$root/Assets/Editor/TideCoreLoopConvergenceProbe.cs"
 if grep -q TickFreeSailingSalvage "$controller"; then failures=$((failures + 1)); else passes=$((passes + 1)); fi
@@ -105,6 +123,7 @@ gate grep -q RunEditorFirstDayAutonomyProbe "$root/Assets/Editor/TideVisualScene
 gate grep -q RunEditorWreckDismantleTideWindowProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorArrivalSalvagePayoffProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorMixedSemidiurnalOpportunityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
+gate grep -q RunEditorLocalWaveEventFieldProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q TideStormRescueTradeoffConvergenceProbe.Run "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorStormManifestOwnershipProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
 gate grep -q RunEditorSailingTideContinuityProbe "$root/Assets/Editor/TideVisualSceneConvergenceProbe.cs"
